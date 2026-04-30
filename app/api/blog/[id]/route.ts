@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params;
+    const blogId = parseInt(id);
     const body = await request.json();
     const { title, content, excerpt } = body;
     
     const post = await prisma.blogPost.update({
-      where: { id },
+      where: { id: blogId },
       data: { title, content, excerpt },
     });
     
@@ -18,11 +19,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params;
+    const blogId = parseInt(id);
     await prisma.blogPost.delete({
-      where: { id },
+      where: { id: blogId },
     });
     return NextResponse.json({ message: 'Post deleted' });
   } catch (error) {
