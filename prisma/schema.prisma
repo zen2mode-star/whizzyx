@@ -1,0 +1,73 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  videoUrl    String?
+  links       String?
+  createdAt   DateTime @default(now())
+}
+
+model Suggestion {
+  id            Int            @id @default(autoincrement())
+  problem       String
+  solution      String
+  userEmail     String?
+  userName      String?
+  isFeatured    Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  contributions Contribution[]
+}
+
+model Contribution {
+  id              Int        @id @default(autoincrement())
+  suggestionId    Int
+  suggestion      Suggestion @relation(fields: [suggestionId], references: [id])
+  text            String
+  contributorName String?
+  createdAt       DateTime   @default(now())
+}
+
+model AdminUser {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+}
+
+model CurrentFocus {
+  id        Int      @id @default(autoincrement())
+  problem   String
+  status    String   @default("Researching")
+  updatedAt DateTime @updatedAt
+}
+
+model Quote {
+  id          Int      @id @default(autoincrement())
+  text        String
+  designation String?
+  createdAt   DateTime @default(now())
+}
+
+model SiteSettings {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+}
+
+model Collaborator {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  skills    String
+  why       String
+  portfolio String?
+  createdAt DateTime @default(now())
+}
