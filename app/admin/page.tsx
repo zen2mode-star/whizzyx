@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
 
   // Project form
+  const [editingProject, setEditingProject] = useState<any>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -128,14 +129,33 @@ export default function AdminDashboard() {
   // --- Projects ---
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/projects', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const url = editingProject ? `/api/projects/${editingProject.id}` : '/api/projects';
+    const method = editingProject ? 'PATCH' : 'POST';
+
+    const res = await fetch(url, {
+      method, headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, description, videoUrl, links }),
     });
+
     if (res.ok) {
       setTitle(''); setDescription(''); setVideoUrl(''); setLinks('');
-      fetchAll(); flash('projects', '✓ Project added!');
+      setEditingProject(null);
+      fetchAll(); flash('projects', editingProject ? '✓ Project updated!' : '✓ Project added!');
     } else flash('projects', '✗ Failed.');
+  };
+
+  const handleEditProject = (p: any) => {
+    setEditingProject(p);
+    setTitle(p.title);
+    setDescription(p.description);
+    setVideoUrl(p.videoUrl || '');
+    setLinks(p.links || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProject(null);
+    setTitle(''); setDescription(''); setVideoUrl(''); setLinks('');
   };
 
   const handleDeleteProject = async (id: number) => {
@@ -308,14 +328,17 @@ export default function AdminDashboard() {
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Add and manage your featured projects shown on the homepage.</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                   <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Add New Project</h3>
+                    <h3 style={{ marginBottom: '1.5rem' }}>{editingProject ? 'Edit Project' : 'Add New Project'}</h3>
                     <form onSubmit={handleAddProject}>
                       <div className="form-group"><label>Title</label><input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required /></div>
                       <div className="form-group"><label>Description</label><textarea className="form-control" value={description} onChange={e => setDescription(e.target.value)} required style={{ minHeight: '80px' }} /></div>
                       <div className="form-group"><label>YouTube URL (optional)</label><input type="url" className="form-control" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." /></div>
                       <div className="form-group"><label>Project Link (optional)</label><input type="url" className="form-control" value={links} onChange={e => setLinks(e.target.value)} placeholder="https://github.com/..." /></div>
-                      <button type="submit" className="btn btn-primary">Publish</button>
-                      {msg.projects && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.projects}</span>}
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <button type="submit" className="btn btn-primary">{editingProject ? 'Update Project' : 'Publish'}</button>
+                        {editingProject && <button type="button" onClick={handleCancelEdit} className="btn" style={{ background: 'rgba(255,255,255,0.05)' }}>Cancel</button>}
+                        {msg.projects && <span style={{ color: 'var(--accent)' }}>{msg.projects}</span>}
+                      </div>
                     </form>
                   </div>
                   <div className="glass-card">
@@ -326,7 +349,10 @@ export default function AdminDashboard() {
                           <h4 style={{ color: '#fff', marginBottom: '0.25rem' }}>{p.title}</h4>
                           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{p.description.substring(0, 70)}...</p>
                         </div>
-                        <button className="btn-delete" onClick={() => handleDeleteProject(p.id)}>Delete</button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid #3b82f6' }} onClick={() => handleEditProject(p)}>Edit</button>
+                          <button className="btn-delete" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => handleDeleteProject(p.id)}>Delete</button>
+                        </div>
                       </div>
                     ))}
                     {projects.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No projects yet.</p>}

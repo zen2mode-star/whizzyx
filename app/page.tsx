@@ -338,23 +338,59 @@ export default function Home() {
 
         {/* ══ PROJECTS ══ */}
         {activeTab === 'projects' && (
-          <div className="tab-page fade-in container">
-            <h2 className="section-title">{settings.sectionProjectsTitle || 'Featured Projects'}</h2>
-            <div className="grid">
+          <div className="tab-page fade-in container" style={{ maxWidth: '1200px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <h2 className="section-title" style={{ marginBottom: '1rem' }}>{settings.sectionProjectsTitle || 'Featured Projects'}</h2>
+              <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>
+                A collection of self-initiated systems, tools, and creative experiments designed to solve real-world friction.
+              </p>
+            </div>
+
+            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '2.5rem' }}>
               {projects.length > 0 ? projects.map((p: any) => (
-                <div key={p.id} className="glass-card">
-                  {p.videoUrl && (
-                    <div className="video-wrapper">
+                <div key={p.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {p.videoUrl ? (
+                    <div className="video-wrapper" style={{ margin: '0', borderRadius: '0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                       <iframe src={`https://www.youtube.com/embed/${p.videoUrl.split('v=')[1] || p.videoUrl.split('/').pop()}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                     </div>
+                  ) : (
+                    <div style={{ height: '200px', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
                   )}
-                  <h3 className="project-title">{p.title}</h3>
-                  <p className="project-desc">{p.description}</p>
-                  {p.links && <a href={p.links} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}>View Details</a>}
+                  
+                  <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--accent)', fontWeight: 700, background: 'rgba(59,130,246,0.1)', padding: '0.25rem 0.75rem', borderRadius: '50px' }}>Project</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(p.createdAt || Date.now()).getFullYear()}</span>
+                    </div>
+                    
+                    <h3 className="project-title" style={{ fontSize: '1.6rem', marginBottom: '1rem', fontFamily: 'Outfit, sans-serif' }}>{p.title}</h3>
+                    <p className="project-desc" style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '2rem', flex: 1 }}>{p.description}</p>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                      {p.links ? (
+                        <a href={p.links} target="_blank" rel="noopener noreferrer" className="home-cta-btn cta-blue" style={{ padding: '0.6rem 1.4rem', fontSize: '0.85rem' }}>
+                          <span>View Details</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        </a>
+                      ) : (
+                        <div style={{ height: '38px' }}></div>
+                      )}
+                      
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 'bold', color: '#fff' }}>MJ</div>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>MJ Build</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )) : (
-                <div className="glass-card" style={{ gridColumn: '1/-1', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--text-secondary)' }}>No projects published yet. Check back soon!</p>
+                <div className="glass-card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem' }}>
+                  <div style={{ marginBottom: '1.5rem', opacity: 0.3 }}>
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>No projects published yet. Check back soon!</p>
                 </div>
               )}
             </div>
