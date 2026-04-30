@@ -71,3 +71,12 @@ model Collaborator {
   portfolio String?
   createdAt DateTime @default(now())
 }
+model BlogPost {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String   @db.Text
+  excerpt   String?
+  author    String   @default("MJ")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-type Tab = 'home' | 'focus' | 'projects' | 'community' | 'join' | 'suggest';
+type Tab = 'home' | 'focus' | 'projects' | 'blog' | 'community' | 'join' | 'suggest';
 
 const NAV_TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'home', label: 'Home', icon: (
@@ -13,6 +13,9 @@ const NAV_TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   )},
   { id: 'projects', label: 'Projects', icon: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+  )},
+  { id: 'blog', label: 'Blog', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
   )},
   { id: 'community', label: 'Community', icon: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -33,6 +36,7 @@ export default function Home() {
   const [featuredSuggestions, setFeaturedSugg]    = useState([]);
   const [quotes, setQuotes]                       = useState<string[]>([]);
   const [settings, setSettings]                   = useState<Record<string, string>>({});
+  const [blogPosts, setBlogPosts]                 = useState<any[]>([]);
   const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
 
   // Community contributions
@@ -96,6 +100,7 @@ export default function Home() {
     fetch('/api/focus').then(r => r.json()).then(setFocus).catch(console.error);
     fetch('/api/suggestions').then(r => r.json()).then(d => setFeaturedSugg(d.filter((s: any) => s.isFeatured))).catch(console.error);
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
+    fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
     fetch('/api/quotes').then(r => r.json()).then((data: any[]) => {
       setQuotes(data.length > 0
         ? data.map(q => q.designation ? `"${q.text}" — ${q.designation}` : q.text)
@@ -352,6 +357,53 @@ export default function Home() {
                   <p style={{ color: 'var(--text-secondary)' }}>No projects published yet. Check back soon!</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ══ BLOG ══ */}
+        {activeTab === 'blog' && (
+          <div className="tab-page fade-in">
+            <div className="hero" style={{ paddingBottom: '2rem' }}>
+              <div className="hero-orb"></div>
+              <h1 style={{ fontSize: '3.5rem' }}>The Workshop Blog</h1>
+              <p style={{ maxWidth: '600px', margin: '0 auto' }}>Deep dives into my building process, technical challenges, and creative philosophy.</p>
+            </div>
+
+            <div className="container" style={{ maxWidth: '900px', paddingBottom: '5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                {blogPosts.map((post: any) => (
+                  <article key={post.id} className="glass-card" style={{ padding: '2.5rem', border: '1px solid rgba(139,92,246,0.2)', transition: 'all 0.3s ease' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <span style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                        {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <h2 style={{ fontSize: '2.2rem', color: '#fff', marginTop: '0.5rem', fontFamily: 'Outfit, sans-serif' }}>{post.title}</h2>
+                    </div>
+                    
+                    {post.excerpt && (
+                      <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '1.5rem', borderLeft: '3px solid var(--accent)', paddingLeft: '1.25rem' }}>
+                        {post.excerpt}
+                      </p>
+                    )}
+
+                    <div style={{ color: 'rgba(255,255,255,0.85)', lineHeight: '1.8', fontSize: '1.05rem', whiteSpace: 'pre-wrap' }}>
+                      {post.content}
+                    </div>
+
+                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>MJ</div>
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Written by <strong style={{ color: '#fff' }}>{post.author}</strong></span>
+                    </div>
+                  </article>
+                ))}
+
+                {blogPosts.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '4rem 0', opacity: 0.6 }}>
+                    <p>No blog posts published yet. Stay tuned!</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

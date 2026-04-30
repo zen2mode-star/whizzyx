@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Tab = 'focus' | 'projects' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials';
+type Tab = 'focus' | 'projects' | 'blog' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('focus');
@@ -21,6 +21,7 @@ export default function AdminDashboard() {
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [focus, setFocus] = useState({ problem: '', status: 'Noticing & Researching' });
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
 
   // Project form
   const [title, setTitle] = useState('');
@@ -36,6 +37,11 @@ export default function AdminDashboard() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
+  // Blog form
+  const [blogTitle, setBlogTitle] = useState('');
+  const [blogContent, setBlogContent] = useState('');
+  const [blogExcerpt, setBlogExcerpt] = useState('');
+
   // Messages
   const [msg, setMsg] = useState<Record<string, string>>({});
   const flash = (key: string, text: string) => {
@@ -50,6 +56,7 @@ export default function AdminDashboard() {
     fetch('/api/quotes').then(r => r.json()).then(setQuotes).catch(console.error);
     fetch('/api/collaborators').then(r => r.json()).then(setCollaborators).catch(console.error);
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
+    fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
     fetch('/api/focus').then(r => r.json()).then(d => {
       if (d && d.problem && d.problem !== 'No problem set yet.') {
         setFocus({ problem: d.problem, status: d.status || 'Noticing & Researching' });
@@ -172,6 +179,25 @@ export default function AdminDashboard() {
     flash('settings', res.ok ? '✓ Website content updated!' : '✗ Failed.');
   };
 
+  // --- Blog ---
+  const handleAddBlog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch('/api/blog', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: blogTitle, content: blogContent, excerpt: blogExcerpt }),
+    });
+    if (res.ok) {
+      setBlogTitle(''); setBlogContent(''); setBlogExcerpt('');
+      fetchAll(); flash('blog', '✓ Blog post published!');
+    } else flash('blog', '✗ Failed.');
+  };
+
+  const handleDeleteBlog = async (id: number) => {
+    if (!confirm('Delete this blog post?')) return;
+    const res = await fetch(`/api/blog/${id}`, { method: 'DELETE' });
+    if (res.ok) fetchAll();
+  };
+
   // ==================== LOGIN SCREEN ====================
   if (!isLoggedIn) {
     return (
@@ -204,6 +230,7 @@ export default function AdminDashboard() {
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'focus', label: 'Live Focus', icon: '🎯' },
     { id: 'projects', label: 'Projects', icon: '🚀' },
+    { id: 'blog', label: 'Blog', icon: '✍️' },
     { id: 'quotes', label: 'Quotes', icon: '💬' },
     { id: 'suggestions', label: 'Suggestions', icon: '💡' },
     { id: 'collaborators', label: 'Join Applications', icon: '🤝' },
@@ -449,6 +476,40 @@ export default function AdminDashboard() {
                     <button type="submit" className="btn btn-primary">Update Credentials</button>
                     {msg.creds && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.creds}</span>}
                   </form>
+                </div>
+              </div>
+            )}
+
+            {/* BLOG TAB */}
+            {activeTab === 'blog' && (
+              <div>
+                <h2 style={{ marginBottom: '0.5rem' }}>✍️ Blog Writing</h2>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Share your thoughts, updates, and deep dives with your community.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem' }}>
+                  <div className="glass-card">
+                    <h3 style={{ marginBottom: '1.5rem' }}>Write New Post</h3>
+                    <form onSubmit={handleAddBlog}>
+                      <div className="form-group"><label>Title</label><input type="text" className="form-control" value={blogTitle} onChange={e => setBlogTitle(e.target.value)} required placeholder="The Future of Inefficiency..." /></div>
+                      <div className="form-group"><label>Excerpt (Short summary)</label><input type="text" className="form-control" value={blogExcerpt} onChange={e => setBlogExcerpt(e.target.value)} placeholder="A quick look at why I built this..." /></div>
+                      <div className="form-group"><label>Content (Markdown supported)</label><textarea className="form-control" value={blogContent} onChange={e => setBlogContent(e.target.value)} required style={{ minHeight: '300px', fontFamily: 'monospace' }} placeholder="Write your post here..." /></div>
+                      <button type="submit" className="btn btn-primary">Publish Post</button>
+                      {msg.blog && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.blog}</span>}
+                    </form>
+                  </div>
+                  <div className="glass-card">
+                    <h3 style={{ marginBottom: '1.5rem' }}>Manage Posts ({blogPosts.length})</h3>
+                    {blogPosts.map((p: any) => (
+                      <div key={p.id} className="admin-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <h4 style={{ color: '#fff' }}>{p.title}</h4>
+                          <button className="btn-delete" onClick={() => handleDeleteBlog(p.id)}>Delete</button>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(p.createdAt).toLocaleDateString()}</p>
+                        {p.excerpt && <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>{p.excerpt}</p>}
+                      </div>
+                    ))}
+                    {blogPosts.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No blog posts yet.</p>}
+                  </div>
                 </div>
               </div>
             )}
