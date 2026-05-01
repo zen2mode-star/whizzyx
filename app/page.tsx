@@ -99,7 +99,7 @@ export default function Home() {
   const [projects, setProjects]                   = useState([]);
   const [focus, setFocus]                         = useState<any>(null);
   const [featuredSuggestions, setFeaturedSugg]    = useState([]);
-  const [quotes, setQuotes]                       = useState<string[]>([]);
+  const [quotes, setQuotes]                       = useState<any[]>([]);
   const [settings, setSettings]                   = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts]                 = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
