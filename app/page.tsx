@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 type Tab = 'home' | 'focus' | 'projects' | 'blog' | 'community' | 'join' | 'suggest';
 
@@ -37,6 +38,8 @@ export default function Home() {
   const [quotes, setQuotes]                       = useState<string[]>([]);
   const [settings, setSettings]                   = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts]                 = useState<any[]>([]);
+  const [updates, setUpdates]                     = useState<any[]>([]);
+  const [filterProject, setFilterProject]         = useState<number | 'all'>('all');
   const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
 
   // Community contributions
@@ -101,6 +104,7 @@ export default function Home() {
     fetch('/api/suggestions').then(r => r.json()).then(d => setFeaturedSugg(d.filter((s: any) => s.isFeatured))).catch(console.error);
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
+    fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
     fetch('/api/quotes').then(r => r.json()).then((data: any[]) => {
       setQuotes(data.length > 0
         ? data.map(q => q.designation ? `"${q.text}" — ${q.designation}` : q.text)
@@ -333,6 +337,84 @@ export default function Home() {
                 <p>No active focus set yet. Check back soon!</p>
               </div>
             )}
+
+            {/* Build Updates Timeline (Roadmap) */}
+            <div className="container" style={{ maxWidth: '900px', marginTop: '4rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', background: 'linear-gradient(to right, #fff, var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Graphical Roadmap</h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>A living log of technical progress and creative evolution.</p>
+                
+                {projects.length > 0 && (
+                  <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                    <button 
+                      onClick={() => setFilterProject('all')} 
+                      className={`btn ${filterProject === 'all' ? 'btn-primary' : ''}`}
+                      style={{ padding: '0.4rem 1.2rem', fontSize: '0.85rem', background: filterProject === 'all' ? undefined : 'rgba(255,255,255,0.05)' }}
+                    >
+                      All Updates
+                    </button>
+                    {projects.map((p: any) => (
+                      <button 
+                        key={p.id}
+                        onClick={() => setFilterProject(p.id)}
+                        className={`btn ${filterProject === p.id ? 'btn-primary' : ''}`}
+                        style={{ padding: '0.4rem 1.2rem', fontSize: '0.85rem', background: filterProject === p.id ? undefined : 'rgba(255,255,255,0.05)' }}
+                      >
+                        {p.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {updates.filter(u => filterProject === 'all' || u.projectId === filterProject).length > 0 ? (
+                <div className="timeline">
+                  {updates.filter(u => filterProject === 'all' || u.projectId === filterProject).map((upd: any) => (
+                    <div key={upd.id} className="timeline-item">
+                      <div className="timeline-dot" style={{ background: upd.category === 'Learning' ? '#10b981' : upd.category === 'Improvement' ? '#f59e0b' : '#3b82f6' }}></div>
+                      <span className="timeline-date">
+                        {new Date(upd.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <div className="timeline-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span className={`category-tag category-${upd.category.toLowerCase()}`}>
+                              {upd.category === 'Learning' && '🎓 '}
+                              {upd.category === 'Improvement' && '📈 '}
+                              {upd.category === 'Update' && '🚀 '}
+                              {upd.category}
+                            </span>
+                          </div>
+                          {upd.project && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.03)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                              Project: <strong style={{ color: '#fff' }}>{upd.project.title}</strong>
+                            </span>
+                          )}
+                        </div>
+                        
+                        {upd.title && (
+                          <h3 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '0.5rem', fontFamily: 'Outfit, sans-serif' }}>{upd.title}</h3>
+                        )}
+                        
+                        {upd.excerpt && (
+                          <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '1rem', borderLeft: '2px solid var(--accent)', paddingLeft: '0.75rem' }}>
+                            {upd.excerpt}
+                          </p>
+                        )}
+
+                        <div className="report-content" style={{ fontSize: '1rem' }}>
+                          <ReactMarkdown>{upd.content}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', opacity: 0.5, padding: '4rem 0', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '24px' }}>
+                  <p>No logged updates for this selection yet.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -423,8 +505,8 @@ export default function Home() {
                       </p>
                     )}
 
-                    <div style={{ color: 'rgba(255,255,255,0.85)', lineHeight: '1.8', fontSize: '1.05rem', whiteSpace: 'pre-wrap' }}>
-                      {post.content}
+                    <div className="report-content">
+                      <ReactMarkdown>{post.content}</ReactMarkdown>
                     </div>
 
                     <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

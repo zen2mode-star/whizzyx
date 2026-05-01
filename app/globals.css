@@ -873,3 +873,131 @@ textarea.form-control {
   box-shadow: 0 0 8px rgba(139,92,246,0.5);
 }
 
+/* Premium Report Styles */
+.report-content {
+  line-height: 1.8;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.report-content h1, .report-content h2, .report-content h3 {
+  color: #fff;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+}
+
+.report-content p {
+  margin-bottom: 1.5rem;
+}
+
+.report-content blockquote {
+  border-left: 4px solid var(--accent);
+  padding: 1rem 1.5rem;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 0 12px 12px 0;
+  font-style: italic;
+  margin: 2rem 0;
+}
+
+.report-content ul, .report-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.report-content li {
+  margin-bottom: 0.5rem;
+}
+
+.report-content hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+  margin: 3rem 0;
+}
+
+/* Timeline / Roadmap Styles */
+.timeline {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 20px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--accent), var(--accent-secondary), transparent);
+  opacity: 0.3;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 50px;
+  margin-bottom: 3rem;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 13px;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #030305;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  z-index: 2;
+}
+
+.timeline-date {
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.timeline-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 1.5rem;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.timeline-card:hover {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateX(5px);
+}
+
+.category-tag {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.category-update { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+.category-learning { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+.category-improvement { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.timeline-item {
+  animation: slideInLeft 0.5s ease-out forwards;
+}
+
+

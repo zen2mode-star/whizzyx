@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-type Tab = 'focus' | 'projects' | 'blog' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials';
+type Tab = 'focus' | 'updates' | 'projects' | 'blog' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('focus');
@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [focus, setFocus] = useState({ problem: '', status: 'Noticing & Researching' });
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<any[]>([]);
 
   // Project form
   const [editingProject, setEditingProject] = useState<any>(null);
@@ -43,6 +44,13 @@ export default function AdminDashboard() {
   const [blogContent, setBlogContent] = useState('');
   const [blogExcerpt, setBlogExcerpt] = useState('');
 
+  // Update form
+  const [updateTitle, setUpdateTitle] = useState('');
+  const [updateContent, setUpdateContent] = useState('');
+  const [updateExcerpt, setUpdateExcerpt] = useState('');
+  const [updateCategory, setUpdateCategory] = useState('Update');
+  const [updateProjectId, setUpdateProjectId] = useState('');
+
   // Messages
   const [msg, setMsg] = useState<Record<string, string>>({});
   const flash = (key: string, text: string) => {
@@ -58,6 +66,7 @@ export default function AdminDashboard() {
     fetch('/api/collaborators').then(r => r.json()).then(setCollaborators).catch(console.error);
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
+    fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
     fetch('/api/focus').then(r => r.json()).then(d => {
       if (d && d.problem && d.problem !== 'No problem set yet.') {
         setFocus({ problem: d.problem, status: d.status || 'Noticing & Researching' });
@@ -218,6 +227,25 @@ export default function AdminDashboard() {
     if (res.ok) fetchAll();
   };
 
+  // --- Build Updates ---
+  const handleAddUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch('/api/updates', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: updateTitle, content: updateContent, excerpt: updateExcerpt, category: updateCategory, projectId: updateProjectId }),
+    });
+    if (res.ok) {
+      setUpdateTitle(''); setUpdateContent(''); setUpdateExcerpt(''); setUpdateCategory('Update'); setUpdateProjectId('');
+      fetchAll(); flash('updates', '✓ Build update posted!');
+    } else flash('updates', '✗ Failed.');
+  };
+
+  const handleDeleteUpdate = async (id: number) => {
+    if (!confirm('Delete this update?')) return;
+    const res = await fetch(`/api/updates/${id}`, { method: 'DELETE' });
+    if (res.ok) fetchAll();
+  };
+
   // ==================== LOGIN SCREEN ====================
   if (!isLoggedIn) {
     return (
@@ -249,6 +277,7 @@ export default function AdminDashboard() {
   // ==================== DASHBOARD ====================
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'focus', label: 'Live Focus', icon: '🎯' },
+    { id: 'updates', label: 'Build Updates', icon: '🛠️' },
     { id: 'projects', label: 'Projects', icon: '🚀' },
     { id: 'blog', label: 'Blog', icon: '✍️' },
     { id: 'quotes', label: 'Quotes', icon: '💬' },
@@ -320,6 +349,72 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+
+            {/* UPDATES TAB */}
+            {activeTab === 'updates' && (
+              <div>
+                <h2 style={{ marginBottom: '0.5rem' }}>🛠️ Build Updates (Roadmap)</h2>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Log what you did, what you learned, or what you improved. These appear in the Roadmap timeline.</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                  <div className="glass-card">
+                    <h3 style={{ marginBottom: '1.5rem' }}>Post New Update</h3>
+                    <form onSubmit={handleAddUpdate}>
+                      <div className="form-group">
+                        <label>Title (Optional)</label>
+                        <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} placeholder="A name for this milestone..." />
+                      </div>
+                      <div className="form-group">
+                        <label>Excerpt (Short summary)</label>
+                        <input type="text" className="form-control" value={updateExcerpt} onChange={e => setUpdateExcerpt(e.target.value)} placeholder="Quick overview..." />
+                      </div>
+                      <div className="form-group">
+                        <label>Content (Markdown supported)</label>
+                        <textarea className="form-control" value={updateContent} onChange={e => setUpdateContent(e.target.value)} required style={{ minHeight: '120px' }} placeholder="What did you achieve or learn?" />
+                      </div>
+                      <div className="form-group">
+                        <label>Category</label>
+                        <select className="form-control" value={updateCategory} onChange={e => setUpdateCategory(e.target.value)} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
+                          <option>Update</option>
+                          <option>Learning</option>
+                          <option>Improvement</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Link to Project (Optional)</label>
+                        <select className="form-control" value={updateProjectId} onChange={e => setUpdateProjectId(e.target.value)} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
+                          <option value="">None</option>
+                          {projects.map((p: any) => (
+                            <option key={p.id} value={p.id}>{p.title}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <button type="submit" className="btn btn-primary">Post Update</button>
+                      {msg.updates && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.updates}</span>}
+                    </form>
+                  </div>
+                  <div className="glass-card">
+                    <h3 style={{ marginBottom: '1.5rem' }}>Recent Updates ({updates.length})</h3>
+                    {updates.map((u: any) => (
+                      <div key={u.id} className="admin-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <span className={`category-tag category-${u.category.toLowerCase()}`} style={{ marginBottom: '0.25rem' }}>{u.category}</span>
+                            <p style={{ color: '#fff', fontSize: '0.95rem' }}>{u.content.substring(0, 100)}...</p>
+                          </div>
+                          <button className="btn-delete" onClick={() => handleDeleteUpdate(u.id)}>Delete</button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                          <span>{new Date(u.date).toLocaleDateString()}</span>
+                          {u.project && <span>Project: {u.project.title}</span>}
+                        </div>
+                      </div>
+                    ))}
+                    {updates.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No updates logged yet.</p>}
+                  </div>
+                </div>
+              </div>
+            )}
+
 
             {/* PROJECTS TAB */}
             {activeTab === 'projects' && (

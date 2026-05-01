@@ -8,12 +8,24 @@ generator client {
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
   description String
   videoUrl    String?
   links       String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime      @default(now())
+  updates     BuildUpdate[]
+}
+
+model BuildUpdate {
+  id        Int      @id @default(autoincrement())
+  title     String?
+  content   String   @db.Text
+  excerpt   String?
+  date      DateTime @default(now())
+  category  String   @default("Update") // Update, Learning, Improvement
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
 }
 
 model Suggestion {
