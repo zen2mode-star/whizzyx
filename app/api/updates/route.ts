@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const updates = await prisma.buildUpdate.findMany({
-      orderBy: { date: 'desc' },
+      orderBy: { date: 'asc' },
       include: { project: true }
     });
     return NextResponse.json(updates);

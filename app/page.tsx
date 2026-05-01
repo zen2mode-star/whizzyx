@@ -41,6 +41,7 @@ export default function Home() {
   const [updates, setUpdates]                     = useState<any[]>([]);
   const [filterProject, setFilterProject]         = useState<number | 'all'>('all');
   const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
+  const [isFocusDescExpanded, setIsFocusDescExpanded] = useState(false);
 
   // Community contributions
   const [contributions, setContributions] = useState<Record<number, any[]>>({});
@@ -340,9 +341,21 @@ export default function Home() {
                   )}
                   
                   {focus?.description && (
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginTop: '1.5rem', maxWidth: '600px', marginInline: 'auto' }}>
-                      {focus.description}
-                    </p>
+                    <div style={{ marginTop: '2rem' }}>
+                      <button 
+                        onClick={() => setIsFocusDescExpanded(!isFocusDescExpanded)}
+                        className="btn"
+                        style={{ background: 'rgba(255,255,255,0.05)', padding: '0.4rem 1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.1)' }}
+                      >
+                        {isFocusDescExpanded ? 'Hide Description' : 'Show Full Description'}
+                      </button>
+                      
+                      {isFocusDescExpanded && (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', lineHeight: '1.7', maxWidth: '700px', marginInline: 'auto', animation: 'fadeIn 0.4s ease' }}>
+                          {focus.description}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
