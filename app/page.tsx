@@ -321,7 +321,9 @@ export default function Home() {
                     {focus?.status || 'Active Research'}
                   </span>
                   
-                  <h2 style={{ fontSize: '2.4rem', marginTop: '1.5rem', marginBottom: '1rem', color: '#fff', lineHeight: 1.2 }}>{focus?.problem}</h2>
+                  <h2 style={{ fontSize: '1.8rem', marginTop: '1.5rem', marginBottom: '1rem', color: '#fff', lineHeight: 1.3, fontFamily: 'serif', textAlign: 'center', maxWidth: '800px', marginInline: 'auto' }}>
+                    {focus?.problem}
+                  </h2>
                   
                   {focus?.project && (
                     <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -341,19 +343,21 @@ export default function Home() {
                   )}
                   
                   {focus?.description && (
-                    <div style={{ marginTop: '2rem' }}>
+                    <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
                       <button 
                         onClick={() => setIsFocusDescExpanded(!isFocusDescExpanded)}
                         className="btn"
-                        style={{ background: 'rgba(255,255,255,0.05)', padding: '0.4rem 1rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.1)' }}
+                        style={{ background: 'rgba(255,255,255,0.03)', padding: '0.4rem 1.2rem', fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '1.5rem', border: '1px solid var(--accent)', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}
                       >
-                        {isFocusDescExpanded ? 'Hide Description' : 'Show Full Description'}
+                        {isFocusDescExpanded ? '− Close Paper' : '+ Read Research Paper'}
                       </button>
                       
                       {isFocusDescExpanded && (
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', lineHeight: '1.7', maxWidth: '700px', marginInline: 'auto', animation: 'fadeIn 0.4s ease' }}>
-                          {focus.description}
-                        </p>
+                        <div className="research-paper-container" style={{ animation: 'fadeIn 0.6s ease' }}>
+                          <div className="research-paper-content">
+                            <ReactMarkdown>{focus.description}</ReactMarkdown>
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

@@ -1033,4 +1033,60 @@ textarea.form-control {
 .category-learning { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
 .category-improvement { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
 
+/* Research Paper Styles */
+.research-paper-container {
+  background: #fff;
+  color: #1a1a1a;
+  padding: 3rem 4rem;
+  max-width: 800px;
+  margin: 2rem auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  border-radius: 2px;
+  text-align: left;
+}
+
+.research-paper-content {
+  font-family: "Times New Roman", Times, serif;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  text-align: justify;
+}
+
+.research-paper-content h1, 
+.research-paper-content h2, 
+.research-paper-content h3 {
+  color: #000;
+  font-family: "Times New Roman", Times, serif;
+  text-align: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.research-paper-content p {
+  margin-bottom: 1rem;
+  text-indent: 2rem;
+}
+
+.research-paper-content ul, 
+.research-paper-content ol {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.research-paper-content blockquote {
+  border-left: 3px solid #ccc;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #444;
+}
+
+@media (max-width: 600px) {
+  .research-paper-container {
+    padding: 1.5rem;
+  }
+}
+
 
