@@ -321,11 +321,19 @@ export default function Home() {
                     {isFocusExpanded ? (
                       <div className="focus-problem-expanded">
                         <span className="quote-mark">&ldquo;</span>{focus.problem}<span className="quote-mark">&rdquo;</span>
+                        {focus.project && (
+                          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Project:</span>
+                            <strong style={{ color: '#fff', fontSize: '0.95rem', flex: 1 }}>{focus.project.title}</strong>
+                            <button onClick={(e) => { e.stopPropagation(); setFilterProject(focus.project.id); }} className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.7rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>Roadmap</button>
+                          </div>
+                        )}
                         <div className="collapse-hint">Click to collapse</div>
                       </div>
                     ) : (
                       <div className="focus-problem-truncated">
                         <p className="focus-problem-clamped">{focus.problem}</p>
+                        {focus.project && <div style={{ fontSize: '0.7rem', color: 'var(--accent)', marginTop: '0.5rem', fontWeight: 600 }}>Building: {focus.project.title}</div>}
                         <div className="expand-hint">Read more</div>
                       </div>
                     )}

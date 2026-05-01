@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
-  const [focus, setFocus] = useState({ problem: '', status: 'Noticing & Researching' });
+  const [focus, setFocus] = useState({ problem: '', status: 'Noticing & Researching', projectId: '' });
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -69,7 +69,11 @@ export default function AdminDashboard() {
     fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
     fetch('/api/focus').then(r => r.json()).then(d => {
       if (d && d.problem && d.problem !== 'No problem set yet.') {
-        setFocus({ problem: d.problem, status: d.status || 'Noticing & Researching' });
+        setFocus({ 
+          problem: d.problem, 
+          status: d.status || 'Noticing & Researching',
+          projectId: d.projectId?.toString() || ''
+        });
       }
     }).catch(console.error);
   };
@@ -132,7 +136,42 @@ export default function AdminDashboard() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(focus),
     });
+    
+    // If user also entered update text, post it
+    if (updateContent) {
+      await handleAddUpdate(e);
+    }
+    
     flash('focus', res.ok ? '✓ Focus updated & live!' : '✗ Failed to update.');
+  };
+
+  const handleCompleteProject = async () => {
+    if (!focus.projectId && !focus.problem) return;
+    
+    // If not linked to a project, ask for a title to create one
+    let targetProjectId = focus.projectId;
+    
+    if (!targetProjectId) {
+      const title = prompt('Enter a title for this new project:');
+      if (!title) return;
+      
+      const res = await fetch('/api/projects', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: focus.problem }),
+      });
+      const newProj = await res.json();
+      targetProjectId = newProj.id.toString();
+    }
+    
+    // Clear focus
+    await fetch('/api/focus', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: null }),
+    });
+    
+    setFocus({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: '' });
+    fetchAll();
+    flash('focus', '✓ Project moved to Projects list!');
   };
 
   // --- Projects ---
@@ -343,8 +382,41 @@ export default function AdminDashboard() {
                         <option>Shipped</option>
                       </select>
                     </div>
-                    <button type="submit" className="btn btn-primary">Set Live</button>
-                    {msg.focus && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.focus}</span>}
+                    <div className="form-group">
+                      <label>Link to Project (Optional)</label>
+                      <select className="form-control" value={focus.projectId} onChange={e => {
+                        const pid = e.target.value;
+                        setFocus({ ...focus, projectId: pid });
+                        setUpdateProjectId(pid); // sync with update form
+                      }} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
+                        <option value="">None / New Idea</option>
+                        {projects.map((p: any) => (
+                          <option key={p.id} value={p.id}>{p.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1.5rem' }}>
+                      <h4 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Post Build Update Simultaneously</h4>
+                      <div className="form-group">
+                        <label>Update Title</label>
+                        <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} placeholder="Milestone name..." />
+                      </div>
+                      <div className="form-group">
+                        <label>Update Content</label>
+                        <textarea className="form-control" value={updateContent} onChange={e => setUpdateContent(e.target.value)} style={{ minHeight: '80px' }} placeholder="What did you achieve just now?" />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                      <button type="submit" className="btn btn-primary">Update Focus & Log Progress</button>
+                      {(focus.projectId || focus.problem) && (
+                        <button type="button" onClick={handleCompleteProject} className="btn" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid #10b981' }}>
+                          Mark as Done / Move to Projects
+                        </button>
+                      )}
+                    </div>
+                    {msg.focus && <span style={{ display: 'block', marginTop: '1rem', color: 'var(--accent)' }}>{msg.focus}</span>}
                   </form>
                 </div>
               </div>

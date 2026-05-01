@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const focus = await prisma.currentFocus.findFirst({
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { updatedAt: 'desc' },
+      include: { project: true }
     });
     return NextResponse.json(focus || { problem: 'No problem set yet.', status: 'Idle' });
   } catch (error) {
@@ -17,24 +18,30 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { problem, status } = body;
+    const { problem, status, projectId } = body;
     
-    // We'll just update the first one or create if none exists
     const existing = await prisma.currentFocus.findFirst();
     let focus;
+    const data = { 
+      problem, 
+      status, 
+      projectId: projectId ? parseInt(projectId) : null 
+    };
+
     if (existing) {
       focus = await prisma.currentFocus.update({
         where: { id: existing.id },
-        data: { problem, status }
+        data
       });
     } else {
       focus = await prisma.currentFocus.create({
-        data: { problem, status }
+        data
       });
     }
     
     return NextResponse.json(focus);
   } catch (error) {
+    console.error('Focus update error:', error);
     return NextResponse.json({ error: 'Failed to update focus' }, { status: 500 });
   }
 }

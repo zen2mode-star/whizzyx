@@ -15,6 +15,7 @@ model Project {
   links       String?
   createdAt   DateTime      @default(now())
   updates     BuildUpdate[]
+  focus       CurrentFocus?
 }
 
 model BuildUpdate {
@@ -58,6 +59,8 @@ model CurrentFocus {
   id        Int      @id @default(autoincrement())
   problem   String
   status    String   @default("Researching")
+  projectId Int?     @unique
+  project   Project? @relation(fields: [projectId], references: [id])
   updatedAt DateTime @updatedAt
 }
 
