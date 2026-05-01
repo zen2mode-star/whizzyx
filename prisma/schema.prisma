@@ -70,6 +70,7 @@ model Quote {
   id          Int      @id @default(autoincrement())
   text        String
   designation String?
+  order       Int      @default(0)
   createdAt   DateTime @default(now())
 }
 

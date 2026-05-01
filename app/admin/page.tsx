@@ -408,6 +408,41 @@ export default function AdminDashboard() {
     fetchAll();
   };
 
+  const handleReorderQuote = async (id: number, direction: 'up' | 'down') => {
+    const currentIndex = quotes.findIndex((q: any) => q.id === id);
+    if (currentIndex === -1) return;
+    
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= quotes.length) return;
+
+    const newQuotes = [...quotes];
+    const currentQuote = { ...newQuotes[currentIndex] };
+    const targetQuote = { ...newQuotes[targetIndex] };
+
+    // If orders are identical or undefined, initialize them based on index
+    let curOrder = currentQuote.order ?? currentIndex;
+    let tarOrder = targetQuote.order ?? targetIndex;
+
+    // Swap logic
+    if (curOrder === tarOrder) {
+        curOrder = currentIndex;
+        tarOrder = targetIndex;
+    }
+
+    const res = await fetch('/api/quotes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        quotes: [
+          { id: currentQuote.id, order: tarOrder },
+          { id: targetQuote.id, order: curOrder }
+        ]
+      })
+    });
+
+    if (res.ok) fetchAll();
+  };
+
   // --- Suggestions ---
   const handleFeature = async (id: number, current: boolean) => {
     await fetch(`/api/suggestions/${id}`, {
@@ -797,11 +832,25 @@ export default function AdminDashboard() {
                 <div className="card">
                   <h3 className="mb-6">Rotating Library</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {quotes.map((q: any) => (
+                    {quotes.map((q: any, idx: number) => (
                       <div key={q.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-secondary)' }}>
                         <p style={{ fontSize: '14px', fontStyle: 'italic', marginBottom: '12px' }}>"{q.text}"</p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span className="text-muted" style={{ fontSize: '12px' }}>{q.designation}</span>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <button 
+                              className="btn" 
+                              style={{ height: '28px', width: '28px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }} 
+                              onClick={() => handleReorderQuote(q.id, 'up')}
+                              disabled={idx === 0}
+                            >↑</button>
+                            <button 
+                              className="btn" 
+                              style={{ height: '28px', width: '28px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }} 
+                              onClick={() => handleReorderQuote(q.id, 'down')}
+                              disabled={idx === quotes.length - 1}
+                            >↓</button>
+                            <span className="text-muted" style={{ fontSize: '12px', marginLeft: '8px' }}>{q.designation}</span>
+                          </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button className="btn" style={{ height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleEditQuote(q)}>EDIT</button>
                             <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteQuote(q.id)}>DEL</button>
