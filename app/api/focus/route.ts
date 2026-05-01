@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { problem, description, status, projectId } = body;
+    const { problem, description, status, projectId, milestone } = body;
     
     const existing = await prisma.currentFocus.findFirst();
     let focus;
@@ -26,7 +26,8 @@ export async function POST(request: Request) {
       problem, 
       description,
       status, 
-      projectId: projectId ? parseInt(projectId) : null 
+      projectId: projectId ? parseInt(projectId) : null,
+      milestone
     };
 
     if (existing) {

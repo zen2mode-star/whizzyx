@@ -170,6 +170,18 @@ export default function Home() {
 
   return (
     <>
+      {/* Theme Override */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          ${settings.themeAccent ? `--accent: ${settings.themeAccent};` : ''}
+          ${settings.themeAccent ? `--accent-glow: ${settings.themeAccent}80;` : ''}
+          ${settings.themeBg ? `--bg-color: ${settings.themeBg};` : ''}
+        }
+        .bg-base {
+          background-color: var(--bg-color) !important;
+        }
+      `}} />
+
       {/* Background */}
       <div className="bg-base">
         <div className="bg-grid"></div>
@@ -315,6 +327,15 @@ export default function Home() {
                       <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Currently Building:</span>
                       <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{focus.project.title}</strong>
                       <button onClick={() => setFilterProject(focus.project.id)} className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.75rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>View Roadmap</button>
+                    </div>
+                  )}
+
+                  {focus?.milestone && (
+                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' }}>Current Milestone</span>
+                      <p style={{ fontSize: '1.4rem', color: '#fff', fontWeight: 500, fontStyle: 'italic', background: 'rgba(255,255,255,0.05)', padding: '0.75rem 1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        {focus.milestone}
+                      </p>
                     </div>
                   )}
                   

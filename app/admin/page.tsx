@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
-  const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '' });
+  const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '', milestone: '' });
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -73,8 +73,10 @@ export default function AdminDashboard() {
           problem: d.problem, 
           description: d.description || '',
           status: d.status || 'Noticing & Researching',
-          projectId: d.projectId?.toString() || ''
+          projectId: d.projectId?.toString() || '',
+          milestone: d.milestone || ''
         });
+        if (d.projectId) setUpdateProjectId(d.projectId.toString());
       }
     }).catch(console.error);
   };
@@ -170,7 +172,7 @@ export default function AdminDashboard() {
       body: JSON.stringify({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: null }),
     });
     
-    setFocus({ problem: 'Looking for the next challenge...', description: '', status: 'Idle', projectId: '' });
+    setFocus({ problem: 'Looking for the next challenge...', description: '', status: 'Idle', projectId: '', milestone: '' });
     fetchAll();
     flash('focus', '✓ Project moved to Projects list!');
   };
@@ -328,7 +330,13 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div style={{ background: '#030305', minHeight: '100vh', position: 'relative' }}>
+    <div style={{ background: settings.themeBg || '#030305', minHeight: '100vh', position: 'relative' }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          ${settings.themeAccent ? `--accent: ${settings.themeAccent};` : ''}
+          ${settings.themeAccent ? `--accent-glow: ${settings.themeAccent}80;` : ''}
+        }
+      `}} />
       <div className="bg-grid" style={{ position: 'fixed', inset: 0, zIndex: 0 }}></div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
@@ -376,6 +384,10 @@ export default function AdminDashboard() {
                     <div className="form-group">
                       <label>Detailed Description</label>
                       <textarea className="form-control" style={{ minHeight: '100px' }} value={focus.description} onChange={e => setFocus({ ...focus, description: e.target.value })} placeholder="I'm currently investigating..." />
+                    </div>
+                    <div className="form-group">
+                      <label>Current Milestone (Short progress text)</label>
+                      <input type="text" className="form-control" value={focus.milestone} onChange={e => setFocus({ ...focus, milestone: e.target.value })} placeholder="e.g. Design phase completed..." />
                     </div>
                     <div className="form-group">
                       <label>Status Tag</label>
@@ -605,6 +617,8 @@ export default function AdminDashboard() {
                       { key: 'sectionProjectsTitle', label: 'Projects Section Title', placeholder: 'Featured Projects' },
                       { key: 'sectionCommunityTitle', label: 'Community Section Title', placeholder: 'Community Wall' },
                       { key: 'sectionSuggestTitle', label: 'Suggestions Section Title', placeholder: 'Got a Problem to Solve?' },
+                      { key: 'themeAccent', label: 'Theme Accent Color (HEX)', placeholder: '#3b82f6' },
+                      { key: 'themeBg', label: 'Theme Background Color (HEX)', placeholder: '#030305' },
                     ].map(field => (
                       <div className="form-group" key={field.key}>
                         <label>{field.label}</label>

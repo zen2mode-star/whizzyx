@@ -62,6 +62,7 @@ model CurrentFocus {
   status      String   @default("Researching")
   projectId Int?     @unique
   project   Project? @relation(fields: [projectId], references: [id])
+  milestone   String?  @db.Text
   updatedAt DateTime @updatedAt
 }
 
