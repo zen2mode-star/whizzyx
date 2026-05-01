@@ -170,7 +170,7 @@ export default function AdminDashboard() {
       body: JSON.stringify({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: null }),
     });
     
-    setFocus({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: '' });
+    setFocus({ problem: 'Looking for the next challenge...', description: '', status: 'Idle', projectId: '' });
     fetchAll();
     flash('focus', '✓ Project moved to Projects list!');
   };
