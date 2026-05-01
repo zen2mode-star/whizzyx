@@ -299,45 +299,30 @@ export default function Home() {
               </div>
             )}
 
-            {/* Focus card */}
             {hasFocus ? (
-              <div className="container" style={{ display: 'flex', justifyContent: 'center' }}>
-                <div
-                  className={`focus-card-compact ${isFocusExpanded ? 'expanded' : ''}`}
-                  onClick={() => setIsFocusExpanded(!isFocusExpanded)}
-                >
-                  <div className="focus-glow"></div>
-                  <div className="focus-content-compact">
-                    <div className="focus-header-compact">
-                      <span className="focus-label">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Currently Working On
-                      </span>
-                      <div className="focus-status">
-                        <div className="status-dot"></div>
-                        <span>{focus.status || 'Researching'}</span>
-                      </div>
+              <div className="container" style={{ maxWidth: '800px' }}>
+                <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', border: '1px solid rgba(139,92,246,0.3)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)', filter: 'blur(40px)' }}></div>
+                  
+                  <span className="status-tag" style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--accent)', border: '1px solid var(--accent)', padding: '0.4rem 1.2rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                    {focus?.status || 'Active Research'}
+                  </span>
+                  
+                  <h2 style={{ fontSize: '2.4rem', marginTop: '1.5rem', marginBottom: '1rem', color: '#fff', lineHeight: 1.2 }}>{focus?.problem}</h2>
+                  
+                  {focus?.project && (
+                    <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Currently Building:</span>
+                      <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{focus.project.title}</strong>
+                      <button onClick={() => setFilterProject(focus.project.id)} className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.75rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>View Roadmap</button>
                     </div>
-                    {isFocusExpanded ? (
-                      <div className="focus-problem-expanded">
-                        <span className="quote-mark">&ldquo;</span>{focus.problem}<span className="quote-mark">&rdquo;</span>
-                        {focus.project && (
-                          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Project:</span>
-                            <strong style={{ color: '#fff', fontSize: '0.95rem', flex: 1 }}>{focus.project.title}</strong>
-                            <button onClick={(e) => { e.stopPropagation(); setFilterProject(focus.project.id); }} className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.7rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>Roadmap</button>
-                          </div>
-                        )}
-                        <div className="collapse-hint">Click to collapse</div>
-                      </div>
-                    ) : (
-                      <div className="focus-problem-truncated">
-                        <p className="focus-problem-clamped">{focus.problem}</p>
-                        {focus.project && <div style={{ fontSize: '0.7rem', color: 'var(--accent)', marginTop: '0.5rem', fontWeight: 600 }}>Building: {focus.project.title}</div>}
-                        <div className="expand-hint">Read more</div>
-                      </div>
-                    )}
-                  </div>
+                  )}
+                  
+                  {focus?.description && (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginTop: '1.5rem', maxWidth: '600px', marginInline: 'auto' }}>
+                      {focus.description}
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (

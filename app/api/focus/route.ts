@@ -18,12 +18,13 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { problem, status, projectId } = body;
+    const { problem, description, status, projectId } = body;
     
     const existing = await prisma.currentFocus.findFirst();
     let focus;
     const data = { 
       problem, 
+      description,
       status, 
       projectId: projectId ? parseInt(projectId) : null 
     };

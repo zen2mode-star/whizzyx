@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
-  const [focus, setFocus] = useState({ problem: '', status: 'Noticing & Researching', projectId: '' });
+  const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '' });
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -71,6 +71,7 @@ export default function AdminDashboard() {
       if (d && d.problem && d.problem !== 'No problem set yet.') {
         setFocus({ 
           problem: d.problem, 
+          description: d.description || '',
           status: d.status || 'Noticing & Researching',
           projectId: d.projectId?.toString() || ''
         });
@@ -370,7 +371,11 @@ export default function AdminDashboard() {
                   <form onSubmit={handleFocusUpdate}>
                     <div className="form-group">
                       <label>Current problem / focus</label>
-                      <textarea className="form-control" style={{ minHeight: '100px' }} value={focus.problem} onChange={e => setFocus({ ...focus, problem: e.target.value })} required placeholder="e.g. Automated expense tracking is too slow..." />
+                      <input type="text" className="form-control" value={focus.problem} onChange={e => setFocus({ ...focus, problem: e.target.value })} required placeholder="e.g. Automated expense tracking is too slow..." />
+                    </div>
+                    <div className="form-group">
+                      <label>Detailed Description</label>
+                      <textarea className="form-control" style={{ minHeight: '100px' }} value={focus.description} onChange={e => setFocus({ ...focus, description: e.target.value })} placeholder="I'm currently investigating..." />
                     </div>
                     <div className="form-group">
                       <label>Status Tag</label>
