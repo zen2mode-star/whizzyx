@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 type Tab = 'focus' | 'updates' | 'projects' | 'blog' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials';
 
@@ -20,7 +20,13 @@ export default function AdminDashboard() {
   const [quotes, setQuotes] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '', milestone: '' });
-  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [settings, setSettings] = useState<Record<string, string>>({
+    sectionProjectsTitle: 'Featured Projects',
+    sectionCommunityTitle: 'Community Wall',
+    sectionSuggestTitle: 'Got a Problem to Solve?',
+    donateQrUrl: '',
+    contactEmail: 'contact@whizzyx.corp',
+  });
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
 
@@ -32,14 +38,12 @@ export default function AdminDashboard() {
   const [links, setLinks] = useState('');
 
   // Quote form
+  const [editingQuote, setEditingQuote] = useState<any>(null);
   const [quoteText, setQuoteText] = useState('');
   const [quoteDesignation, setQuoteDesignation] = useState('');
 
-  // Credentials form
-  const [newUsername, setNewUsername] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-
   // Blog form
+  const [editingBlog, setEditingBlog] = useState<any>(null);
   const [blogTitle, setBlogTitle] = useState('');
   const [blogContent, setBlogContent] = useState('');
   const [blogExcerpt, setBlogExcerpt] = useState('');
@@ -50,6 +54,165 @@ export default function AdminDashboard() {
   const [updateExcerpt, setUpdateExcerpt] = useState('');
   const [updateCategory, setUpdateCategory] = useState('Update');
   const [updateProjectId, setUpdateProjectId] = useState('');
+
+  // Full-Screen Editor State
+  const [isFSOpen, setIsFSOpen] = useState(false);
+  const [fsContent, setFSContent] = useState('');
+  const [fsTarget, setFSTarget] = useState<'focus' | 'project' | 'blog' | 'update' | 'settings_subtitle' | 'homeHeroTitle' | 'founderBio' | null>(null);
+  const [fsFontSize, setFSFontSize] = useState(18);
+  const fsTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const openFS = (content: string, target: any) => {
+    setFSContent(content);
+    setFSTarget(target);
+    setIsFSOpen(true);
+  };
+
+  const saveFS = () => {
+    if (fsTarget === 'focus') setFocus({ ...focus, description: fsContent });
+    if (fsTarget === 'project') setDescription(fsContent);
+    if (fsTarget === 'blog') setBlogContent(fsContent);
+    if (fsTarget === 'update') setUpdateContent(fsContent);
+    if (fsTarget === 'settings_subtitle') setSettings({ ...settings, heroSubtitle: fsContent });
+    if (fsTarget === 'homeHeroTitle') setSettings({ ...settings, homeHeroTitle: fsContent });
+    if (fsTarget === 'founderBio') setSettings({ ...settings, founderBio: fsContent });
+    setIsFSOpen(false);
+  };
+
+  const insertTag = (before: string, after: string = '') => {
+    const el = fsTextareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const val = fsContent;
+    const selected = val.substring(start, end);
+
+    let newVal;
+    let newStart, newEnd;
+
+    // Check if the selection is already wrapped (Toggle OFF)
+    if (before && after && selected.startsWith(before) && selected.endsWith(after)) {
+      const stripped = selected.substring(before.length, selected.length - after.length);
+      newVal = val.substring(0, start) + stripped + val.substring(end);
+      newStart = start;
+      newEnd = start + stripped.length;
+    } else {
+      // Apply tags (Toggle ON)
+      newVal = val.substring(0, start) + before + selected + after + val.substring(end);
+      newStart = start;
+      newEnd = start + before.length + selected.length + after.length;
+    }
+
+    setFSContent(newVal);
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(newStart, newEnd);
+    }, 10);
+  };
+
+  const togglePrefix = (prefix: string) => {
+    const el = fsTextareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const val = fsContent;
+    const selected = val.substring(start, end);
+    const lines = selected.split('\n');
+
+    const allHavePrefix = lines.every(line => line.startsWith(prefix));
+    let newLines;
+
+    if (allHavePrefix) {
+      newLines = lines.map(line => line.substring(prefix.length));
+    } else {
+      newLines = lines.map(line => prefix + line);
+    }
+
+    const newText = newLines.join('\n');
+    const newVal = val.substring(0, start) + newText + val.substring(end);
+    
+    setFSContent(newVal);
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start, start + newText.length);
+    }, 10);
+  };
+
+  const updateFontSize = (newSize: number) => {
+    const el = fsTextareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    if (start === end) {
+      setFSFontSize(newSize);
+      return;
+    }
+
+    const val = fsContent;
+    const selected = val.substring(start, end);
+    let newVal;
+
+    // Regex to detect existing font-size span around selection
+    const fontSpanRegex = /^<span style="font-size:(\d+)px">(.*)<\/span>$/;
+    const match = selected.match(fontSpanRegex);
+
+    if (newSize === 18) {
+      // Revert to default: Remove tags if they exist
+      if (match) {
+        newVal = val.substring(0, start) + match[2] + val.substring(end);
+      } else {
+        newVal = val;
+      }
+    } else {
+      // Apply or Update
+      const content = match ? match[2] : selected;
+      const tag = `<span style="font-size:${newSize}px">`;
+      newVal = val.substring(0, start) + tag + content + '</span>' + val.substring(end);
+    }
+
+    setFSContent(newVal);
+    setFSFontSize(newSize);
+    
+    // Maintain selection
+    setTimeout(() => {
+      el.focus();
+      const tagLen = newSize === 18 ? 0 : `<span style="font-size:${newSize}px">`.length;
+      const contentLen = match ? match[2].length : selected.length;
+      el.setSelectionRange(start, start + tagLen + contentLen + (newSize === 18 ? 0 : 7));
+    }, 10);
+  };
+
+  const renderPreview = (content: string) => {
+    if (!content) return '';
+    let processed = content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/_(.*?)_/g, '<em>$1</em>')
+      .replace(/^### (.*)$/gm, '<h3 style="font-size: 22px; fontWeight: 800; margin: 24px 0 12px;">$1</h3>')
+      .replace(/^[\s]*[-*]\s+(.*)$/gm, '<li>$1</li>');
+      
+    processed = processed.replace(/(<li>.*?<\/li>(\n| )*)+/g, (match) => `<ul style="margin-bottom: 20px; padding-left: 20px; list-style-type: disc;">${match}</ul>`);
+    
+    // 2. Wrap allowed HTML tags so they don't get escaped
+    processed = processed.replace(/<span style="(.*?)">(.*?)<\/span>/g, '[[SPAN style="$1"]]$2[[/SPAN]]');
+    processed = processed.replace(/<strong>(.*?)<\/strong>/g, '[[STRONG]]$1[[/STRONG]]');
+    processed = processed.replace(/<em>(.*?)<\/em>/g, '[[EM]]$1[[/EM]]');
+    processed = processed.replace(/<h3 style="(.*?)">(.*?)<\/h3>/g, '[[H3 style="$1"]]$2[[/H3]]');
+
+    // 3. Escape everything else
+    let safe = processed
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 4. Restore the whitelisted tags
+    safe = safe
+      .replace(/\[\[SPAN style="(.*?)"\]\](.*?)\[\[\/SPAN\]\]/g, '<span style="$1">$2</span>')
+      .replace(/\[\[STRONG\]\](.*?)\[\[\/STRONG\]\]/g, '<strong>$1</strong>')
+      .replace(/\[\[EM\]\](.*?)\[\[\/EM\]\]/g, '<em>$1</em>')
+      .replace(/\[\[H3 style="(.*?)"\]\](.*?)\[\[\/H3\]\]/g, '<h3 style="$1">$2</h3>')
+      .replace(/\n/g, '<br/>');
+    return safe;
+  };
 
   // Messages
   const [msg, setMsg] = useState<Record<string, string>>({});
@@ -218,15 +381,27 @@ export default function AdminDashboard() {
   // --- Quotes ---
   const handleAddQuote = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/quotes', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const url = editingQuote ? `/api/quotes/${editingQuote.id}` : '/api/quotes';
+    const method = editingQuote ? 'PATCH' : 'POST';
+    const res = await fetch(url, {
+      method, headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: quoteText, designation: quoteDesignation }),
     });
-    if (res.ok) { setQuoteText(''); setQuoteDesignation(''); fetchAll(); flash('quotes', '✓ Quote added to marquee!'); }
-    else flash('quotes', '✗ Failed.');
+    if (res.ok) { 
+      setQuoteText(''); setQuoteDesignation(''); setEditingQuote(null);
+      fetchAll(); flash('quotes', editingQuote ? '✓ Quote updated!' : '✓ Quote added!'); 
+    } else flash('quotes', '✗ Failed.');
+  };
+
+  const handleEditQuote = (q: any) => {
+    setEditingQuote(q);
+    setQuoteText(q.text);
+    setQuoteDesignation(q.designation || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteQuote = async (id: number) => {
+    if (!confirm('Delete this quote?')) return;
     await fetch(`/api/quotes/${id}`, { method: 'DELETE' });
     fetchAll();
   };
@@ -253,14 +428,24 @@ export default function AdminDashboard() {
   // --- Blog ---
   const handleAddBlog = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('/api/blog', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+    const url = editingBlog ? `/api/blog/${editingBlog.id}` : '/api/blog';
+    const method = editingBlog ? 'PATCH' : 'POST';
+    const res = await fetch(url, {
+      method, headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: blogTitle, content: blogContent, excerpt: blogExcerpt }),
     });
     if (res.ok) {
-      setBlogTitle(''); setBlogContent(''); setBlogExcerpt('');
-      fetchAll(); flash('blog', '✓ Blog post published!');
+      setBlogTitle(''); setBlogContent(''); setBlogExcerpt(''); setEditingBlog(null);
+      fetchAll(); flash('blog', editingBlog ? '✓ Blog post updated!' : '✓ Blog post published!');
     } else flash('blog', '✗ Failed.');
+  };
+
+  const handleEditBlog = (b: any) => {
+    setEditingBlog(b);
+    setBlogTitle(b.title);
+    setBlogContent(b.content);
+    setBlogExcerpt(b.excerpt || '');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteBlog = async (id: number) => {
@@ -291,25 +476,25 @@ export default function AdminDashboard() {
   // ==================== LOGIN SCREEN ====================
   if (!isLoggedIn) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#030305', position: 'relative', overflow: 'hidden' }}>
-        <div className="bg-grid" style={{ position: 'absolute', inset: 0, zIndex: 0 }}></div>
-        <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)', filter: 'blur(60px)', zIndex: 0 }}></div>
-        <div className="glass-card" style={{ maxWidth: '420px', width: '100%', zIndex: 1, position: 'relative', border: '1px solid rgba(139,92,246,0.4)' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <div className="logo" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>WhizzyX.</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Admin Dashboard Access</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-secondary)' }}>
+        <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '24px', marginBottom: '8px' }}>WhizzyX Admin</h1>
+            <p className="text-muted">Enter credentials to access dashboard</p>
           </div>
           <form onSubmit={handleLogin}>
             <div className="form-group">
-              <label>Username</label>
-              <input type="text" className="form-control" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} required placeholder="Username" />
+              <label className="label">Username</label>
+              <input type="text" className="form-control" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} required />
             </div>
             <div className="form-group">
-              <label>Password</label>
-              <input type="password" className="form-control" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required placeholder="••••••••" />
+              <label className="label">Password</label>
+              <input type="password" className="form-control" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
             </div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Enter Dashboard</button>
-            {loginError && <p style={{ color: '#ef4444', textAlign: 'center', marginTop: '1rem', fontSize: '0.9rem' }}>{loginError}</p>}
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '16px' }}>
+              Sign In
+            </button>
+            {loginError && <p style={{ color: '#ef4444', textAlign: 'center', marginTop: '16px', fontSize: '13px' }}>{loginError}</p>}
           </form>
         </div>
       </div>
@@ -317,418 +502,517 @@ export default function AdminDashboard() {
   }
 
   // ==================== DASHBOARD ====================
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'focus', label: 'Live Focus', icon: '🎯' },
-    { id: 'updates', label: 'Build Updates', icon: '🛠️' },
-    { id: 'projects', label: 'Projects', icon: '🚀' },
-    { id: 'blog', label: 'Blog', icon: '✍️' },
-    { id: 'quotes', label: 'Quotes', icon: '💬' },
-    { id: 'suggestions', label: 'Suggestions', icon: '💡' },
-    { id: 'collaborators', label: 'Join Applications', icon: '🤝' },
-    { id: 'settings', label: 'Site Content', icon: '✏️' },
-    { id: 'credentials', label: 'Credentials', icon: '🔐' },
+  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'focus', label: 'Live Focus', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    )},
+    { id: 'updates', label: 'Roadmap', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    )},
+    { id: 'projects', label: 'Projects', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    )},
+    { id: 'blog', label: 'Blog', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    )},
+    { id: 'quotes', label: 'Quotes', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    )},
+    { id: 'suggestions', label: 'Suggestions', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.19.33-.42.41-.67a3 3 0 1 0-7 0c.08.25.23.48.41.67L10 16h4l1.09-2z"/></svg>
+    )},
+    { id: 'collaborators', label: 'Applications', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    )},
+    { id: 'settings', label: 'Site Content', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+    )},
+    { id: 'credentials', label: 'Credentials', icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    )},
   ];
 
   return (
-    <div style={{ background: settings.themeBg || '#030305', minHeight: '100vh', position: 'relative' }}>
-      <style dangerouslySetInnerHTML={{ __html: `
-        :root {
-          ${settings.themeAccent ? `--accent: ${settings.themeAccent};` : ''}
-          ${settings.themeAccent ? `--accent-glow: ${settings.themeAccent}80;` : ''}
-        }
-      `}} />
-      <div className="bg-grid" style={{ position: 'fixed', inset: 0, zIndex: 0 }}></div>
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Top Bar */}
-        <div style={{ borderBottom: '1px solid var(--glass-border)', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(3,3,5,0.8)', backdropFilter: 'blur(20px)', position: 'sticky', top: 0, zIndex: 10 }}>
-          <div className="logo" style={{ fontSize: '1.6rem' }}>WhizzyX. <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'Inter' }}>Admin</span></div>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Logged in as <strong style={{ color: '#fff' }}>{currentUsername}</strong></span>
-            <a href="/" className="btn" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)' }}>← Live Site</a>
-            <button onClick={handleLogout} className="btn" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid #ef4444' }}>Logout</button>
+    <div className="min-h-screen bg-primary">
+      {/* ── Top Bar ── */}
+      <header className="header">
+        <div className="header-inner">
+          <div className="logo" style={{ cursor: 'default' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+            <span style={{ fontSize: '20px', fontWeight: 800 }}>WhizzyX <span style={{ color: 'var(--text-muted)', fontSize: '14px', fontWeight: 500 }}>ADMIN</span></span>
+          </div>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <span className="mono text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>{currentUsername.toUpperCase()}</span>
+            <a href="/" className="btn" style={{ fontSize: '12px', fontWeight: 600 }}>LIVE SITE</a>
+            <button onClick={handleLogout} className="btn" style={{ fontSize: '12px', fontWeight: 600, color: '#ef4444', borderColor: '#ef4444' }}>LOGOUT</button>
           </div>
         </div>
+      </header>
 
-        <div style={{ display: 'flex', minHeight: 'calc(100vh - 65px)' }}>
-          {/* Sidebar */}
-          <aside style={{ width: '220px', borderRight: '1px solid var(--glass-border)', padding: '1.5rem 1rem', background: 'rgba(255,255,255,0.01)', flexShrink: 0 }}>
-            {tabs.map(t => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem',
-                borderRadius: '10px', border: 'none', cursor: 'pointer', marginBottom: '0.4rem', fontSize: '0.95rem',
-                background: activeTab === t.id ? 'rgba(59,130,246,0.15)' : 'transparent',
-                color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
-                borderLeft: activeTab === t.id ? '3px solid var(--accent)' : '3px solid transparent',
-                transition: 'all 0.2s',
-              }}>
-                <span>{t.icon}</span> {t.label}
-              </button>
-            ))}
-          </aside>
+      <div className="main-layout">
+        {/* ── Sidebar ── */}
+        <aside className="sidebar">
+          <div style={{ padding: '0 24px 16px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.1em' }}>MANAGEMENT</div>
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+        </aside>
 
-          {/* Main content */}
-          <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+        {/* ── Main Content Area ── */}
+        <main className="content-area">
+          {/* FOCUS TAB */}
+          {activeTab === 'focus' && (
+            <div className="fade-in" style={{ maxWidth: '850px' }}>
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Live Focus</h1>
+                <p className="text-muted">Broadcast the current technical objective.</p>
+              </div>
+              <div className="card" style={{ padding: '40px', background: 'white' }}>
+                <form onSubmit={handleFocusUpdate}>
+                  <div className="form-group">
+                    <label className="label">Focus Title (Problem Statement)</label>
+                    <input type="text" className="form-control" value={focus.problem} onChange={e => setFocus({ ...focus, problem: e.target.value })} required style={{ fontSize: '18px', fontWeight: 600, height: '50px' }} />
+                  </div>
+                  <div className="form-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label className="label" style={{ margin: 0 }}>Detailed Content / Gaps</label>
+                      <button type="button" onClick={() => openFS(focus.description, 'focus')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                    </div>
+                    <textarea 
+                      className="form-control mono" 
+                      rows={10} 
+                      value={focus.description} 
+                      onChange={e => setFocus({ ...focus, description: e.target.value })} 
+                      placeholder="Use two enters for a new paragraph."
+                      style={{ fontSize: '14px', lineHeight: '1.6', padding: '20px', background: '#fcfcfc', border: '1px solid #ddd' }}
+                    />
+                  </div>
+                  {/* ... */}
+                  <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+                    <button type="submit" className="btn btn-primary" style={{ height: '48px', padding: '0 32px', borderRadius: '10px', fontWeight: 700 }}>
+                      SAVE & PUBLISH
+                    </button>
+                    {(focus.projectId || focus.problem) && (
+                      <button type="button" onClick={handleCompleteProject} className="btn" style={{ height: '48px', borderRadius: '10px' }}>
+                        Archive as Project
+                      </button>
+                    )}
+                  </div>
+                  {msg.focus && <p className="mt-4 mono text-muted" style={{ fontSize: '12px', color: 'var(--status-success)' }}>{msg.focus}</p>}
+                </form>
+              </div>
+            </div>
+          )}
 
-            {/* FOCUS TAB */}
-            {activeTab === 'focus' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>🎯 Live Focus</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>This broadcasts live to the homepage, showing what you're currently working on.</p>
-                <div className="glass-card" style={{ maxWidth: '700px' }}>
-                  <form onSubmit={handleFocusUpdate}>
+          {/* UPDATES TAB */}
+          {activeTab === 'updates' && (
+            <div className="fade-in">
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Roadmap Log</h1>
+                <p className="text-muted">Document architectural milestones and build updates.</p>
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+                <div className="card">
+                  <h3 className="mb-6">New Entry</h3>
+                  <form onSubmit={handleAddUpdate}>
                     <div className="form-group">
-                      <label>Current problem / focus</label>
-                      <input type="text" className="form-control" value={focus.problem} onChange={e => setFocus({ ...focus, problem: e.target.value })} required placeholder="e.g. Automated expense tracking is too slow..." />
+                      <label className="label">Entry Title</label>
+                      <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} required />
                     </div>
                     <div className="form-group">
-                      <label>Detailed Description</label>
-                      <textarea className="form-control" style={{ minHeight: '100px' }} value={focus.description} onChange={e => setFocus({ ...focus, description: e.target.value })} placeholder="I'm currently investigating..." />
-                    </div>
-                    <div className="form-group">
-                      <label>Current Milestone (Short progress text)</label>
-                      <input type="text" className="form-control" value={focus.milestone} onChange={e => setFocus({ ...focus, milestone: e.target.value })} placeholder="e.g. Design phase completed..." />
-                    </div>
-                    <div className="form-group">
-                      <label>Status Tag</label>
-                      <select className="form-control" value={focus.status} onChange={e => setFocus({ ...focus, status: e.target.value })} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
-                        <option>Noticing & Researching</option>
-                        <option>Prototyping Ideas</option>
-                        <option>Building Alpha</option>
-                        <option>Polishing Beta</option>
-                        <option>Shipped</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Link to Project (Optional)</label>
-                      <select className="form-control" value={focus.projectId} onChange={e => {
-                        const pid = e.target.value;
-                        setFocus({ ...focus, projectId: pid });
-                        setUpdateProjectId(pid); // sync with update form
-                      }} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
-                        <option value="">None / New Idea</option>
-                        {projects.map((p: any) => (
-                          <option key={p.id} value={p.id}>{p.title}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1.5rem' }}>
-                      <h4 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Post Build Update Simultaneously</h4>
-                      <div className="form-group">
-                        <label>Update Title</label>
-                        <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} placeholder="Milestone name..." />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label className="label" style={{ margin: 0 }}>Progress Log / Details</label>
+                        <button type="button" onClick={() => openFS(updateContent, 'update')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
                       </div>
-                      <div className="form-group">
-                        <label>Update Content</label>
-                        <textarea className="form-control" value={updateContent} onChange={e => setUpdateContent(e.target.value)} style={{ minHeight: '80px' }} placeholder="What did you achieve just now?" />
-                      </div>
+                      <textarea className="form-control mono" rows={5} value={updateContent} onChange={e => setUpdateContent(e.target.value)} placeholder="Log a technical milestone..." />
                     </div>
-
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                      <button type="submit" className="btn btn-primary">Update Focus & Log Progress</button>
-                      {(focus.projectId || focus.problem) && (
-                        <button type="button" onClick={handleCompleteProject} className="btn" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid #10b981' }}>
-                          Mark as Done / Move to Projects
-                        </button>
-                      )}
-                    </div>
-                    {msg.focus && <span style={{ display: 'block', marginTop: '1rem', color: 'var(--accent)' }}>{msg.focus}</span>}
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '48px', borderRadius: '12px', marginTop: '16px' }}>Post Update</button>
+                    {msg.updates && <p className="mt-4 mono text-muted" style={{ fontSize: '12px' }}>{msg.updates}</p>}
                   </form>
                 </div>
-              </div>
-            )}
-
-            {/* UPDATES TAB */}
-            {activeTab === 'updates' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>🛠️ Build Updates (Roadmap)</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Log what you did, what you learned, or what you improved. These appear in the Roadmap timeline.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Post New Update</h3>
-                    <form onSubmit={handleAddUpdate}>
-                      <div className="form-group">
-                        <label>Title (Optional)</label>
-                        <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} placeholder="A name for this milestone..." />
-                      </div>
-                      <div className="form-group">
-                        <label>Excerpt (Short summary)</label>
-                        <input type="text" className="form-control" value={updateExcerpt} onChange={e => setUpdateExcerpt(e.target.value)} placeholder="Quick overview..." />
-                      </div>
-                      <div className="form-group">
-                        <label>Content (Markdown supported)</label>
-                        <textarea className="form-control" value={updateContent} onChange={e => setUpdateContent(e.target.value)} required style={{ minHeight: '120px' }} placeholder="What did you achieve or learn?" />
-                      </div>
-                      <div className="form-group">
-                        <label>Category</label>
-                        <select className="form-control" value={updateCategory} onChange={e => setUpdateCategory(e.target.value)} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
-                          <option>Update</option>
-                          <option>Learning</option>
-                          <option>Improvement</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label>Link to Project (Optional)</label>
-                        <select className="form-control" value={updateProjectId} onChange={e => setUpdateProjectId(e.target.value)} style={{ appearance: 'none', background: 'rgba(0,0,0,0.4)' }}>
-                          <option value="">None</option>
-                          {projects.map((p: any) => (
-                            <option key={p.id} value={p.id}>{p.title}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <button type="submit" className="btn btn-primary">Post Update</button>
-                      {msg.updates && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.updates}</span>}
-                    </form>
-                  </div>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Recent Updates ({updates.length})</h3>
+                <div className="card">
+                  <h3 className="mb-6">Update History</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {updates.map((u: any) => (
-                      <div key={u.id} className="admin-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <span className={`category-tag category-${u.category.toLowerCase()}`} style={{ marginBottom: '0.25rem' }}>{u.category}</span>
-                            <p style={{ color: '#fff', fontSize: '0.95rem' }}>{u.content.substring(0, 100)}...</p>
-                          </div>
-                          <button className="btn-delete" onClick={() => handleDeleteUpdate(u.id)}>Delete</button>
-                        </div>
-                        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          <span>{new Date(u.date).toLocaleDateString()}</span>
-                          {u.project && <span>Project: {u.project.title}</span>}
-                        </div>
+                      <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '10px', background: 'var(--bg-secondary)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{u.title}</span>
+                        <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteUpdate(u.id)}>REMOVE</button>
                       </div>
                     ))}
-                    {updates.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No updates logged yet.</p>}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-
-            {/* PROJECTS TAB */}
-            {activeTab === 'projects' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>🚀 Projects</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Add and manage your featured projects shown on the homepage.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>{editingProject ? 'Edit Project' : 'Add New Project'}</h3>
-                    <form onSubmit={handleAddProject}>
-                      <div className="form-group"><label>Title</label><input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required /></div>
-                      <div className="form-group"><label>Description</label><textarea className="form-control" value={description} onChange={e => setDescription(e.target.value)} required style={{ minHeight: '80px' }} /></div>
-                      <div className="form-group"><label>YouTube URL (optional)</label><input type="url" className="form-control" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." /></div>
-                      <div className="form-group"><label>Project Link (optional)</label><input type="url" className="form-control" value={links} onChange={e => setLinks(e.target.value)} placeholder="https://github.com/..." /></div>
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <button type="submit" className="btn btn-primary">{editingProject ? 'Update Project' : 'Publish'}</button>
-                        {editingProject && <button type="button" onClick={handleCancelEdit} className="btn" style={{ background: 'rgba(255,255,255,0.05)' }}>Cancel</button>}
-                        {msg.projects && <span style={{ color: 'var(--accent)' }}>{msg.projects}</span>}
-                      </div>
-                    </form>
-                  </div>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Existing Projects ({projects.length})</h3>
-                    {projects.map((p: any) => (
-                      <div key={p.id} className="admin-item-card">
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{ color: '#fff', marginBottom: '0.25rem' }}>{p.title}</h4>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{p.description.substring(0, 70)}...</p>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid #3b82f6' }} onClick={() => handleEditProject(p)}>Edit</button>
-                          <button className="btn-delete" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => handleDeleteProject(p.id)}>Delete</button>
-                        </div>
-                      </div>
-                    ))}
-                    {projects.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No projects yet.</p>}
-                  </div>
-                </div>
+          {/* PROJECTS TAB */}
+          {activeTab === 'projects' && (
+            <div className="fade-in">
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Project Portfolio</h1>
+                <p className="text-muted">Manage the global module registry.</p>
               </div>
-            )}
-
-            {/* QUOTES TAB */}
-            {activeTab === 'quotes' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>💬 Marquee Quotes</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>These appear in the animated scrolling banner on the homepage. Add your own thoughts and designations.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Add New Quote</h3>
-                    <form onSubmit={handleAddQuote}>
-                      <div className="form-group"><label>Quote / Thought</label><textarea className="form-control" value={quoteText} onChange={e => setQuoteText(e.target.value)} required placeholder="e.g. You don't need to know everything to start. Just build." style={{ minHeight: '80px' }} /></div>
-                      <div className="form-group"><label>Designation / Attribution (Optional)</label><input type="text" className="form-control" value={quoteDesignation} onChange={e => setQuoteDesignation(e.target.value)} placeholder="e.g. — Manas, Builder" /></div>
-                      <button type="submit" className="btn btn-primary">Add to Marquee</button>
-                      {msg.quotes && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.quotes}</span>}
-                    </form>
-                  </div>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Current Quotes ({quotes.length})</h3>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>If empty, default quotes are shown.</p>
-                    {quotes.map((q: any) => (
-                      <div key={q.id} className="admin-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <p style={{ color: '#fff', fontSize: '0.95rem' }}>"{q.text}"</p>
-                        {q.designation && <p style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>{q.designation}</p>}
-                        <button className="btn-delete" onClick={() => handleDeleteQuote(q.id)} style={{ marginTop: '0.5rem' }}>Remove</button>
-                      </div>
-                    ))}
-                    {quotes.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No custom quotes added yet. Default quotes are active.</p>}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SUGGESTIONS TAB */}
-            {activeTab === 'suggestions' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>💡 User Suggestions</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Review community submissions. Feature the best ones to the public Community Wall.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
-                  {suggestions.map((s: any) => (
-                    <div key={s.id} className="glass-card" style={{ border: s.isFeatured ? '1px solid rgba(16,185,129,0.5)' : undefined }}>
-                      {s.isFeatured && <span style={{ fontSize: '0.75rem', background: 'rgba(16,185,129,0.15)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '50px', border: '1px solid rgba(16,185,129,0.3)' }}>★ Featured</span>}
-                      <p style={{ color: '#fff', margin: '1rem 0 0.5rem', fontWeight: 500 }}>{s.problem}</p>
-                      {s.solution && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontStyle: 'italic' }}>Idea: {s.solution}</p>}
-                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          <span className="community-author" style={{ fontSize: '1.1rem' }}>{s.userName || 'Anonymous'}</span>
-                          <br />{new Date(s.createdAt).toLocaleDateString()}
-                        </span>
-                        <button onClick={() => handleFeature(s.id, s.isFeatured)} className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', background: s.isFeatured ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)', color: s.isFeatured ? '#ef4444' : '#10b981', border: `1px solid ${s.isFeatured ? '#ef4444' : '#10b981'}` }}>
-                          {s.isFeatured ? 'Unfeature' : 'Feature to Wall'}
-                        </button>
-                      </div>
+              <div className="grid" style={{ gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+                <div className="card">
+                  <h3 className="mb-6">{editingProject ? 'Edit Module' : 'Register New Module'}</h3>
+                  <form onSubmit={handleAddProject}>
+                    <div className="form-group">
+                      <label className="label">Module Title</label>
+                      <input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required />
                     </div>
-                  ))}
-                  {suggestions.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No suggestions yet.</p>}
-                </div>
-              </div>
-            )}
-
-            {/* SETTINGS TAB */}
-            {activeTab === 'settings' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>✏️ Site Content</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Edit every text section shown on the homepage through this GUI.</p>
-                <div className="glass-card" style={{ maxWidth: '700px' }}>
-                  <form onSubmit={handleSettingsSave}>
-                    {[
-                      { key: 'heroTitle', label: 'Hero Title', placeholder: 'Self-Initiated Startup Idea & Creative Systems' },
-                      { key: 'heroSubtitle', label: 'Hero Subtitle', placeholder: 'Identifying and solving real-world inefficiencies...' },
-                      { key: 'heroTagline', label: 'Hero Tagline (handwritten)', placeholder: '— Welcome to my workshop! 🛠️' },
-                      { key: 'sectionProjectsTitle', label: 'Projects Section Title', placeholder: 'Featured Projects' },
-                      { key: 'sectionCommunityTitle', label: 'Community Section Title', placeholder: 'Community Wall' },
-                      { key: 'sectionSuggestTitle', label: 'Suggestions Section Title', placeholder: 'Got a Problem to Solve?' },
-                      { key: 'themeAccent', label: 'Theme Accent Color (HEX)', placeholder: '#3b82f6' },
-                      { key: 'themeBg', label: 'Theme Background Color (HEX)', placeholder: '#030305' },
-                    ].map(field => (
-                      <div className="form-group" key={field.key}>
-                        <label>{field.label}</label>
-                        <input type="text" className="form-control" value={settings[field.key] || ''} onChange={e => setSettings({ ...settings, [field.key]: e.target.value })} placeholder={field.placeholder} />
+                    <div className="form-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label className="label" style={{ margin: 0 }}>Core Description</label>
+                        <button type="button" onClick={() => openFS(description, 'project')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
                       </div>
-                    ))}
-                    <button type="submit" className="btn btn-primary">Save All Changes</button>
-                    {msg.settings && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.settings}</span>}
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* COLLABORATORS TAB */}
-            {activeTab === 'collaborators' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>🤝 Join Applications</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-                  People who applied to collaborate on WhizzyX. This is private — only you can see it.
-                </p>
-                {collaborators.length === 0 && (
-                  <p style={{ color: 'var(--text-secondary)' }}>No applications yet.</p>
-                )}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.5rem' }}>
-                  {collaborators.map((c: any) => (
-                    <div key={c.id} className="glass-card" style={{ border: '1px solid rgba(139,92,246,0.3)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                        <div>
-                          <span className="community-author" style={{ fontSize: '1.4rem' }}>{c.name}</span>
-                          <p style={{ color: 'var(--accent)', fontSize: '0.85rem', marginTop: '0.2rem' }}>{c.email}</p>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <div style={{ marginBottom: '0.75rem' }}>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Skills</p>
-                        <p style={{ color: '#fff', fontSize: '0.95rem' }}>{c.skills}</p>
-                      </div>
-                      <div style={{ marginBottom: '0.75rem' }}>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Why WhizzyX?</p>
-                        <p style={{ color: '#fff', fontSize: '0.95rem' }}>{c.why}</p>
-                      </div>
-                      {c.portfolio && (
-                        <a href={c.portfolio} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>🔗 {c.portfolio}</a>
+                      <textarea className="form-control" rows={6} value={description} onChange={e => setDescription(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Demo Video URL</label>
+                      <input type="text" className="form-control" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://..." />
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                      <button type="submit" className="btn btn-primary" style={{ flex: 1, height: '48px', borderRadius: '12px' }}>
+                        {editingProject ? 'Save Changes' : 'Publish Module'}
+                      </button>
+                      {editingProject && (
+                        <button type="button" onClick={handleCancelEdit} className="btn" style={{ height: '48px', borderRadius: '12px' }}>Cancel</button>
                       )}
                     </div>
+                    {msg.projects && <p className="mt-4 mono text-muted" style={{ fontSize: '12px' }}>{msg.projects}</p>}
+                  </form>
+                </div>
+                <div className="card">
+                  <h3 className="mb-6">Module Index</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {projects.map((p: any) => (
+                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-secondary)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{p.title}</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn" style={{ height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleEditProject(p)}>EDIT</button>
+                          <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteProject(p.id)}>DEL</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* BLOG TAB */}
+          {activeTab === 'blog' && (
+            <div className="fade-in">
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Engineering Blog</h1>
+                <p className="text-muted">Publish technical insights and platform updates.</p>
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+                <div className="card">
+                  <h3 className="mb-6">{editingBlog ? 'Edit Post' : 'New Publication'}</h3>
+                  <form onSubmit={handleAddBlog}>
+                    <div className="form-group">
+                      <label className="label">Headline</label>
+                      <input type="text" className="form-control" value={blogTitle} onChange={e => setBlogTitle(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Abstract / Excerpt</label>
+                      <input type="text" className="form-control" value={blogExcerpt} onChange={e => setBlogExcerpt(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label className="label" style={{ margin: 0 }}>Full Content (Markdown)</label>
+                        <button type="button" onClick={() => openFS(blogContent, 'blog')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                      </div>
+                      <textarea className="form-control mono" rows={12} value={blogContent} onChange={e => setBlogContent(e.target.value)} required style={{ fontSize: '13px' }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                      <button type="submit" className="btn btn-primary" style={{ flex: 1, height: '48px', borderRadius: '12px' }}>
+                        {editingBlog ? 'Update Publication' : 'Release Post'}
+                      </button>
+                      {editingBlog && (
+                        <button type="button" onClick={() => { setEditingBlog(null); setBlogTitle(''); setBlogContent(''); setBlogExcerpt(''); }} className="btn" style={{ height: '48px', borderRadius: '12px' }}>Cancel</button>
+                      )}
+                    </div>
+                    {msg.blog && <p className="mt-4 mono text-muted" style={{ fontSize: '12px' }}>{msg.blog}</p>}
+                  </form>
+                </div>
+                <div className="card">
+                  <h3 className="mb-6">Published Content</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {blogPosts.map((b: any) => (
+                      <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-secondary)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{b.title}</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn" style={{ height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleEditBlog(b)}>EDIT</button>
+                          <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteBlog(b.id)}>DEL</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* QUOTES TAB */}
+          {activeTab === 'quotes' && (
+            <div className="fade-in">
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Quote Management</h1>
+                <p className="text-muted">Manage the rotating technical insights.</p>
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                <div className="card">
+                  <h3 className="mb-6">{editingQuote ? 'Edit Quote' : 'New Quote'}</h3>
+                  <form onSubmit={handleAddQuote}>
+                    <div className="form-group">
+                      <label className="label">Insight Text</label>
+                      <textarea className="form-control" rows={4} value={quoteText} onChange={e => setQuoteText(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Source / Designation</label>
+                      <input type="text" className="form-control" value={quoteDesignation} onChange={e => setQuoteDesignation(e.target.value)} placeholder="e.g. Senior Software Engineer" />
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                      <button type="submit" className="btn btn-primary" style={{ flex: 1, height: '48px', borderRadius: '12px' }}>
+                        {editingQuote ? 'Save' : 'Add Quote'}
+                      </button>
+                      {editingQuote && (
+                        <button type="button" onClick={() => { setEditingQuote(null); setQuoteText(''); setQuoteDesignation(''); }} className="btn" style={{ height: '48px', borderRadius: '12px' }}>Cancel</button>
+                      )}
+                    </div>
+                    {msg.quotes && <p className="mt-4 mono text-muted" style={{ fontSize: '12px' }}>{msg.quotes}</p>}
+                  </form>
+                </div>
+                <div className="card">
+                  <h3 className="mb-6">Rotating Library</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {quotes.map((q: any) => (
+                      <div key={q.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--bg-secondary)' }}>
+                        <p style={{ fontSize: '14px', fontStyle: 'italic', marginBottom: '12px' }}>"{q.text}"</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span className="text-muted" style={{ fontSize: '12px' }}>{q.designation}</span>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button className="btn" style={{ height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleEditQuote(q)}>EDIT</button>
+                            <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteQuote(q.id)}>DEL</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SUGGESTIONS TAB */}
+          {activeTab === 'suggestions' && (
+            <div className="fade-in">
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Community Feedback</h1>
+                <p className="text-muted">Review and feature user suggestions.</p>
+              </div>
+              <div className="card">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {suggestions.length === 0 && <p className="text-muted">No suggestions received yet.</p>}
+                  {suggestions.map((s: any) => (
+                    <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px', border: '1px solid var(--border-color)', borderRadius: '16px', background: s.isFeatured ? 'rgba(var(--accent-rgb), 0.05)' : 'white' }}>
+                      <div>
+                        <h4 style={{ marginBottom: '4px' }}>{s.title}</h4>
+                        <p className="text-muted" style={{ fontSize: '14px' }}>{s.description}</p>
+                      </div>
+                      <button 
+                        className="btn" 
+                        onClick={() => handleFeature(s.id, s.isFeatured)}
+                        style={{ borderColor: s.isFeatured ? 'var(--accent)' : 'var(--border-color)', color: s.isFeatured ? 'var(--accent)' : 'inherit' }}
+                      >
+                        {s.isFeatured ? 'Featured' : 'Mark as Featured'}
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* CREDENTIALS TAB */}
-            {activeTab === 'credentials' && (
-
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>🔐 Admin Credentials</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Update your admin login username and password.</p>
-                <div className="glass-card" style={{ maxWidth: '500px' }}>
-                  <form onSubmit={handleCredentialsUpdate}>
-                    <div className="form-group">
-                      <label>New Username (leave blank to keep current)</label>
-                      <input type="text" className="form-control" value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder={currentUsername} />
-                    </div>
-                    <div className="form-group">
-                      <label>New Password</label>
-                      <input type="password" className="form-control" value={newPassword} onChange={e => setNewPassword(e.target.value)} required placeholder="Enter new password" />
-                    </div>
-                    <button type="submit" className="btn btn-primary">Update Credentials</button>
-                    {msg.creds && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.creds}</span>}
-                  </form>
-                </div>
+          {/* SETTINGS TAB */}
+          {activeTab === 'settings' && (
+            <div className="fade-in" style={{ maxWidth: '800px' }}>
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Site Content</h1>
+                <p className="text-muted">Configure the global platform strings and identity.</p>
               </div>
-            )}
+              <div className="card" style={{ padding: '40px', background: 'white' }}>
+                <form onSubmit={handleSettingsSave}>
+                  <div className="form-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label className="label" style={{ margin: 0 }}>Home Hero Title</label>
+                      <button type="button" onClick={() => openFS(settings.homeHeroTitle || '', 'homeHeroTitle')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                    </div>
+                    <textarea className="form-control" rows={2} value={settings.homeHeroTitle || ''} onChange={e => setSettings({ ...settings, homeHeroTitle: e.target.value })} placeholder="Engineering the Future of Systems." />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Hero Title (Secondary/Focus)</label>
+                    <input type="text" className="form-control" value={settings.heroTitle || ''} onChange={e => setSettings({ ...settings, heroTitle: e.target.value })} placeholder="WhizzyX Labs" />
+                  </div>
+                  <div className="form-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label className="label" style={{ margin: 0 }}>Hero Subtitle / Bio</label>
+                      <button type="button" onClick={() => openFS(settings.heroSubtitle || '', 'settings_subtitle')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                    </div>
+                    <textarea className="form-control" rows={4} value={settings.heroSubtitle || ''} onChange={e => setSettings({ ...settings, heroSubtitle: e.target.value })} placeholder="Architecting the next generation..." />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Roadmap Mission Tagline</label>
+                    <input type="text" className="form-control mono" value={settings.missionTagline || ''} onChange={e => setSettings({ ...settings, missionTagline: e.target.value })} placeholder="e.g. CONQUER THE MARS" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Technology Stack Section Title</label>
+                    <input type="text" className="form-control" value={settings.techStackTitle || ''} onChange={e => setSettings({ ...settings, techStackTitle: e.target.value })} placeholder="e.g. TECHNOLOGY STACK" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Technology Stack (Comma Separated)</label>
+                    <input type="text" className="form-control" value={settings.techStack || ''} onChange={e => setSettings({ ...settings, techStack: e.target.value })} placeholder="React, Next.js, Rust..." />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Hero Tagline / Status</label>
+                    <input type="text" className="form-control" value={settings.heroTagline || ''} onChange={e => setSettings({ ...settings, heroTagline: e.target.value })} placeholder="STABLE_BUILD_VERSION_1.0" />
+                  </div>
+                  <div style={{ margin: '40px 0 24px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Founder Profile</h3>
+                    <p className="text-muted" style={{ fontSize: '13px' }}>The human intelligence behind the architecture.</p>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Founder Name</label>
+                    <input type="text" className="form-control" value={settings.founderName || ''} onChange={e => setSettings({ ...settings, founderName: e.target.value })} placeholder="e.g. MANAS" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Professional Title</label>
+                    <input type="text" className="form-control" value={settings.founderTitle || ''} onChange={e => setSettings({ ...settings, founderTitle: e.target.value })} placeholder="e.g. Lead Architect / Systems Engineer" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Avatar URL</label>
+                    <input type="text" className="form-control" value={settings.founderAvatar || ''} onChange={e => setSettings({ ...settings, founderAvatar: e.target.value })} placeholder="https://.../avatar.png" />
+                  </div>
+                  <div className="form-group">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label className="label" style={{ margin: 0 }}>Founder Biography</label>
+                      <button type="button" onClick={() => openFS(settings.founderBio || '', 'founderBio')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                    </div>
+                    <textarea className="form-control" rows={4} value={settings.founderBio || ''} onChange={e => setSettings({ ...settings, founderBio: e.target.value })} placeholder="Write about the vision and experience..." />
+                  </div>
 
-            {/* BLOG TAB */}
-            {activeTab === 'blog' && (
-              <div>
-                <h2 style={{ marginBottom: '0.5rem' }}>✍️ Blog Writing</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Share your thoughts, updates, and deep dives with your community.</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem' }}>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Write New Post</h3>
-                    <form onSubmit={handleAddBlog}>
-                      <div className="form-group"><label>Title</label><input type="text" className="form-control" value={blogTitle} onChange={e => setBlogTitle(e.target.value)} required placeholder="The Future of Inefficiency..." /></div>
-                      <div className="form-group"><label>Excerpt (Short summary)</label><input type="text" className="form-control" value={blogExcerpt} onChange={e => setBlogExcerpt(e.target.value)} placeholder="A quick look at why I built this..." /></div>
-                      <div className="form-group"><label>Content (Markdown supported)</label><textarea className="form-control" value={blogContent} onChange={e => setBlogContent(e.target.value)} required style={{ minHeight: '300px', fontFamily: 'monospace' }} placeholder="Write your post here..." /></div>
-                      <button type="submit" className="btn btn-primary">Publish Post</button>
-                      {msg.blog && <span style={{ marginLeft: '1rem', color: 'var(--accent)' }}>{msg.blog}</span>}
-                    </form>
+                  <div style={{ margin: '40px 0 24px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800 }}>External Connects</h3>
+                    <p className="text-muted" style={{ fontSize: '13px' }}>Manage how the community and companies reach you.</p>
                   </div>
-                  <div className="glass-card">
-                    <h3 style={{ marginBottom: '1.5rem' }}>Manage Posts ({blogPosts.length})</h3>
-                    {blogPosts.map((p: any) => (
-                      <div key={p.id} className="admin-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <h4 style={{ color: '#fff' }}>{p.title}</h4>
-                          <button className="btn-delete" onClick={() => handleDeleteBlog(p.id)}>Delete</button>
-                        </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{new Date(p.createdAt).toLocaleDateString()}</p>
-                        {p.excerpt && <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>{p.excerpt}</p>}
-                      </div>
-                    ))}
-                    {blogPosts.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No blog posts yet.</p>}
+                  <div className="form-group">
+                    <label className="label">Donation QR Code URL</label>
+                    <input type="text" className="form-control" value={settings.donateQrUrl || ''} onChange={e => setSettings({ ...settings, donateQrUrl: e.target.value })} placeholder="https://.../qr.png" />
                   </div>
-                </div>
+                  <div className="form-group">
+                    <label className="label">Public Contact Email (For Companies)</label>
+                    <input type="email" className="form-control" value={settings.contactEmail || ''} onChange={e => setSettings({ ...settings, contactEmail: e.target.value })} placeholder="contact@whizzyx.corp" />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '12px', marginTop: '24px', fontWeight: 800 }}>Save All Changes</button>
+                  {msg.settings && <p className="mt-4 mono text-muted" style={{ fontSize: '12px', color: 'var(--status-success)' }}>{msg.settings}</p>}
+                </form>
               </div>
-            )}
+            </div>
+          )}
 
-          </main>
-        </div>
+          {/* CREDENTIALS TAB */}
+          {activeTab === 'credentials' && (
+            <div className="fade-in" style={{ maxWidth: '600px' }}>
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Security Settings</h1>
+                <p className="text-muted">Update administrative access.</p>
+              </div>
+              <div className="card">
+                <form onSubmit={handleCredentialsUpdate}>
+                  <div className="form-group">
+                    <label className="label">New Admin Username (Optional)</label>
+                    <input type="text" className="form-control" value={newUsername} onChange={e => setNewUsername(e.target.value)} placeholder={currentUsername} />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">New Admin Password</label>
+                    <input type="password" className="form-control" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '48px', borderRadius: '12px', marginTop: '16px' }}>Update Credentials</button>
+                  {msg.creds && <p className="mt-4 mono text-muted" style={{ fontSize: '12px' }}>{msg.creds}</p>}
+                </form>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
+
+      {/* ── FULL SCREEN EDITOR OVERLAY ── */}
+      {isFSOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 9999, display: 'flex', flexDirection: 'column' }}>
+          {/* Toolbar */}
+          <div style={{ padding: '16px 32px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f9fafb' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => insertTag('**', '**')} className="btn" title="Bold" style={{ fontWeight: 800, width: '36px' }}>B</button>
+              <button onClick={() => insertTag('_', '_')} className="btn" title="Italic" style={{ fontStyle: 'italic', width: '36px' }}>I</button>
+              <button onClick={() => togglePrefix('### ')} className="btn" title="Heading">H3</button>
+              <button onClick={() => togglePrefix('- ')} className="btn" title="List">List</button>
+              <div style={{ width: '1px', background: 'var(--border-color)', margin: '0 8px' }} />
+              <button onClick={() => insertTag('<span style="color:var(--accent)">', '</span>')} className="btn" style={{ color: 'var(--accent)', fontWeight: 700 }}>Accent</button>
+              <button onClick={() => insertTag('<span style="color:#22c55e">', '</span>')} className="btn" style={{ color: '#22c55e', fontWeight: 700 }}>Green</button>
+              <button onClick={() => insertTag('<span style="color:#f59e0b">', '</span>')} className="btn" style={{ color: '#f59e0b', fontWeight: 700 }}>Amber</button>
+              <button onClick={() => insertTag('<span style="color:#ef4444">', '</span>')} className="btn" style={{ color: '#ef4444', fontWeight: 700 }}>Red</button>
+              <div style={{ width: '1px', background: 'var(--border-color)', margin: '0 8px' }} />
+              <button onClick={() => insertTag('[', '](https://)')} className="btn">Link</button>
+              <button onClick={() => insertTag('`', '`')} className="btn mono">Code</button>
+              
+              <div style={{ width: '1px', background: 'var(--border-color)', margin: '0 8px' }} />
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span className="mono text-muted" style={{ fontSize: '10px', fontWeight: 800 }}>FONT SIZE</span>
+                <input 
+                  type="range" 
+                  min="12" 
+                  max="48" 
+                  value={fsFontSize} 
+                  onChange={(e) => updateFontSize(parseInt(e.target.value))} 
+                  style={{ width: '100px', cursor: 'pointer', accentColor: 'var(--accent)' }} 
+                />
+                <span className="mono" style={{ fontSize: '12px', width: '30px' }}>{fsFontSize}px</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <span className="mono text-muted" style={{ fontSize: '12px' }}>WRITING MODE</span>
+              <button onClick={() => setIsFSOpen(false)} className="btn" style={{ borderColor: '#ef4444', color: '#ef4444' }}>Discard</button>
+              <button onClick={saveFS} className="btn btn-primary" style={{ padding: '0 32px', height: '40px', borderRadius: '8px' }}>SAVE CHANGES</button>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flex: 1, overflow: 'hidden' }}>
+            <textarea
+              ref={fsTextareaRef}
+              value={fsContent}
+              onChange={e => setFSContent(e.target.value)}
+              placeholder="Start writing technical excellence..."
+              style={{ padding: '48px', fontSize: '18px', border: 'none', outline: 'none', resize: 'none', background: '#fff', borderRight: '1px solid var(--border-color)', lineHeight: '1.6', fontFamily: 'var(--font-mono)' }}
+            />
+            <div style={{ padding: '48px', overflowY: 'auto', background: '#fbfbfc' }}>
+              <h4 className="mb-8" style={{ color: 'var(--text-muted)' }}>LIVE PREVIEW</h4>
+              <div className="prose" style={{ fontSize: '18px' }}>
+                <div dangerouslySetInnerHTML={{ __html: renderPreview(fsContent) }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

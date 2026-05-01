@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-type Tab = 'home' | 'focus' | 'projects' | 'blog' | 'community' | 'join' | 'suggest';
+type Tab = 'home' | 'focus' | 'projects' | 'blog' | 'community' | 'join' | 'suggest' | 'support' | 'inquiry';
 
 const NAV_TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'home', label: 'Home', icon: (
@@ -27,10 +27,74 @@ const NAV_TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'suggest', label: 'Suggest', icon: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
   )},
+  { id: 'support', label: 'Support', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+  )},
+  { id: 'inquiry', label: 'Reach Us', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+  )},
 ];
+
+/* Utility to render content with markdown-like breaks and HTML support */
+const RenderContent = ({ content }: { content: string }) => {
+  if (!content) return null;
+  
+  // 1. Convert Markdown-like syntax to HTML strings
+  let processed = content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/_(.*?)_/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code class="mono-inline">$1</code>')
+    .replace(/^### (.*)$/gm, '<h3 style="font-size: 22px; font-weight: 800; margin: 24px 0 12px;">$1</h3>')
+    .replace(/^[\s]*[-*]\s+(.*)$/gm, '<li>$1</li>');
+
+  // 2. Wrap WHITELISTED tags so they survive the escape process
+  processed = processed.replace(/<span style="(.*?)">(.*?)<\/span>/g, '[[SPAN style="$1"]]$2[[/SPAN]]');
+  processed = processed.replace(/<strong>(.*?)<\/strong>/g, '[[STRONG]]$1[[/STRONG]]');
+  processed = processed.replace(/<em>(.*?)<\/em>/g, '[[EM]]$1[[/EM]]');
+  processed = processed.replace(/<h3 style="(.*?)">(.*?)<\/h3>/g, '[[H3 style="$1"]]$2[[/H3]]');
+  processed = processed.replace(/<li>(.*?)<\/li>/g, '[[LI]]$1[[/LI]]');
+
+  // 3. Escape all other HTML for security
+  let safe = processed
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 4. Restore the whitelisted tags from their placeholders
+  safe = safe
+    .replace(/\[\[SPAN style="(.*?)"\]\](.*?)\[\[\/SPAN\]\]/g, '<span style="$1">$2</span>')
+    .replace(/\[\[STRONG\]\](.*?)\[\[\/STRONG\]\]/g, '<strong>$1</strong>')
+    .replace(/\[\[EM\]\](.*?)\[\[\/EM\]\]/g, '<em>$1</em>')
+    .replace(/\[\[H3 style="(.*?)"\]\](.*?)\[\[\/H3\]\]/g, '<h3 style="$1">$2</h3>')
+    .replace(/\[\[LI\]\](.*?)\[\[\/LI\]\]/g, '<li>$1</li>');
+
+  // 5. Group consecutive LI items into UL for proper bullet points
+  safe = safe.replace(/(<li>.*?<\/li>(\n| )*)+/g, (match) => `<ul style="margin-bottom: 20px; padding-left: 20px; list-style-type: disc;">${match}</ul>`);
+
+  // 6. Handle final line breaks
+  safe = safe.replace(/\n/g, '<br/>');
+
+  return (
+    <div 
+      className="prose-content"
+      dangerouslySetInnerHTML={{ __html: safe }} 
+    />
+  );
+};
+
+/* Helper for one-line HTML rendering (e.g. titles) */
+const renderText = (content: string) => {
+  if (!content) return '';
+  return content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/_(.*?)_/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code class="mono-inline">$1</code>')
+    .replace(/<span style="(.*?)">(.*?)<\/span>/g, '<span style="$1">$2</span>');
+};
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
 
   const [projects, setProjects]                   = useState([]);
   const [focus, setFocus]                         = useState<any>(null);
@@ -38,7 +102,9 @@ export default function Home() {
   const [quotes, setQuotes]                       = useState<string[]>([]);
   const [settings, setSettings]                   = useState<Record<string, string>>({});
   const [blogPosts, setBlogPosts]                 = useState<any[]>([]);
-  const [updates, setUpdates]                     = useState<any[]>([]);
+  const [updates, setUpdates] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedUpdate, setSelectedUpdate] = useState<any>(null);
   const [filterProject, setFilterProject]         = useState<number | 'all'>('all');
   const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
   const [isFocusDescExpanded, setIsFocusDescExpanded] = useState(false);
@@ -49,27 +115,6 @@ export default function Home() {
   const [contribText, setContribText]     = useState('');
   const [contribName, setContribName]     = useState('');
   const [contribSubmitting, setContribSubmitting] = useState(false);
-
-  // Quote slider
-  const [quoteIdx, setQuoteIdx]   = useState(0);
-  const [dragStart, setDragStart] = useState<number | null>(null);
-  const [autoPaused, setAutoPaused] = useState(false);
-  const goNext = () => setQuoteIdx(i => (i + 1) % Math.max(quotes.length, 1));
-  const goPrev = () => setQuoteIdx(i => (i - 1 + Math.max(quotes.length, 1)) % Math.max(quotes.length, 1));
-
-  // Auto-advance every 4s, pauses on manual interaction for 8s
-  useEffect(() => {
-    if (quotes.length <= 1 || autoPaused) return;
-    const timer = setInterval(goNext, 4000);
-    return () => clearInterval(timer);
-  }, [quotes.length, autoPaused, quoteIdx]);
-
-  const handleManualNav = (fn: () => void) => {
-    setAutoPaused(true);
-    fn();
-    setTimeout(() => setAutoPaused(false), 8000);
-  };
-
 
   // Suggest form
   const [problem, setProblem]       = useState('');
@@ -87,17 +132,14 @@ export default function Home() {
   const [joinPortfolio, setJoinPortfolio] = useState('');
   const [joinSubmitting, setJoinSubmitting] = useState(false);
   const [joinMsg, setJoinMsg]             = useState('');
-
-  const spotlightRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const move = (e: MouseEvent) => {
-      if (spotlightRef.current)
-        spotlightRef.current.style.transform = `translate(${e.clientX - 300}px, ${e.clientY - 300}px)`;
-    };
-    window.addEventListener('mousemove', move);
-    return () => window.removeEventListener('mousemove', move);
-  }, []);
+ 
+  // Inquiry form
+  const [inquiryName, setInInquiryName]   = useState('');
+  const [inquiryCompany, setInquiryCompany] = useState('');
+  const [inquiryEmail, setInquiryEmail]   = useState('');
+  const [inquiryMsg, setInquiryMsg]       = useState('');
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const [inquiryResult, setInquiryResult] = useState('');
 
   useEffect(() => {
     fetch('/api/projects').then(r => r.json()).then(setProjects).catch(console.error);
@@ -107,23 +149,26 @@ export default function Home() {
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
     fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
     fetch('/api/quotes').then(r => r.json()).then((data: any[]) => {
-      setQuotes(data.length > 0
-        ? data.map(q => q.designation ? `"${q.text}" — ${q.designation}` : q.text)
-        : [
-            "You don't need to know everything to start. Just build.",
-            'Continuous learning through continuous building.',
-            'Refusing to settle for inefficient systems.',
-            'Grounded, feasible solutions to daily friction.',
-            'Technical innovation driven by non-linear thinking.',
-            'Ideas are cheap, execution is everything.',
-            'Solve real problems, not imaginary ones.',
-          ]);
+      setQuotes(data.length > 0 ? data : [
+        { text: "Building efficient systems.", designation: "SYSTEM_CORE" },
+        { text: "Technical innovation.", designation: "ARCHITECT" },
+        { text: "Execution is everything.", designation: "LEAD_ENG" }
+      ]);
     }).catch(console.error);
   }, []);
 
+
+  useEffect(() => {
+    if (quotes.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentQuoteIndex(prev => (prev + 1) % quotes.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [quotes]);
+
   const repeatedQuotes = [...quotes, ...quotes, ...quotes];
 
-  const heroTitle    = settings.heroTitle    || 'Self-Initiated Startup Idea & Creative Systems';
   const heroSubtitle = settings.heroSubtitle || 'Identifying and solving real-world inefficiencies through technical innovation and non-linear thinking.';
   const heroTagline  = settings.heroTagline  || '— Welcome to my workshop! 🛠️';
   const hasFocus     = focus && focus.problem && focus.problem !== 'No problem set yet.';
@@ -152,566 +197,812 @@ export default function Home() {
     setTimeout(() => setJoinMsg(''), 6000);
   };
 
-  const fetchContributions = async (suggestionId: number) => {
-    const res = await fetch(`/api/contributions?suggestionId=${suggestionId}`);
-    const data = await res.json();
-    setContributions(prev => ({ ...prev, [suggestionId]: data }));
-  };
-
-  const handleContribSubmit = async (e: React.FormEvent, suggestionId: number) => {
-    e.preventDefault();
-    setContribSubmitting(true);
-    const res = await fetch('/api/contributions', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ suggestionId, text: contribText, contributorName: contribName }),
-    });
-    if (res.ok) { setContribText(''); setContribName(''); fetchContributions(suggestionId); }
-    setContribSubmitting(false);
-  };
-
   return (
-    <>
-      {/* Theme Override */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        :root {
-          ${settings.themeAccent ? `--accent: ${settings.themeAccent};` : ''}
-          ${settings.themeAccent ? `--accent-glow: ${settings.themeAccent}80;` : ''}
-          ${settings.themeBg ? `--bg-color: ${settings.themeBg};` : ''}
+    <div className="min-h-screen bg-primary">
+      <style>{`
+        .timeline-item:last-child .timeline-line {
+          display: none;
         }
-        .bg-base {
-          background-color: var(--bg-color) !important;
+        @keyframes leapCat {
+          0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+          50% { transform: translateY(-25px) rotate(-5deg) scale(1.1); }
         }
-      `}} />
-
-      {/* Background */}
-      <div className="bg-base">
-        <div className="bg-grid"></div>
-        <div className="cursor-spotlight" ref={spotlightRef}></div>
-      </div>
-
-      {/* ── Header + Tabs ── */}
-      <div className="sticky-tabs-wrapper">
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0' }}>
-
-            {/* Left: logo block */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', flexShrink: 0 }} onClick={() => setActiveTab('home')}>
-              <div style={{ padding: '3px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}>
-                <img src="/logo.png" alt="WhizzyX Logo" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
-              </div>
-              <div className="logo" style={{ lineHeight: 1 }}>WhizzyX.</div>
-            </div>
-
-            {/* Right: tabs + admin */}
-            <nav style={{ display: 'flex', alignItems: 'center', gap: '0', flexShrink: 0 }}>
-              {NAV_TABS.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveTab(t.id)}
-                  className={`tab-btn ${activeTab === t.id ? 'active' : ''}`}
-                  style={{ padding: '0.6rem 1rem', fontSize: '0.88rem' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>{t.icon}{t.label}</span>
-                </button>
-              ))}
-              <a href="/admin" style={{ fontSize: '0.8rem', opacity: 0.4, marginLeft: '1rem', padding: '0.6rem 0.5rem', whiteSpace: 'nowrap' }}>Admin</a>
-            </nav>
+        @keyframes walkAlongRoad {
+          0% { offset-distance: 0%; transform: scaleX(1); }
+          48% { offset-distance: 100%; transform: scaleX(1); }
+          50% { offset-distance: 100%; transform: scaleX(-1); }
+          98% { offset-distance: 0%; transform: scaleX(-1); }
+          100% { offset-distance: 0%; transform: scaleX(1); }
+        }
+        .walking-cat-road {
+          offset-path: path("M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100");
+          position: absolute;
+          width: 70px;
+          height: 70px;
+          animation: walkAlongRoad 40s linear infinite;
+          z-index: 50;
+          pointer-events: none;
+        }
+        .cat-inner {
+          animation: leapCat 0.8s ease-in-out infinite;
+          display: block;
+          width: 100%;
+          height: 100%;
+          transform-origin: bottom center;
+        }
+        .cat-tail {
+          animation: wagTail 0.3s ease-in-out infinite;
+          transform-origin: 20px 75px;
+        }
+        .signpost {
+          cursor: pointer;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .signpost:hover {
+          transform: scale(1.1) translateY(-10px);
+          z-index: 50;
+        }
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.4);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          padding: 24px;
+          pointer-events: none;
+        }
+        .hover-detail-card {
+          position: fixed;
+          bottom: 40px;
+          right: 40px;
+          width: 450px;
+          background: #fff;
+          color: #000;
+          padding: 32px;
+          border: 3px solid #000;
+          box-shadow: 12px 12px 0 #222;
+          z-index: 3000;
+          pointer-events: none;
+          animation: slideInRight 0.3s ease-out;
+        }
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes scanLine {
+          0% { top: 0%; opacity: 0; }
+          50% { opacity: 0.5; }
+          100% { top: 100%; opacity: 0; }
+        }
+        .technical-card {
+          position: relative;
+          background: #fff;
+          border: 1px solid var(--border-color);
+          border-radius: 20px;
+          padding: 32px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        .technical-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(#eee 1px, transparent 0);
+          background-size: 20px 20px;
+          opacity: 0.5;
+          pointer-events: none;
+        }
+        .technical-card:hover {
+          border-color: var(--text-primary);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .scan-anim {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: linear-gradient(to right, transparent, var(--text-primary), transparent);
+          animation: scanLine 3s linear infinite;
+          pointer-events: none;
+        }
+        @keyframes quoteGlow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.1); }
+        }
+        .quote-module {
+          position: relative;
+          background: #000;
+          background-image: 
+            radial-gradient(at 0% 0%, rgba(var(--accent-rgb), 0.2) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+            linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.03) 75%, transparent 75%, transparent),
+            radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1.5px, transparent 0);
+          background-size: 100% 100%, 100% 100%, 10px 10px, 40px 40px;
+          border-radius: 32px;
+          padding: 32px 48px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .quote-glow {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle, rgba(var(--accent-rgb), 0.2) 0%, transparent 70%);
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          animation: quoteGlow 4s ease-in-out infinite;
+        }
+        .sidebar-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          margin: 4px 12px;
+          border-radius: 12px;
+          color: var(--text-secondary);
+          font-size: 13px;
+          font-weight: 500;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid transparent;
+          background: none;
+          width: calc(100% - 24px);
+          cursor: pointer;
+          text-align: left;
+        }
+        .sidebar-item:hover {
+          background: #fff;
+          color: var(--text-primary);
+          border-color: var(--border-color);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          transform: translateX(4px);
+        }
+        .sidebar-item.active {
+          background: var(--text-primary) !important;
+          color: #fff !important;
+          font-weight: 700;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .sidebar-label {
+          padding: 24px 24px 8px;
+          font-size: 10px;
+          font-weight: 900;
+          color: var(--text-muted);
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+        }
+        .sidebar-divider {
+          height: 1px;
+          background: var(--border-color);
+          margin: 16px 24px;
+          opacity: 0.5;
+        }
+      `}</style>
+      {/* ── Top Bar ── */}
+      <header className="header">
+        <div className="header-inner">
+          <div className="logo" onClick={() => setActiveTab('home')} style={{ cursor: 'pointer' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+            <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>WhizzyX</span>
+          </div>
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <a href="/admin" className="btn" style={{ border: 'none', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ADMIN CONSOLE</a>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 600 }}>WX</div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── TAB CONTENT ── */}
-      <div className="tab-content-wrapper">
-
-        {/* ══ HOME ══ */}
-        {activeTab === 'home' && (
-          <div className="tab-page fade-in">
-            <div className="hero" style={{ paddingBottom: '2rem' }}>
-              <div className="hero-orb"></div>
-              <h1>{heroTitle}</h1>
-              <p>{heroSubtitle}</p>
-              <div style={{ marginTop: '1.5rem' }}>
-                <span className="human-touch" style={{ transform: 'rotate(-3deg)', display: 'inline-block', fontSize: '1.6rem', opacity: 0.9 }}>{heroTagline}</span>
-              </div>
-
-              {/* Premium CTA buttons */}
-              <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', marginTop: '2.5rem', flexWrap: 'wrap' }}>
-                <button onClick={() => setActiveTab('projects')} className="home-cta-btn cta-blue">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                  <span>View Projects</span>
-                  <svg className="cta-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
-                <button onClick={() => setActiveTab('focus')} className="home-cta-btn cta-ghost">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                  <span>Current Focus</span>
-                  <svg className="cta-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
-                <button onClick={() => setActiveTab('join')} className="home-cta-btn cta-purple">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                  <span>Join WhizzyX</span>
-                  <svg className="cta-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Interactive quote slider */}
-            {quotes.length > 0 && (
-              <div className="quote-slider-wrapper">
-                <div
-                  className="quote-slider-track"
-                  onMouseDown={e => setDragStart(e.clientX)}
-                  onMouseUp={e => { if (dragStart !== null) { const d = dragStart - e.clientX; if (d > 40) handleManualNav(goNext); else if (d < -40) handleManualNav(goPrev); setDragStart(null); }}}
-                  onTouchStart={e => setDragStart(e.touches[0].clientX)}
-                  onTouchEnd={e => { if (dragStart !== null) { const d = dragStart - e.changedTouches[0].clientX; if (d > 40) handleManualNav(goNext); else if (d < -40) handleManualNav(goPrev); setDragStart(null); }}}
-                  style={{ userSelect: 'none', cursor: 'grab' }}
-                >
-                  <div className="quote-slide" key={quoteIdx}>
-                    <div className="quote-mark-big">"</div>
-                    <p className="quote-slide-text">{quotes[quoteIdx]}</p>
-                    <span className="quote-slide-attr">— MJ</span>
-                  </div>
-                </div>
-                <div className="quote-nav">
-                  <button onClick={() => handleManualNav(goPrev)} className="quote-nav-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                  </button>
-                  <div className="quote-dots">
-                    {quotes.map((_: any, i: number) => (
-                      <button key={i} onClick={() => { setAutoPaused(true); setQuoteIdx(i); setTimeout(() => setAutoPaused(false), 8000); }} className={`quote-dot ${i === quoteIdx ? 'active' : ''}`} />
-                    ))}
-                  </div>
-                  <button onClick={() => handleManualNav(goNext)} className="quote-nav-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
-                </div>
-              </div>
-            )}
+      <div className="main-layout">
+        {/* ── Sidebar ── */}
+        <aside className="sidebar">
+          <div style={{ padding: '0 24px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '6px', height: '6px', background: '#10B981', borderRadius: '50%', boxShadow: '0 0 8px #10B981', animation: 'pulse 2s infinite' }}></div>
+            <div className="mono" style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.2em' }}>ENGINEERING_CORE</div>
           </div>
-        )}
 
-        {/* ══ WORKING ON ══ */}
+          <div className="sidebar-label">[ CORE_MISSION ]</div>
+          {NAV_TABS.slice(0, 4).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { setActiveTab(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+          
+          <div className="sidebar-divider" />
+          <div className="sidebar-label">[ COMMUNITY_HUB ]</div>
+          {NAV_TABS.slice(4, 7).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { setActiveTab(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
 
-        {activeTab === 'focus' && (
-          <div className="tab-page fade-in">
-            {/* Mini hero on this tab */}
-            <div className="hero" style={{ paddingBottom: '2rem' }}>
-              <div className="hero-orb"></div>
-              <h1>{heroTitle}</h1>
-              <p>{heroSubtitle}</p>
-              <div style={{ marginTop: '1.5rem' }}>
-                <span className="human-touch" style={{ transform: 'rotate(-3deg)', display: 'inline-block', fontSize: '1.6rem', opacity: 0.9 }}>{heroTagline}</span>
+          <div className="sidebar-divider" />
+          <div className="sidebar-label">[ EXTERNAL_CONNECT ]</div>
+          {NAV_TABS.slice(7).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { setActiveTab(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+          <div style={{ padding: '40px 24px 0', borderTop: '1px solid var(--border-color)', marginTop: '32px' }}>
+            <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.7' }}>
+              Systematic optimization.<br/>
+              © {new Date().getFullYear()} WhizzyX Lab
+            </p>
+          </div>
+        </aside>
+
+        {/* ── Main Content Area ── */}
+        <main className="content-area">
+          {/* Quote Slider (Slide Show) */}
+          {quotes.length > 0 && (
+            <div className="quote-module text-center" style={{ marginBottom: '24px' }}>
+              <div className="quote-glow"></div>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', marginBottom: '32px' }} className="mono">
+                  [SYSTEM://VISIONARY_LOG]
+                </div>
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: '24px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                  “{quotes[currentQuoteIndex]?.text || 'Loading vision...'}”
+                </h2>
+                <div className="mono" style={{ fontSize: '12px', fontWeight: 800, color: '#fff', letterSpacing: '0.1em', opacity: 0.8 }}>
+                  — {quotes[currentQuoteIndex]?.designation || 'SYSTEM_CORE'}
+                </div>
+              </div>
+              
+              <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px' }}>
+                {quotes.map((_: any, idx: number) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => setCurrentQuoteIndex(idx)}
+                    style={{ 
+                      width: idx === currentQuoteIndex ? '24px' : '6px', 
+                      height: '6px', 
+                      background: idx === currentQuoteIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)', 
+                      borderRadius: '3px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }} 
+                  />
+                ))}
               </div>
             </div>
+          )}
 
-            {/* Marquee */}
-            {repeatedQuotes.length > 0 && (
-              <div className="marquee-wrapper" style={{ marginBottom: '3rem' }}>
-                <div className="marquee-content">
-                  {repeatedQuotes.map((q, i) => <span key={i} className="marquee-item">{q}</span>)}
-                </div>
-              </div>
-            )}
-
-            {hasFocus ? (
-              <div className="container" style={{ maxWidth: '800px' }}>
-                <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', border: '1px solid rgba(139,92,246,0.3)', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)', filter: 'blur(40px)' }}></div>
-                  
-                  <span className="status-tag" style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--accent)', border: '1px solid var(--accent)', padding: '0.4rem 1.2rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                    {focus?.status || 'Active Research'}
-                  </span>
-                  
-                  <h2 style={{ fontSize: '1.8rem', marginTop: '1.5rem', marginBottom: '1rem', color: '#fff', lineHeight: 1.3, fontFamily: 'serif', textAlign: 'center', maxWidth: '800px', marginInline: 'auto' }}>
-                    {focus?.problem}
-                  </h2>
-                  
-                  {focus?.project && (
-                    <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Currently Building:</span>
-                      <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{focus.project.title}</strong>
-                      <button onClick={() => setFilterProject(focus.project.id)} className="btn" style={{ padding: '0.3rem 0.8rem', fontSize: '0.75rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>View Roadmap</button>
-                    </div>
-                  )}
-
-                  {focus?.milestone && (
-                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' }}>Current Milestone</span>
-                      <p style={{ fontSize: '1.4rem', color: '#fff', fontWeight: 500, fontStyle: 'italic', background: 'rgba(255,255,255,0.05)', padding: '0.75rem 1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        {focus.milestone}
-                      </p>
-                    </div>
-                  )}
-                  
-                  {focus?.description && (
-                    <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
-                      <button 
-                        onClick={() => setIsFocusDescExpanded(!isFocusDescExpanded)}
-                        className="btn"
-                        style={{ background: 'rgba(255,255,255,0.03)', padding: '0.4rem 1.2rem', fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '1.5rem', border: '1px solid var(--accent)', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}
-                      >
-                        {isFocusDescExpanded ? '− Close Paper' : '+ Read Research Paper'}
-                      </button>
-                      
-                      {isFocusDescExpanded && (
-                        <div className="research-paper-container" style={{ animation: 'fadeIn 0.6s ease' }}>
-                          <div className="research-paper-content">
-                            <ReactMarkdown>{focus.description}</ReactMarkdown>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="container" style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <p>No active focus set yet. Check back soon!</p>
-              </div>
-            )}
-
-            {/* Build Updates Timeline (Roadmap) */}
-            <div className="container" style={{ maxWidth: '900px', marginTop: '4rem' }}>
-              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', background: 'linear-gradient(to right, #fff, var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Graphical Roadmap</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>A living log of technical progress and creative evolution.</p>
-                
-                {projects.length > 0 && (
-                  <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                    <button 
-                      onClick={() => setFilterProject('all')} 
-                      className={`btn ${filterProject === 'all' ? 'btn-primary' : ''}`}
-                      style={{ padding: '0.4rem 1.2rem', fontSize: '0.85rem', background: filterProject === 'all' ? undefined : 'rgba(255,255,255,0.05)' }}
-                    >
-                      All Updates
-                    </button>
-                    {projects.map((p: any) => (
-                      <button 
-                        key={p.id}
-                        onClick={() => setFilterProject(p.id)}
-                        className={`btn ${filterProject === p.id ? 'btn-primary' : ''}`}
-                        style={{ padding: '0.4rem 1.2rem', fontSize: '0.85rem', background: filterProject === p.id ? undefined : 'rgba(255,255,255,0.05)' }}
-                      >
-                        {p.title}
-                      </button>
-                    ))}
+          {/* ══ HOME TAB (Creative Freedom Redesign) ══ */}
+          {activeTab === 'home' && (
+            <div className="fade-in" style={{ maxWidth: '1200px', paddingTop: '0px' }}>
+              <section className="mb-16">
+                <h1 
+                  style={{ fontSize: '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.15 }}
+                  dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
+                />
+                <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
+                  {heroSubtitle}
+                </p>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <div className="mono" style={{ fontSize: '13px', background: 'var(--text-primary)', color: 'white', padding: '10px 20px', borderRadius: '12px', display: 'inline-block', fontWeight: 600 }}>
+                    {heroTagline}
                   </div>
-                )}
+                  <button onClick={() => setActiveTab('projects')} className="btn" style={{ height: '44px', fontWeight: 600, border: '1px solid var(--border-color)', background: 'white' }}>
+                    {settings.homeExploreModulesBtn || 'EXPLORE MODULES →'}
+                  </button>
+                </div>
+              </section>
+
+              <div className="featured-grid">
+                <div className="featured-card">
+                  <div>
+                    <span className="badge badge-info" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', marginBottom: '20px' }}>
+                      {settings.homeActiveExpeditionLabel || 'ACTIVE EXPEDITION'}
+                    </span>
+                    <h2 style={{ color: 'white', fontSize: '32px', marginBottom: '12px' }}>{focus?.problem || 'Architecting Excellence'}</h2>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px', lineHeight: '1.5', maxWidth: '500px' }}>
+                      {focus?.description?.substring(0, 120) || 'Currently refining the core architectural modules for the WhizzyX platform.'}...
+                    </p>
+                  </div>
+                  <button onClick={() => setActiveTab('focus')} className="btn" style={{ background: 'white', color: 'black', border: 'none', width: 'fit-content', padding: '0 24px', height: '48px', fontWeight: 700, borderRadius: '12px' }}>
+                    {settings.homeViewRoadmapBtn || 'VIEW ROADMAP'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div className="technical-card">
+                    <div className="scan-anim"></div>
+                    <div className="mono text-muted mb-4" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em' }}>{settings.homeSystemCapacityLabel || 'ACTIVE DEPLOYMENTS'}</div>
+                    <div className="mono" style={{ fontSize: '48px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>{projects.length}</div>
+                    <div className="text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>{settings.homeSystemCapacitySub || 'LIVE IN PRODUCTION'}</div>
+                    <div style={{ position: 'absolute', bottom: '16px', right: '16px', opacity: 0.1 }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+                    </div>
+                  </div>
+                  <div className="technical-card" style={{ background: '#000', color: '#fff' }}>
+                    <div className="scan-anim" style={{ background: 'linear-gradient(to right, transparent, #fff, transparent)' }}></div>
+                    <div className="mono" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.5 }}>{settings.homeHealthLabel || 'ARCHITECTURAL HEALTH'}</div>
+                    <div className="mono" style={{ fontSize: '48px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>{settings.homeHealthValue || '99.8%'}</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7 }}>{settings.homeHealthSub || 'UPTIME & OPTIMIZATION RATE'}</div>
+                    <div style={{ position: 'absolute', bottom: '16px', right: '16px', opacity: 0.2 }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {updates.filter(u => filterProject === 'all' || u.projectId === filterProject).length > 0 ? (
-                <div className="timeline">
-                  {updates.filter(u => filterProject === 'all' || u.projectId === filterProject).map((upd: any) => (
-                    <div key={upd.id} className="timeline-item">
-                      <div className="timeline-dot" style={{ background: upd.category === 'Learning' ? '#10b981' : upd.category === 'Improvement' ? '#f59e0b' : '#3b82f6' }}></div>
-                      <span className="timeline-date">
-                        {new Date(upd.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </span>
-                      <div className="timeline-card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span className={`category-tag category-${upd.category.toLowerCase()}`}>
-                              {upd.category === 'Learning' && '🎓 '}
-                              {upd.category === 'Improvement' && '📈 '}
-                              {upd.category === 'Update' && '🚀 '}
-                              {upd.category}
-                            </span>
-                          </div>
-                          {upd.project && (
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.03)', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                              Project: <strong style={{ color: '#fff' }}>{upd.project.title}</strong>
-                            </span>
-                          )}
-                        </div>
-                        
-                        {upd.title && (
-                          <h3 style={{ fontSize: '1.4rem', color: '#fff', marginBottom: '0.5rem', fontFamily: 'Outfit, sans-serif' }}>{upd.title}</h3>
-                        )}
-                        
-                        {upd.excerpt && (
-                          <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '1rem', borderLeft: '2px solid var(--accent)', paddingLeft: '0.75rem' }}>
-                            {upd.excerpt}
-                          </p>
-                        )}
+              <section className="mb-20">
+                <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.15em' }}>{settings.techStackTitle || 'TECHNOLOGY STACK'}</div>
+                <div className="flex flex-wrap gap-4">
+                  {(settings.techStack ? settings.techStack.split(',') : ['React', 'Next.js', 'TypeScript', 'Prisma', 'PostgreSQL', 'TailwindCSS', 'Node.js', 'Rust', 'Vercel', 'AWS']).map((tech: string) => (
+                    <div key={tech} className="badge" style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--bg-secondary)', fontWeight: 600 }}>{tech.trim()}</div>
+                  ))}
+                </div>
+              </section>
 
-                        <div className="report-content" style={{ fontSize: '1rem' }}>
-                          <ReactMarkdown>{upd.content}</ReactMarkdown>
+              {/* THE WHIZZYX PROTOCOL */}
+              <section className="mt-24 mb-20">
+                <div className="mb-12">
+                  <div className="mono text-muted mb-4" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em' }}>[SYSTEM://PROTOCOL_V1.0]</div>
+                  <h2 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>The WhizzyX Protocol</h2>
+                  <p className="text-muted" style={{ fontSize: '18px', maxWidth: '700px' }}>Our systematic architectural approach to identifying, engineering, and deploying modular solutions.</p>
+                </div>
+
+                <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+                  <div className="technical-card">
+                    <div className="mono mb-4" style={{ color: 'var(--accent)', fontWeight: 800 }}>01. SIGNAL_DETECTION</div>
+                    <p className="text-muted" style={{ fontSize: '14px', lineHeight: 1.6 }}>Scanning the real world for inefficiencies and technical gaps. We broadcast signals for problems that need a modular cure.</p>
+                  </div>
+                  <div className="technical-card" style={{ background: '#000', color: '#fff' }}>
+                    <div className="scan-anim" style={{ background: 'linear-gradient(to right, transparent, #fff, transparent)' }}></div>
+                    <div className="mono mb-4" style={{ color: '#fff', fontWeight: 800, opacity: 0.8 }}>02. SYSTEM_ARCHITECT</div>
+                    <p style={{ fontSize: '14px', lineHeight: 1.6, opacity: 0.7 }}>Designing the high-fidelity blueprint. We engineer robust, non-linear systems to bridge identified gaps with code and logic.</p>
+                  </div>
+                  <div className="technical-card">
+                    <div className="mono mb-4" style={{ color: 'var(--accent)', fontWeight: 800 }}>03. PRODUCTION_DEPLOY</div>
+                    <p className="text-muted" style={{ fontSize: '14px', lineHeight: 1.6 }}>Releasing stable, production-ready modules. Every deployment is a verified solution to an original technical signal.</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* ABOUT THE FOUNDER / ARCHITECT */}
+              <section className="mb-24" style={{ padding: '60px', background: 'var(--bg-secondary)', borderRadius: '32px', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)', opacity: 0.05 }}></div>
+                <div style={{ display: 'flex', gap: '48px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <div style={{ width: '180px', height: '180px', borderRadius: '24px', overflow: 'hidden', border: '4px solid #fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+                      <img 
+                        src={settings.founderAvatar || 'https://ui-avatars.com/api/?name=Architect&background=111&color=fff&size=256&bold=true'} 
+                        alt="Founder" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div className="mono text-muted mb-4" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em' }}>[SYSTEM://ARCHITECT_INFO]</div>
+                    <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px' }}>{settings.founderName || 'The Architect'}</h2>
+                    <div className="mono mb-8" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>{settings.founderTitle || 'Lead Systems Engineer'}</div>
+                    <div className="prose" style={{ fontSize: '16px', lineHeight: '1.7', color: 'var(--text-secondary)' }}>
+                      <RenderContent content={settings.founderBio || 'Driving the technical vision of WhizzyX through modular innovation and non-linear system design.'} />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div style={{ padding: '80px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+                <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.2em' }}>[SYSTEM://TRANSITION_READY]</div>
+                <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '32px' }}>Ready to see the blueprint?</h3>
+                <button 
+                  onClick={() => {
+                    setActiveTab('focus');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="btn btn-primary" 
+                  style={{ height: '64px', padding: '0 48px', borderRadius: '32px', fontSize: '18px', fontWeight: 800, gap: '16px' }}
+                >
+                  PROCEED TO ROADMAP
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+              </div>
+
+            </div>
+          )}
+
+          {/* ══ WORKING ON TAB ══ */}
+          {activeTab === 'focus' && (
+            <div className="fade-in" style={{ maxWidth: '100%' }}>
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Engineering Roadmap</h1>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Technical build logs and architectural progress tracking.</p>
+              </div>
+
+              {hasFocus && (
+                <div className="card mb-12" style={{ padding: '48px', background: 'var(--bg-primary)', borderLeft: '4px solid var(--text-primary)' }}>
+                  <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>[SYSTEM://FOCUS_MISSION]</div>
+                  <div className="mb-8" style={{ display: 'inline-block', padding: '16px 32px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '6px 6px 0px #111' }}>
+                      <h2 style={{ fontSize: '24px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{focus.problem}</h2>
+                  </div>
+                  <div className="prose" style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+                    <RenderContent content={focus.description} />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end mb-8">
+                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    style={{ 
+                      padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                      background: viewMode === 'list' ? 'var(--bg-primary)' : 'transparent',
+                      color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      boxShadow: viewMode === 'list' ? 'var(--shadow-sm)' : 'none',
+                      border: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                  >
+                    LIST
+                  </button>
+                  <a 
+                    href="/roadmap" 
+                    target="_blank"
+                    style={{ 
+                      padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                      background: 'transparent',
+                      color: 'var(--text-secondary)',
+                      boxShadow: 'none',
+                      border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                      textDecoration: 'none', display: 'flex', alignItems: 'center'
+                    }}
+                  >
+                    3D MAP ↗
+                  </a>
+                </div>
+              </div>
+
+              {viewMode === 'list' ? (
+                <div className="relative pl-12" style={{ borderLeft: '2px solid var(--border-color)', minHeight: '100px' }}>
+                  {updates.map((upd: any) => (
+                    <div key={upd.id} className="timeline-item mb-12 relative">
+                      <div className="timeline-dot" style={{ width: '14px', height: '14px', left: '-51px', border: '3px solid var(--bg-primary)', background: 'var(--text-primary)' }}></div>
+                      <div className="timeline-card">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="badge mono" style={{ background: '#111', color: '#fff', fontSize: '10px', padding: '4px 10px', borderRadius: '4px' }}>
+                            LOGGED: {new Date(upd.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                          </div>
+                        </div>
+                        <div className="mb-6" style={{ display: 'inline-block', padding: '10px 24px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '5px 5px 0px #111' }}>
+                          <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>{upd.title}</h3>
+                        </div>
+                        <div className="prose" style={{ fontSize: '16px', lineHeight: '1.8', color: 'var(--text-secondary)' }}>
+                          <RenderContent content={upd.content} />
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', opacity: 0.5, padding: '4rem 0', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '24px' }}>
-                  <p>No logged updates for this selection yet.</p>
+                <div className="relative overflow-x-auto py-12" style={{ background: '#0a0a0c', backgroundImage: 'radial-gradient(circle at 2px 2px, #1a1a1e 1px, transparent 0)', backgroundSize: '40px 40px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 40px 100px rgba(0,0,0,0.3)', position: 'relative' }}>
+                  <div style={{ position: 'sticky', left: '40px', top: '40px', zIndex: 100, pointerEvents: 'none' }}>
+                    <div className="mono" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4em', fontWeight: 800, textShadow: '0 0 10px rgba(0,0,0,0.5)' }}>OBJECTIVE_ALPHA</div>
+                    <div className="mono" style={{ fontSize: '26px', fontWeight: 900, color: '#fff', letterSpacing: '0.15em', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>{settings.missionTagline || 'CONQUER THE MARS'}</div>
+                  </div>
+                  <div style={{ minWidth: '1500px', height: '550px', position: 'relative' }}>
+                    <svg width="1500" height="550" viewBox="0 0 1500 550" fill="none">
+                      <path d="M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100" stroke="#000" strokeWidth="64" strokeLinecap="round" />
+                      <path d="M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100" stroke="#222" strokeWidth="60" strokeLinecap="round" />
+                      <path d="M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100" stroke="white" strokeWidth="1" strokeDasharray="10 30" strokeLinecap="round" opacity="0.1" />
+                    </svg>
+
+                    <div className="walking-cat-road">
+                      <div className="cat-inner">
+                        <svg width="70" height="70" viewBox="0 0 100 100">
+                          {/* Tail */}
+                          <path className="cat-tail" d="M20 75 Q10 75 10 60 Q10 50 20 50" stroke="#000" strokeWidth="6" fill="none" strokeLinecap="round" />
+                          {/* Body (Black Back) */}
+                          <path d="M20 80 Q30 40 50 40 Q70 40 80 80" fill="#000" />
+                          {/* White Chest/Belly */}
+                          <path d="M40 80 Q50 50 60 80" fill="#fff" />
+                          {/* Head (Black) */}
+                          <circle cx="50" cy="35" r="24" fill="#000" />
+                          {/* White Muzzle */}
+                          <path d="M40 45 Q50 35 60 45 Q50 55 40 45" fill="#fff" />
+                          {/* Ears */}
+                          <path d="M30 22 L32 5 L45 18" fill="#000" />
+                          <path d="M70 22 L68 5 L55 18" fill="#000" />
+                          {/* Whiskers */}
+                          <path d="M35 42 L10 38" stroke="#fff" strokeWidth="1" opacity="0.6" />
+                          <path d="M35 45 L10 45" stroke="#fff" strokeWidth="1" opacity="0.6" />
+                          <path d="M35 48 L10 52" stroke="#fff" strokeWidth="1" opacity="0.6" />
+                          <path d="M65 42 L90 38" stroke="#fff" strokeWidth="1" opacity="0.6" />
+                          <path d="M65 45 L90 45" stroke="#fff" strokeWidth="1" opacity="0.6" />
+                          <path d="M65 48 L90 52" stroke="#fff" strokeWidth="1" opacity="0.6" />
+                          {/* Eyes */}
+                          <circle cx="42" cy="32" r="4.5" fill="#fff" />
+                          <circle cx="58" cy="32" r="4.5" fill="#fff" />
+                          <circle cx="42" cy="32" r="1.5" fill="#000" />
+                          <circle cx="58" cy="32" r="1.5" fill="#000" />
+                          {/* White Paws (Jumping) */}
+                          <circle cx="35" cy="85" r="7" fill="#fff" />
+                          <circle cx="65" cy="85" r="7" fill="#fff" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {updates.map((upd: any, index: number) => {
+                      const positions = [
+                        { x: 100, y: 400 }, { x: 300, y: 300 }, { x: 500, y: 150 }, { x: 600, y: 100 },
+                        { x: 750, y: 200 }, { x: 900, y: 400 }, { x: 1100, y: 400 }, { x: 1300, y: 200 }
+                      ];
+                      const pos = positions[index % positions.length];
+                      return (
+                        <div 
+                          key={upd.id} 
+                          className="signpost" 
+                          onMouseEnter={() => setSelectedUpdate(upd)}
+                          onMouseLeave={() => setSelectedUpdate(null)}
+                          style={{ position: 'absolute', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)' }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ 
+                              background: '#fff', color: '#000', padding: '10px 16px', borderRadius: '4px', 
+                              border: '2px solid #000', boxShadow: '4px 4px 0 #333', minWidth: '150px', textAlign: 'center' 
+                            }}>
+                              <div className="mono" style={{ fontSize: '9px', fontWeight: 900, marginBottom: '4px', color: '#666' }}>
+                                {new Date(upd.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                              </div>
+                              <div style={{ fontSize: '12px', fontWeight: 800 }}>
+                                {upd.title.length > 20 ? upd.title.substring(0, 18) + '...' : upd.title}
+                              </div>
+                            </div>
+                            <div style={{ width: '3px', height: '20px', background: '#fff' }}></div>
+                            <div style={{ width: '10px', height: '10px', background: '#fff', borderRadius: '50%', border: '2px solid #000' }}></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-6 text-center mono text-muted" style={{ fontSize: '11px' }}>
+                    [SCROLL HORIZONTALLY] // [CLICK SIGNPOST FOR DETAILS]
+                  </div>
+                </div>
+              )}
+
+              {/* Detail Hover Card */}
+              {selectedUpdate && (
+                <div className="hover-detail-card fade-in">
+                  <div className="mono mb-4" style={{ fontSize: '11px', fontWeight: 900, color: '#888' }}>
+                    [EXPEDITION_LOG] // {new Date(selectedUpdate.date).toLocaleString()}
+                  </div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '20px', lineHeight: 1.2 }}>{selectedUpdate.title}</h2>
+                  <div className="prose" style={{ fontSize: '15px', lineHeight: '1.7', color: '#333' }}>
+                    <RenderContent content={selectedUpdate.content} />
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ══ PROJECTS ══ */}
-        {activeTab === 'projects' && (
-          <div className="tab-page fade-in container" style={{ maxWidth: '1200px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-              <h2 className="section-title" style={{ marginBottom: '1rem' }}>{settings.sectionProjectsTitle || 'Featured Projects'}</h2>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>
-                A collection of self-initiated systems, tools, and creative experiments designed to solve real-world friction.
-              </p>
-            </div>
+          {/* ══ PROJECTS TAB ══ */}
+          {activeTab === 'projects' && (
+            <div className="fade-in">
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Module Index</h1>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Stable systems and production-grade engineering deployments.</p>
+              </div>
 
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '2.5rem' }}>
-              {projects.length > 0 ? projects.map((p: any) => (
-                <div key={p.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  {p.videoUrl ? (
-                    <div className="video-wrapper" style={{ margin: '0', borderRadius: '0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      <iframe src={`https://www.youtube.com/embed/${p.videoUrl.split('v=')[1] || p.videoUrl.split('/').pop()}`} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '48px' }}>
+                {projects.map((p: any) => (
+                  <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column', padding: '40px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '28px' }}>
+                      <span className="badge badge-success" style={{ borderRadius: '8px', padding: '6px 14px', background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', border: '1px solid rgba(34, 197, 94, 0.2)' }}>Production</span>
+                      <span className="mono text-muted" style={{ fontSize: '12px', fontWeight: 700 }}>VER-2.4.0</span>
                     </div>
+                    <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[MODULE://TARGET_INEFFICIENCY]</div>
+                    <div className="mb-8" style={{ display: 'inline-block', padding: '14px 28px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '6px 6px 0px #111' }}>
+                      <h3 style={{ fontSize: '22px', fontWeight: 800, margin: 0 }}>{p.title}</h3>
+                    </div>
+                    <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[LOG://ENGINEERED_SOLUTION]</div>
+                    <div className="prose" style={{ fontSize: '15px', lineHeight: '1.7', color: 'var(--text-secondary)', flex: 1, marginBottom: '32px' }}>
+                      <RenderContent content={p.description} />
+                    </div>
+                    {p.links && (
+                      <a href={p.links} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700 }}>
+                        Open Architecture
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ══ BLOG TAB ══ */}
+          {activeTab === 'blog' && (
+            <div className="fade-in" style={{ maxWidth: '900px' }}>
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Technical Journal</h1>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Deep dives into system architecture, engineering logic, and execution.</p>
+              </div>
+
+              {blogPosts.map((post: any) => (
+                <div key={post.id} className="card mb-12" style={{ padding: '56px' }}>
+                  <div className="mono text-muted mb-6" style={{ fontSize: '12px', letterSpacing: '0.1em', fontWeight: 700 }}>LOGGED: {new Date(post.createdAt).toLocaleDateString()}</div>
+                  <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800 }}>[JOURNAL://TECH_LOG]</div>
+                  <div className="mb-10" style={{ display: 'inline-block', padding: '18px 36px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '8px 8px 0px #111' }}>
+                    <h2 style={{ fontSize: '28px', fontWeight: 800, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.2 }}>{post.title}</h2>
+                  </div>
+                  <div className="prose" style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: '1.8' }}>
+                    <RenderContent content={post.content} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ══ COMMUNITY TAB ══ */}
+          {activeTab === 'community' && (
+            <div className="fade-in">
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Technical Signals</h1>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Community-identified inefficiencies and modular feature signals.</p>
+              </div>
+
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '32px' }}>
+                {featuredSuggestions.map((s: any) => (
+                  <div key={s.id} className="card" style={{ borderLeft: '6px solid var(--text-primary)', padding: '32px' }}>
+                    <div className="mb-6">
+                      <span className="badge badge-warning" style={{ fontSize: '10px', borderRadius: '6px', padding: '4px 10px' }}>FEATURE SIGNAL</span>
+                    </div>
+                    <p style={{ fontWeight: 700, marginBottom: '20px', fontSize: '18px', lineHeight: '1.6', letterSpacing: '-0.01em' }}>{s.problem}</p>
+                    <div className="text-muted mono" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>SOURCE: {s.userName || 'ANONYMOUS'}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ══ JOIN TAB ══ */}
+          {activeTab === 'join' && (
+            <div className="fade-in" style={{ maxWidth: '700px' }}>
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Collaboration Gateway</h1>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Join the core engineering network and architect future systems.</p>
+              </div>
+
+              <div className="card" style={{ padding: '56px' }}>
+                <form onSubmit={handleJoinSubmit}>
+                  <div className="form-group">
+                    <label className="label">Primary Identity</label>
+                    <input type="text" className="form-control" value={joinName} onChange={e => setJoinName(e.target.value)} required placeholder="Full Name" style={{ height: '52px', fontSize: '16px' }} />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Technical Stack</label>
+                    <input type="text" className="form-control" value={joinSkills} onChange={e => setJoinSkills(e.target.value)} required placeholder="Primary modules/languages" style={{ height: '52px', fontSize: '16px' }} />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Engineering Intent</label>
+                    <textarea className="form-control" rows={5} value={joinWhy} onChange={e => setJoinWhy(e.target.value)} required placeholder="Why do you wish to collaborate?" style={{ fontSize: '16px', padding: '16px' }} />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '40px', height: '60px', fontSize: '18px', fontWeight: 800, borderRadius: '16px' }} disabled={joinSubmitting}>
+                    {joinSubmitting ? 'Processing Application...' : 'Broadcast Application'}
+                  </button>
+                  {joinMsg && <div className="mt-10 p-6 bg-tertiary rounded-xl text-center mono" style={{ fontSize: '14px', fontWeight: 700, border: '1px solid var(--border-color)' }}>{joinMsg}</div>}
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ══ SUGGEST TAB ══ */}
+          {activeTab === 'suggest' && (
+            <div className="fade-in" style={{ maxWidth: '700px' }}>
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Broadcast Technical Signal</h1>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Identify a technical gap or propose a new system module.</p>
+              </div>
+
+              <div className="card" style={{ padding: '56px' }}>
+                <form onSubmit={handleSuggestSubmit}>
+                  <div className="form-group">
+                    <label className="label">Signal / Inefficiency Description</label>
+                    <textarea className="form-control" rows={7} value={problem} onChange={e => setProblem(e.target.value)} required placeholder="Detail the technical gap or modular proposal..." style={{ fontSize: '16px', padding: '16px' }} />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '40px', height: '60px', fontSize: '18px', fontWeight: 800, borderRadius: '16px' }} disabled={submitting}>
+                    {submitting ? 'Transmitting Signal...' : 'Transmit Signal'}
+                  </button>
+                  {suggestMsg && <div className="mt-10 p-6 bg-tertiary rounded-xl text-center mono" style={{ fontSize: '14px', fontWeight: 700, border: '1px solid var(--border-color)' }}>{suggestMsg}</div>}
+                </form>
+              </div>
+            </div>
+          )}
+          {/* ══ SUPPORT TAB ══ */}
+          {activeTab === 'support' && (
+            <div className="fade-in" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800 }}>Support the Mission</h1>
+                <p className="text-muted">Buy me a coffee and help fuel the next generation of architectural breakthroughs.</p>
+              </div>
+              <div className="card" style={{ padding: '64px', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ padding: '24px', background: 'var(--bg-secondary)', borderRadius: '24px', marginBottom: '32px', border: '1px solid var(--border-color)' }}>
+                  {settings.donateQrUrl ? (
+                    <img src={settings.donateQrUrl} alt="Donate QR" style={{ width: '250px', height: '250px', borderRadius: '12px' }} />
                   ) : (
-                    <div style={{ height: '200px', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <div style={{ width: '250px', height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center' }}>
+                      QR Code Pending.<br/>Please check back soon!
                     </div>
                   )}
-                  
-                  <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                      <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: 'var(--accent)', fontWeight: 700, background: 'rgba(59,130,246,0.1)', padding: '0.25rem 0.75rem', borderRadius: '50px' }}>Project</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(p.createdAt || Date.now()).getFullYear()}</span>
-                    </div>
-                    
-                    <h3 className="project-title" style={{ fontSize: '1.6rem', marginBottom: '1rem', fontFamily: 'Outfit, sans-serif' }}>{p.title}</h3>
-                    <p className="project-desc" style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '2rem', flex: 1 }}>{p.description}</p>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                      {p.links ? (
-                        <a href={p.links} target="_blank" rel="noopener noreferrer" className="home-cta-btn cta-blue" style={{ padding: '0.6rem 1.4rem', fontSize: '0.85rem' }}>
-                          <span>View Details</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                        </a>
-                      ) : (
-                        <div style={{ height: '38px' }}></div>
-                      )}
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 'bold', color: '#fff' }}>MJ</div>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>MJ Build</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              )) : (
-                <div className="glass-card" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem' }}>
-                  <div style={{ marginBottom: '1.5rem', opacity: 0.3 }}>
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>No projects published yet. Check back soon!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ══ BLOG ══ */}
-        {activeTab === 'blog' && (
-          <div className="tab-page fade-in">
-            <div className="hero" style={{ paddingBottom: '2rem' }}>
-              <div className="hero-orb"></div>
-              <h1 style={{ fontSize: '3.5rem' }}>The Workshop Blog</h1>
-              <p style={{ maxWidth: '600px', margin: '0 auto' }}>Deep dives into my building process, technical challenges, and creative philosophy.</p>
-            </div>
-
-            <div className="container" style={{ maxWidth: '900px', paddingBottom: '5rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                {blogPosts.map((post: any) => (
-                  <article key={post.id} className="glass-card" style={{ padding: '2.5rem', border: '1px solid rgba(139,92,246,0.2)', transition: 'all 0.3s ease' }}>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                      <span style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                        {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      </span>
-                      <h2 style={{ fontSize: '2.2rem', color: '#fff', marginTop: '0.5rem', fontFamily: 'Outfit, sans-serif' }}>{post.title}</h2>
-                    </div>
-                    
-                    {post.excerpt && (
-                      <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '1.5rem', borderLeft: '3px solid var(--accent)', paddingLeft: '1.25rem' }}>
-                        {post.excerpt}
-                      </p>
-                    )}
-
-                    <div className="report-content">
-                      <ReactMarkdown>{post.content}</ReactMarkdown>
-                    </div>
-
-                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>MJ</div>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Written by <strong style={{ color: '#fff' }}>{post.author}</strong></span>
-                    </div>
-                  </article>
-                ))}
-
-                {blogPosts.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '4rem 0', opacity: 0.6 }}>
-                    <p>No blog posts published yet. Stay tuned!</p>
-                  </div>
-                )}
+                <h3 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '12px' }}>Buy me a coffee ☕</h3>
+                <p className="text-muted mb-8" style={{ maxWidth: '400px' }}>Every contribution helps maintain the infrastructure and accelerate the WhizzyX roadmap.</p>
+                <div className="badge mono" style={{ background: '#111', color: '#fff', padding: '12px 24px', fontSize: '13px' }}>WHIZZYX_ECOSYSTEM_SUPPORT</div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ══ COMMUNITY ══ */}
-        {activeTab === 'community' && (
-          <div className="tab-page fade-in container">
-            <h2 className="section-title">{settings.sectionCommunityTitle || 'Community Wall'}</h2>
-            <p style={{ textAlign: 'center', marginBottom: '3rem', color: 'var(--text-secondary)' }}>
-              Real problems spotted by the community. Click any card to contribute your solution idea.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px', margin: '0 auto' }}>
-              {featuredSuggestions.length > 0 ? featuredSuggestions.map((s: any) => {
-                const isOpen = openContrib === s.id;
-                const cardContribs = contributions[s.id] || [];
-                return (
-                  <div key={s.id} className="glass-card community-card" style={{ cursor: 'default' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                      <div style={{ flex: 1 }}>
-                        <span className="community-author">{s.userName || 'Anonymous'}</span>
-                        <h3 className="project-title" style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>"{s.problem}"</h3>
-                        {s.solution && <p className="project-desc" style={{ fontStyle: 'italic', marginTop: '0.4rem' }}>Original idea: {s.solution}</p>}
-                      </div>
-                      <button
-                        onClick={() => { if (!isOpen) { setOpenContrib(s.id); fetchContributions(s.id); } else setOpenContrib(null); }}
-                        className="btn"
-                        style={{ padding: '0.35rem 0.85rem', fontSize: '0.8rem', flexShrink: 0, background: isOpen ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${isOpen ? 'var(--accent)' : 'var(--glass-border)'}`, color: isOpen ? '#93c5fd' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        {isOpen ? 'Close' : `Ideas (${cardContribs.length || '?'})`}
-                      </button>
-                    </div>
-
-                    {isOpen && (
-                      <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.25rem' }}>
-                        {cardContribs.length > 0 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
-                            {cardContribs.map((c: any) => (
-                              <div key={c.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg,#3b82f6,#8b5cf6)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>
-                                  {(c.contributorName || 'A')[0].toUpperCase()}
-                                </div>
-                                <div>
-                                  <span className="community-author" style={{ fontSize: '1rem' }}>{c.contributorName || 'Anonymous'}</span>
-                                  <p style={{ color: '#e2e8f0', fontSize: '0.92rem', marginTop: '0.15rem', lineHeight: 1.5 }}>{c.text}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1rem' }}>No ideas yet — be the first!</p>
-                        )}
-                        <form onSubmit={(e) => handleContribSubmit(e, s.id)} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                          <textarea className="form-control" value={contribText} onChange={e => setContribText(e.target.value)} required placeholder="Your idea to solve this..." style={{ minHeight: '65px', fontSize: '0.92rem' }} />
-                          <div style={{ display: 'flex', gap: '0.6rem' }}>
-                            <input type="text" className="form-control" value={contribName} onChange={e => setContribName(e.target.value)} placeholder="Your name (optional)" style={{ flex: 1, fontSize: '0.88rem' }} />
-                            <button type="submit" className="btn btn-primary" disabled={contribSubmitting} style={{ flexShrink: 0, padding: '0.45rem 1.1rem', fontSize: '0.88rem' }}>
-                              {contribSubmitting ? '...' : 'Post'}
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-                  </div>
-                );
-              }) : (
-                <div className="glass-card" style={{ textAlign: 'center' }}>
-                  <p style={{ color: 'var(--text-secondary)' }}>No featured ideas yet. Submit yours in the Suggest tab!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-
-        {/* ══ JOIN ══ */}
-        {activeTab === 'join' && (
-          <div className="tab-page fade-in container">
-            <h2 className="section-title">🤝 Join WhizzyX</h2>
-            <p style={{ textAlign: 'center', marginBottom: '3rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 3rem' }}>
-              Interested in building real-world solutions together? Share your details and we'll reach out.
-            </p>
-            <div className="glass-card" style={{ maxWidth: '680px', margin: '0 auto', border: '1px solid rgba(139,92,246,0.3)' }}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <span className="human-touch" style={{ fontSize: '1.4rem' }}>Tell us about yourself ✍️</span>
+          {/* ══ INQUIRY TAB ══ */}
+          {activeTab === 'inquiry' && (
+            <div className="fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
+              <div className="mb-12">
+                <h1 style={{ fontSize: '36px', fontWeight: 800 }}>Corporate Inquiry</h1>
+                <p className="text-muted">Connect with WhizzyX for strategic partnerships, system licensing, or custom architectural consulting.</p>
               </div>
-              <form onSubmit={handleJoinSubmit}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label htmlFor="joinName">Full Name *</label>
-                    <input id="joinName" type="text" className="form-control" value={joinName} onChange={e => setJoinName(e.target.value)} required placeholder="Your name" />
+              <div className="card" style={{ padding: '48px', background: 'white' }}>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setInquirySubmitting(true);
+                  // Mock submission
+                  setTimeout(() => {
+                    setInquiryResult('✓ Inquiry received. Our technical team will reach out shortly.');
+                    setInInquiryName(''); setInquiryCompany(''); setInquiryEmail(''); setInquiryMsg('');
+                    setInquirySubmitting(false);
+                    setTimeout(() => setInquiryResult(''), 5000);
+                  }, 1500);
+                }}>
+                  <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                    <div className="form-group">
+                      <label className="label">Full Name</label>
+                      <input type="text" className="form-control" value={inquiryName} onChange={e => setInInquiryName(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Company Name</label>
+                      <input type="text" className="form-control" value={inquiryCompany} onChange={e => setInquiryCompany(e.target.value)} required />
+                    </div>
                   </div>
                   <div className="form-group">
-                    <label htmlFor="joinEmail">Email *</label>
-                    <input id="joinEmail" type="email" className="form-control" value={joinEmail} onChange={e => setJoinEmail(e.target.value)} required placeholder="you@example.com" />
+                    <label className="label">Corporate Email</label>
+                    <input type="email" className="form-control" value={inquiryEmail} onChange={e => setInquiryEmail(e.target.value)} required />
                   </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="joinSkills">Your Skills / Expertise *</label>
-                  <input id="joinSkills" type="text" className="form-control" value={joinSkills} onChange={e => setJoinSkills(e.target.value)} required placeholder="e.g. Python, Hardware, UI Design, Electronics..." />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="joinWhy">Why do you want to be part of WhizzyX? *</label>
-                  <textarea id="joinWhy" className="form-control" value={joinWhy} onChange={e => setJoinWhy(e.target.value)} required placeholder="What draws you to this? What can you bring?" />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="joinPortfolio">Portfolio / GitHub / LinkedIn (Optional)</label>
-                  <input id="joinPortfolio" type="text" className="form-control" value={joinPortfolio} onChange={e => setJoinPortfolio(e.target.value)} placeholder="https://..." />
-                </div>
-                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                  <button type="submit" className="btn btn-primary" disabled={joinSubmitting} style={{ background: 'linear-gradient(45deg, #8b5cf6, #3b82f6)' }}>
-                    {joinSubmitting ? 'Sending...' : 'Send Application'}
+                  <div className="form-group">
+                    <label className="label">Message / Objective</label>
+                    <textarea className="form-control" rows={5} value={inquiryMsg} onChange={e => setInquiryMsg(e.target.value)} required placeholder="Describe your collaborative goals..." />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '12px', fontWeight: 800 }} disabled={inquirySubmitting}>
+                    {inquirySubmitting ? 'TRANSMITTING...' : 'SEND CORPORATE INQUIRY'}
                   </button>
-                  {joinMsg && <p style={{ marginTop: '1rem', color: joinMsg.startsWith('✓') ? '#10b981' : '#ef4444' }}>{joinMsg}</p>}
-                </div>
-              </form>
+                  {inquiryResult && <p className="mt-4 mono" style={{ color: 'var(--status-success)', fontSize: '13px' }}>{inquiryResult}</p>}
+                </form>
+              </div>
+              <div className="mt-8 p-6 mono" style={{ background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                DIRECT_CHANNEL: {settings.contactEmail || 'contact@whizzyx.corp'}
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* ══ SUGGEST ══ */}
-        {activeTab === 'suggest' && (
-          <div className="tab-page fade-in container">
-            <h2 className="section-title">{settings.sectionSuggestTitle || 'Got a Problem to Solve?'}</h2>
-            <p className="header-tagline" style={{ textAlign: 'center', marginBottom: '3rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 3rem' }}>
-              Spotted an inefficiency in daily life? Share it — the best ideas get featured on the Community Wall.
-            </p>
-            <div className="glass-card" style={{ maxWidth: '680px', margin: '0 auto' }}>
-              <form onSubmit={handleSuggestSubmit}>
-                <div className="form-group">
-                  <label htmlFor="problem">What daily friction or inefficiency did you notice? *</label>
-                  <textarea id="problem" className="form-control" value={problem} onChange={e => setProblem(e.target.value)} required placeholder="Describe the problem..." />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="solution">Any idea how to solve it?</label>
-                  <textarea id="solution" className="form-control" value={solution} onChange={e => setSolution(e.target.value)} placeholder="Your idea or leave blank..." />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label htmlFor="userName">Name / Alias (Optional)</label>
-                    <input id="userName" type="text" className="form-control" value={userName} onChange={e => setUserName(e.target.value)} placeholder="Anonymous" />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="email">Email (Optional)</label>
-                    <input id="email" type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
-                  </div>
-                </div>
-                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                  <button type="submit" className="btn btn-primary" disabled={submitting}>
-                    {submitting ? 'Submitting...' : 'Submit Suggestion'}
-                  </button>
-                  {suggestMsg && <p style={{ marginTop: '1rem', color: suggestMsg.startsWith('✓') ? '#10b981' : '#ef4444' }}>{suggestMsg}</p>}
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
+          )}
+        </main>
       </div>
-    </>
+    </div>
   );
 }
