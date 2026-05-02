@@ -595,7 +595,7 @@ export default function Home() {
                       <div className="badge mb-6" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '10px', fontWeight: 800 }}>ACTIVE EXPEDITION</div>
                       <h2 style={{ fontSize: '40px', fontWeight: 800, marginBottom: '20px', color: '#fff', letterSpacing: '-0.03em' }}>{focus?.problem || 'Architecting Excellence'}</h2>
                       <div className="prose mb-10" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '17px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        <RenderContent content={focus?.milestone || 'Executing high-priority system architectural upgrades and performance optimization.'} />
+                        <RenderContent content={focus?.blurb || focus?.milestone || 'Executing high-priority system architectural upgrades and performance optimization.'} />
                       </div>
                       <button onClick={() => setActiveTab('focus')} className="btn" style={{ height: '48px', padding: '0 28px', background: '#fff', color: '#000', borderRadius: '10px', fontSize: '13px', fontWeight: 800 }}>
                         READ FULL MISSION
@@ -730,7 +730,8 @@ export default function Home() {
                         {(() => {
                           const title = focus.problem || '';
                           const desc = focus.description || '';
-                          const summary = focus.milestone || '';
+                          const blurb = focus.blurb || '';
+                          const milestone = focus.milestone || '';
                           
                           if (isFocusExpanded) {
                             return (
@@ -745,10 +746,16 @@ export default function Home() {
                                     <RenderContent content={desc} />
                                   </div>
                                 )}
-                                {summary && summary !== title && summary !== desc && (
-                                  <div>
+                                {blurb && blurb !== title && blurb !== desc && (
+                                  <div className="mb-6">
                                     <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[SUMMARY_BLURB]</div>
-                                    <RenderContent content={summary} />
+                                    <RenderContent content={blurb} />
+                                  </div>
+                                )}
+                                {milestone && milestone !== title && milestone !== desc && milestone !== blurb && (
+                                  <div>
+                                    <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[ROADMAP_MILESTONE]</div>
+                                    <RenderContent content={milestone} />
                                   </div>
                                 )}
                               </div>
@@ -757,7 +764,8 @@ export default function Home() {
                           
                           // Collapsed: Find a non-title blurb
                           let collapsedText = 'Technical deep-dive into system architectural upgrades and performance optimization.';
-                          if (summary && summary.trim() !== title.trim()) collapsedText = summary;
+                          if (blurb && blurb.trim() !== title.trim()) collapsedText = blurb;
+                          else if (milestone && milestone.trim() !== title.trim()) collapsedText = milestone;
                           else if (desc && desc.trim() !== title.trim()) collapsedText = desc;
                           else if (title.includes('\n')) collapsedText = title.split('\n').slice(1).join(' ');
                           

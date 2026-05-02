@@ -4,15 +4,19 @@ import { prisma } from '@/lib/prisma';
 export async function POST() {
   try {
     // Find the current latest non-hibernated focus
-    const activeFocusList = await prisma.$queryRawUnsafe(`SELECT * FROM "CurrentFocus" WHERE status != 'Hibernated' ORDER BY id DESC LIMIT 1`);
-    const focus = Array.isArray(activeFocusList) && activeFocusList.length > 0 ? activeFocusList[0] : null;
+    const focus = await prisma.currentFocus.findFirst({
+      where: {
+        status: { not: 'Hibernated' }
+      },
+      orderBy: { id: 'desc' }
+    });
 
     if (focus) {
       // Hibernate all missions with this same problem title to prevent duplicates from resurfacing
-      await prisma.$executeRawUnsafe(
-        `UPDATE "CurrentFocus" SET status = 'Hibernated' WHERE problem = $1`,
-        focus.problem
-      );
+      await prisma.currentFocus.updateMany({
+        where: { problem: focus.problem },
+        data: { status: 'Hibernated' }
+      });
       return NextResponse.json({ success: true, message: 'Mission hibernated' });
     }
 

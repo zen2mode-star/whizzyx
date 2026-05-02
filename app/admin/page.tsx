@@ -22,7 +22,7 @@ export default function AdminDashboard() {
   const [quotes, setQuotes] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
   const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
-  const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '', milestone: '', finalDestination: '' });
+  const [focus, setFocus] = useState({ id: null, problem: '', description: '', blurb: '', status: 'Noticing & Researching', projectId: '', milestone: '', finalDestination: '' });
   const [settings, setSettings] = useState<Record<string, string>>({
     sectionProjectsTitle: 'Featured Projects',
     sectionCommunityTitle: 'Community Wall',
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   // Full-Screen Editor State
   const [isFSOpen, setIsFSOpen] = useState(false);
   const [fsContent, setFSContent] = useState('');
-  const [fsTarget, setFSTarget] = useState<'focus' | 'project' | 'blog' | 'update' | 'settings_subtitle' | 'homeHeroTitle' | 'founderBio' | 'quote' | 'focus_milestone' | null>(null);
+  const [fsTarget, setFSTarget] = useState<'focus' | 'project' | 'blog' | 'update' | 'settings_subtitle' | 'homeHeroTitle' | 'founderBio' | 'quote' | 'focus_milestone' | 'focus_blurb' | null>(null);
   const [fsFontSize, setFSFontSize] = useState(18);
   const fsTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -83,6 +83,7 @@ export default function AdminDashboard() {
     if (fsTarget === 'founderBio') setSettings(prev => ({ ...prev, founderBio: fsContent }));
     if (fsTarget === 'quote') setQuoteText(fsContent);
     if (fsTarget === 'focus_milestone') setFocus(prev => ({ ...prev, milestone: fsContent }));
+    if (fsTarget === 'focus_blurb') setFocus(prev => ({ ...prev, blurb: fsContent }));
     setIsFSOpen(false);
   };
 
@@ -237,22 +238,26 @@ export default function AdminDashboard() {
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
     fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
-    fetch('/api/focus?status=all').then(r => r.json()).then(data => {
+    fetch('/api/focus?status=all&t=' + Date.now()).then(r => r.json()).then(data => {
       if (Array.isArray(data)) {
         const active = data.find((f: any) => f.status !== 'Hibernated');
         const hibernated = data.filter((f: any) => f.status === 'Hibernated');
         if (active) {
           setFocus({ 
+            id: active.id,
             problem: active.problem, 
             description: active.description || '',
+            blurb: active.blurb || '',
             status: active.status || 'Active',
             projectId: active.projectId?.toString() || '',
             milestone: active.milestone || '',
             finalDestination: active.finalDestination || ''
           });
-          if (active.projectId) setUpdateProjectId(active.projectId.toString());
+          setUpdateProjectId('__FOCUS__');
+          setFinalDestination(active.finalDestination || '');
         } else {
-          setFocus({ problem: '', description: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+          setFocus({ id: null, problem: '', description: '', blurb: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+          setUpdateProjectId('');
         }
         setHibernatedMissions(hibernated);
       }
@@ -679,12 +684,12 @@ export default function AdminDashboard() {
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <label className="label" style={{ margin: 0 }}>Home Page Short Summary (Blurb)</label>
-                        <button type="button" onClick={() => openFS(focus.milestone || '', 'focus_milestone')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                        <button type="button" onClick={() => openFS(focus.blurb || '', 'focus_blurb')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
                       </div>
                       <textarea 
                         className="form-control" 
-                        value={focus.milestone || ''} 
-                        onChange={e => setFocus({ ...focus, milestone: e.target.value })} 
+                        value={focus.blurb || ''} 
+                        onChange={e => setFocus({ ...focus, blurb: e.target.value })} 
                         placeholder="A short hook for the home page card..." 
                         style={{ fontSize: '15px', fontWeight: 600, minHeight: '60px' }}
                       />
@@ -764,7 +769,7 @@ export default function AdminDashboard() {
                         const res = await fetch('/api/focus/hibernate', { method: 'POST' });
                         if (res.ok) {
                           flash('focus', '✓ Mission hibernated.');
-                          setFocus({ problem: '', description: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+                          setFocus({ id: null, problem: '', description: '', blurb: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
                           fetchAll();
                         }
                       }}
