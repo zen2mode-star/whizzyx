@@ -131,6 +131,21 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
     synthRef.current.speak(utterance);
   };
 
+  const closeUpdate = () => {
+    isManuallyClosed.current = true;
+    if (synthRef.current) synthRef.current.cancel();
+    setSelectedUpdate(null);
+    setIsSpeaking(false);
+    setTitleHighlightChar(-1);
+    setContentHighlightChar(-1);
+  };
+
+  const handleMainClose = () => {
+    isManuallyClosed.current = true;
+    if (synthRef.current) synthRef.current.cancel();
+    if (onClose) onClose();
+  };
+
   const handlePush = (targetIdx?: number) => {
     if (isWalking || updates.length === 0) return;
     const nextIdx = targetIdx !== undefined ? targetIdx : (currentIdx + 1) % updates.length;
@@ -181,7 +196,7 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
         
         .signpost { cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .signpost:hover { transform: scale(1.1) translateY(-10px); z-index: 50; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 24px; }
+        .update-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 24px; }
         .push-button { background: #fff; color: #000; border: 3px solid #000; padding: 12px 24px; font-weight: 900; font-size: 14px; letter-spacing: 0.1em; cursor: pointer; box-shadow: 6px 6px 0 #333; transition: all 0.2s; position: relative; overflow: hidden; }
         .push-button:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 #444; }
         .push-button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #111; }
@@ -209,7 +224,7 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
           </button>
           {onClose && (
             <button 
-              onClick={onClose} 
+              onClick={handleMainClose} 
               className="push-button mono" 
               style={{ background: '#222', color: '#fff', borderColor: '#444', padding: '10px 20px', fontSize: '11px' }}
             >
@@ -295,16 +310,14 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
       </div>
 
       {selectedUpdate && (
-        <div className="modal-overlay" onClick={() => { isManuallyClosed.current = true; setSelectedUpdate(null); if (synthRef.current) synthRef.current.cancel(); }}>
-          <div style={{ background: '#fff', color: '#000', maxWidth: '800px', width: '100%', padding: '64px', borderRadius: '4px', position: 'relative', border: '3px solid #000', boxShadow: '16px 16px 0 #222' }} onClick={e => e.stopPropagation()}>
+        <div className="update-modal-overlay" onClick={closeUpdate}>
+          <div style={{ background: '#fff', color: '#000', maxWidth: '800px', width: '100%', padding: '64px', borderRadius: '4px', position: 'relative', border: '3px solid #000', boxShadow: '16px 16px 0 #222', zIndex: 10000 }} onClick={e => e.stopPropagation()}>
             <button 
               onClick={(e) => {
                 e.stopPropagation();
-                isManuallyClosed.current = true;
-                setSelectedUpdate(null);
-                if (synthRef.current) synthRef.current.cancel();
+                closeUpdate();
               }}
-              style={{ position: 'absolute', top: '20px', right: '20px', background: '#000', color: '#fff', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 900, fontSize: '12px', zIndex: 1100 }}
+              style={{ position: 'absolute', top: '20px', right: '20px', background: '#000', color: '#fff', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 900, fontSize: '12px', zIndex: 11000 }}
             >
               CLOSE_X
             </button>

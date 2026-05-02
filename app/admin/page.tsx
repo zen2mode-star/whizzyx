@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   // Full-Screen Editor State
   const [isFSOpen, setIsFSOpen] = useState(false);
   const [fsContent, setFSContent] = useState('');
-  const [fsTarget, setFSTarget] = useState<'focus' | 'project' | 'blog' | 'update' | 'settings_subtitle' | 'homeHeroTitle' | 'founderBio' | null>(null);
+  const [fsTarget, setFSTarget] = useState<'focus' | 'project' | 'blog' | 'update' | 'settings_subtitle' | 'homeHeroTitle' | 'founderBio' | 'quote' | 'focus_milestone' | null>(null);
   const [fsFontSize, setFSFontSize] = useState(18);
   const fsTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -74,13 +74,15 @@ export default function AdminDashboard() {
   };
 
   const saveFS = () => {
-    if (fsTarget === 'focus') setFocus({ ...focus, description: fsContent });
+    if (fsTarget === 'focus') setFocus(prev => ({ ...prev, description: fsContent }));
     if (fsTarget === 'project') setDescription(fsContent);
     if (fsTarget === 'blog') setBlogContent(fsContent);
     if (fsTarget === 'update') setUpdateContent(fsContent);
-    if (fsTarget === 'settings_subtitle') setSettings({ ...settings, heroSubtitle: fsContent });
-    if (fsTarget === 'homeHeroTitle') setSettings({ ...settings, homeHeroTitle: fsContent });
-    if (fsTarget === 'founderBio') setSettings({ ...settings, founderBio: fsContent });
+    if (fsTarget === 'settings_subtitle') setSettings(prev => ({ ...prev, heroSubtitle: fsContent }));
+    if (fsTarget === 'homeHeroTitle') setSettings(prev => ({ ...prev, homeHeroTitle: fsContent }));
+    if (fsTarget === 'founderBio') setSettings(prev => ({ ...prev, founderBio: fsContent }));
+    if (fsTarget === 'quote') setQuoteText(fsContent);
+    if (fsTarget === 'focus_milestone') setFocus(prev => ({ ...prev, milestone: fsContent }));
     setIsFSOpen(false);
   };
 
@@ -675,13 +677,16 @@ export default function AdminDashboard() {
                     <input type="text" className="form-control" value={focus.problem} onChange={e => setFocus({ ...focus, problem: e.target.value })} required style={{ fontSize: '18px', fontWeight: 600, height: '50px' }} />
                   </div>
                     <div className="form-group">
-                      <label className="label">Home Page Short Summary (Blurb)</label>
-                      <input 
-                        type="text" className="form-control" 
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label className="label" style={{ margin: 0 }}>Home Page Short Summary (Blurb)</label>
+                        <button type="button" onClick={() => openFS(focus.milestone || '', 'focus_milestone')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                      </div>
+                      <textarea 
+                        className="form-control" 
                         value={focus.milestone || ''} 
                         onChange={e => setFocus({ ...focus, milestone: e.target.value })} 
                         placeholder="A short hook for the home page card..." 
-                        style={{ fontSize: '15px', fontWeight: 600, height: '45px' }}
+                        style={{ fontSize: '15px', fontWeight: 600, minHeight: '60px' }}
                       />
                     </div>
                   <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -772,6 +777,49 @@ export default function AdminDashboard() {
                   {msg.focus && <p className="mt-4 mono text-muted" style={{ fontSize: '12px', color: 'var(--status-success)' }}>{msg.focus}</p>}
                 </form>
               </div>
+
+              {hibernatedMissions.length > 0 && (
+                <div className="mt-12">
+                  <div className="technical-label mb-4" style={{ opacity: 0.6 }}>[ARCHIVED_MISSION_LOGS]</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {hibernatedMissions.map(m => (
+                      <div key={m.id} className="card" style={{ padding: '24px', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderStyle: 'dashed' }}>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '4px' }}>{m.problem}</div>
+                          <div className="mono text-muted" style={{ fontSize: '10px' }}>HIBERNATED ON {new Date(m.updatedAt || Date.now()).toLocaleDateString().toUpperCase()}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            className="btn" 
+                            style={{ borderColor: 'var(--status-active)', color: 'var(--status-active)', fontWeight: 800, fontSize: '11px' }}
+                            onClick={async () => {
+                              if (!confirm('Re-activate this mission?')) return;
+                              const res = await fetch('/api/focus', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ ...m, status: 'Active' }),
+                              });
+                              if (res.ok) fetchAll();
+                            }}
+                          >
+                            RESTORE MISSION
+                          </button>
+                          <button 
+                            className="btn" 
+                            style={{ borderColor: '#ef4444', color: '#ef4444', fontWeight: 800, fontSize: '11px' }}
+                            onClick={async () => {
+                              if (!confirm('PERMANENT DELETION: Are you sure you want to delete this archived mission?')) return;
+                              const res = await fetch(`/api/focus/${m.id}`, { method: 'DELETE' });
+                              if (res.ok) fetchAll();
+                            }}
+                          >
+                            DELETE
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1115,7 +1163,10 @@ export default function AdminDashboard() {
                   <h3 className="mb-6">{editingQuote ? 'Edit Quote' : 'New Quote'}</h3>
                   <form onSubmit={handleAddQuote}>
                     <div className="form-group">
-                      <label className="label">Insight Text</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label className="label" style={{ margin: 0 }}>Insight Text</label>
+                        <button type="button" onClick={() => openFS(quoteText, 'quote')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                      </div>
                       <textarea className="form-control" rows={4} value={quoteText} onChange={e => setQuoteText(e.target.value)} required />
                     </div>
                     <div className="form-group">

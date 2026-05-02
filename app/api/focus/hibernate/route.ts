@@ -8,10 +8,10 @@ export async function POST() {
     const focus = Array.isArray(activeFocusList) && activeFocusList.length > 0 ? activeFocusList[0] : null;
 
     if (focus) {
-      // Hibernate it
+      // Hibernate all missions with this same problem title to prevent duplicates from resurfacing
       await prisma.$executeRawUnsafe(
-        `UPDATE "CurrentFocus" SET status = 'Hibernated' WHERE id = $1`,
-        focus.id
+        `UPDATE "CurrentFocus" SET status = 'Hibernated' WHERE problem = $1`,
+        focus.problem
       );
       return NextResponse.json({ success: true, message: 'Mission hibernated' });
     }

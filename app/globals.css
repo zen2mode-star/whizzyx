@@ -3,26 +3,34 @@
 :root {
   /* Colors */
   --bg-primary: #ffffff;
-  --bg-secondary: #fbfbfc;
+  --bg-secondary: #fafafa;
   --bg-tertiary: #f3f4f6;
-  --text-primary: #111111;
-  --text-secondary: #555555;
+  --text-primary: #0a0a0a;
+  --text-secondary: #4a4a4a;
   --text-muted: #888888;
   --border-color: #eeeeee;
+  
+  /* Monochrome Depth */
+  --obsidian: #0a0a0a;
+  --charcoal: #1a1a1a;
+  --slate: #2a2a2a;
+  --silver: #f0f0f2;
+  --ghost: #fafafa;
+
+  /* Precision Accents */
   --accent: #000000;
-  --accent-hover: #333333;
+  --accent-hover: #1a1a1a;
   --accent-foreground: #FFFFFF;
-  --status-success: #10B981;
-  --status-success-bg: #ECFDF5;
-  --status-warning: #F59E0B;
-  --status-warning-bg: #FFFBEB;
-  --status-info: #3B82F6;
-  --status-info-bg: #EFF6FF;
+  --status-active: #10B981;
+  --status-active-glow: rgba(16, 185, 129, 0.2);
+  --status-hibernated: #F59E0B;
+  --status-hibernated-glow: rgba(245, 158, 11, 0.15);
+  
   --radius: 12px;
-  --header-height: 64px;
-  --sidebar-width: 260px;
+  --header-height: 72px;
+  --sidebar-width: 280px;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
 
   /* Spacing (8px Grid) */
   --space-1: 0.25rem; /* 4px */

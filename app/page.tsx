@@ -99,6 +99,7 @@ export default function Home() {
 
   const [projects, setProjects]                   = useState([]);
   const [focus, setFocus]                         = useState<any>(null);
+  const [otherActiveMissions, setOtherActiveMissions] = useState<any[]>([]);
   const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
   const [featuredSuggestions, setFeaturedSugg]    = useState([]);
   const [quotes, setQuotes]                       = useState<any[]>([]);
@@ -149,7 +150,19 @@ export default function Home() {
     fetch('/api/projects').then(r => r.json()).then(setProjects).catch(console.error);
     fetch('/api/focus?status=all&t=' + Date.now()).then(r => r.json()).then(data => {
       if (Array.isArray(data)) {
-        setFocus(data.find((f: any) => f.status !== 'Hibernated') || null);
+        const active = data.filter((f: any) => f.status !== 'Hibernated');
+        // Filter for unique problems to avoid duplicates in the UI
+        const uniqueActive: any[] = [];
+        const seenProblems = new Set();
+        active.forEach(m => {
+          if (!seenProblems.has(m.problem)) {
+            uniqueActive.push(m);
+            seenProblems.add(m.problem);
+          }
+        });
+        
+        setFocus(uniqueActive[0] || null);
+        setOtherActiveMissions(uniqueActive.slice(1));
         setHibernatedMissions(data.filter((f: any) => f.status === 'Hibernated'));
       } else {
         setFocus(data);
@@ -234,6 +247,26 @@ export default function Home() {
           z-index: 50;
           pointer-events: none;
         }
+        .technical-label {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.2em;
+          color: var(--text-muted);
+          text-transform: uppercase;
+        }
+        .status-pulse {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--status-active);
+          box-shadow: 0 0 8px var(--status-active-glow);
+          animation: pulse 2s infinite;
+        }
+        .status-pulse-hibernated {
+          background: var(--status-hibernated);
+          box-shadow: 0 0 8px var(--status-hibernated-glow);
+        }
         .cat-inner {
           animation: leapCat 0.8s ease-in-out infinite;
           display: block;
@@ -293,14 +326,35 @@ export default function Home() {
           position: relative;
           background: #fff;
           border: 1px solid var(--border-color);
-          border-radius: 24px;
-          padding: 40px;
+          border-radius: 20px;
+          padding: 32px;
           overflow: hidden;
           transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+          box-shadow: var(--shadow-sm);
           display: flex;
           flex-direction: column;
           justify-content: center;
+        }
+        .technical-card:hover {
+          border-color: var(--obsidian);
+          transform: translateY(-4px);
+          box-shadow: var(--shadow-md);
+        }
+        .card-obsidian {
+          background: var(--obsidian);
+          color: #fff;
+          border-color: var(--charcoal);
+        }
+        .scan-line {
+          position: absolute;
+          left: 0;
+          width: 100%;
+          height: 1px;
+          background: rgba(255,255,255,0.1);
+          box-shadow: 0 0 12px 1px rgba(255,255,255,0.15);
+          animation: scanLine 4s linear infinite;
+          pointer-events: none;
+          z-index: 10;
         }
         .technical-card::before {
           content: "";
@@ -533,72 +587,37 @@ export default function Home() {
                 </div>
               </section>
 
-              <div className="featured-grid">
-                <div className={`featured-card ${isFocusExpanded ? 'expanded' : ''}`} style={{ transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)', height: isFocusExpanded ? 'auto' : '400px', cursor: 'default' }}>
-                  <div style={{ flex: 1 }}>
-                    <span className="badge badge-info" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', marginBottom: '20px' }}>
-                      {settings.homeActiveExpeditionLabel || 'ACTIVE EXPEDITION'}
-                    </span>
-                    <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 800, marginBottom: '12px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                      {focus?.problem && focus.problem.length > 50 ? focus.problem.split('\n')[0].substring(0, 50) + '...' : (focus?.problem || 'Architecting Excellence')}
-                    </h2>
-                    
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px', lineHeight: '1.6', maxWidth: '500px' }}>
-                      {isFocusExpanded ? (
-                        <div className="fade-in prose prose-invert" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                           <RenderContent content={focus?.description || focus?.problem} />
-                        </div>
-                      ) : (
-                        <p style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                          {(() => {
-                            const title = focus?.problem || '';
-                            const summary = focus?.milestone || '';
-                            const desc = focus?.description || '';
-                            
-                            // If summary is just the title, look for description
-                            if (summary.trim() === title.trim() || !summary) {
-                              if (desc && desc.trim() !== title.trim()) return desc;
-                              return 'Technical deep-dive into system architectural upgrades and performance optimization.';
-                            }
-                            return summary;
-                          })()}
-                        </p>
-                      )}
+              {focus && (
+                <div className="grid" style={{ gridTemplateColumns: '1.6fr 1fr', gap: '32px', marginBottom: '64px' }}>
+                  <div className="technical-card card-obsidian" style={{ padding: '48px', minHeight: '380px' }}>
+                    <div className="scan-line"></div>
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                      <div className="badge mb-6" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '10px', fontWeight: 800 }}>ACTIVE EXPEDITION</div>
+                      <h2 style={{ fontSize: '40px', fontWeight: 800, marginBottom: '20px', color: '#fff', letterSpacing: '-0.03em' }}>{focus?.problem || 'Architecting Excellence'}</h2>
+                      <div className="prose mb-10" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '17px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <RenderContent content={focus?.milestone || 'Executing high-priority system architectural upgrades and performance optimization.'} />
+                      </div>
+                      <button onClick={() => setActiveTab('focus')} className="btn" style={{ height: '48px', padding: '0 28px', background: '#fff', color: '#000', borderRadius: '10px', fontSize: '13px', fontWeight: 800 }}>
+                        READ FULL MISSION
+                      </button>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                    <button 
-                      onClick={() => { setActiveTab('focus'); setIsFocusExpanded(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-                      className="btn" 
-                      style={{ background: 'white', color: 'black', border: 'none', padding: '0 24px', height: '48px', fontSize: '13px', fontWeight: 800, borderRadius: '12px' }}
-                    >
-                      READ FULL MISSION
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div className="technical-card">
-                    <div className="scan-anim"></div>
-                    <div className="mono text-muted mb-4" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em' }}>{settings.homeSystemCapacityLabel || 'ACTIVE DEPLOYMENTS'}</div>
-                    <div className="mono" style={{ fontSize: '48px', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px' }}>{projects.length}</div>
-                    <div className="text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>{settings.homeSystemCapacitySub || 'LIVE IN PRODUCTION'}</div>
-                    <div style={{ position: 'absolute', bottom: '16px', right: '16px', opacity: 0.1 }}>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+                  <div className="flex flex-col gap-8">
+                    <div className="technical-card" style={{ background: 'var(--ghost)' }}>
+                      <div className="technical-label mb-2">ACTIVE DEPLOYMENTS</div>
+                      <div style={{ fontSize: '64px', fontWeight: 800, lineHeight: 1, color: 'var(--obsidian)' }}>{projects.length}</div>
+                      <div className="text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>LIVE IN PRODUCTION</div>
                     </div>
-                  </div>
-                  <div className="technical-card" style={{ background: '#000', color: '#fff' }}>
-                    <div className="scan-anim" style={{ background: 'linear-gradient(to right, transparent, #fff, transparent)', boxShadow: '0 0 15px #fff' }}></div>
-                    <div className="mono" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.5 }}>{settings.homeHealthLabel || 'ARCHITECTURAL HEALTH'}</div>
-                    <div className="mono" style={{ fontSize: '48px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>{settings.homeHealthValue || '99.8%'}</div>
-                    <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7 }}>{settings.homeHealthSub || 'UPTIME & OPTIMIZATION RATE'}</div>
-                    <div style={{ position: 'absolute', bottom: '16px', right: '16px', opacity: 0.2 }}>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <div className="technical-card card-obsidian">
+                      <div className="scan-line" style={{ animationDelay: '1.5s' }}></div>
+                      <div className="technical-label mb-2" style={{ opacity: 0.5 }}>ARCHITECTURAL HEALTH</div>
+                      <div style={{ fontSize: '64px', fontWeight: 800, lineHeight: 1 }}>{settings.homeHealthValue || '99.8%'}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7 }}>UPTIME & OPTIMIZATION RATE</div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <section className="mb-20">
                 <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.15em' }}>{settings.techStackTitle || 'TECHNOLOGY STACK'}</div>
@@ -682,265 +701,240 @@ export default function Home() {
             <div className="fade-in" style={{ maxWidth: '100%' }}>
               <div className="mb-12">
                 <h1 style={{ fontSize: '48px', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '8px' }}>Engineering Roadmap</h1>
-                <p className="text-muted" style={{ fontSize: '18px' }}>Technical build logs and architectural progress tracking.</p>
+                <p className="text-muted" style={{ fontSize: '18px' }}>Technical build logs</p>
               </div>
-
-              {focus && (
-                <div className="card mb-12" style={{ padding: '48px', background: 'white', borderLeft: '6px solid #111', borderRadius: '12px', border: '1px solid #eee', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <div className="mb-4 mono text-muted" style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.15em' }}>[SYSTEM://FOCUS_MISSION]</div>
-                      <div className="mb-6" style={{ display: 'inline-block', padding: '18px 36px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '8px 8px 0px #111' }}>
-                          <h2 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{focus.problem}</h2>
-                      </div>
-                    </div>
-                    {focus.projectId && (
-                      <div style={{ textAlign: 'right' }}>
-                        <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>[TARGET_MODULE]</div>
-                        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                          {(projects as any[]).find((p: any) => p.id.toString() === focus.projectId.toString())?.title || 'System Core'}
+              {focus && focus.status !== 'Hibernated' ? (
+                <>
+                  <div className="card mb-12" style={{ padding: '48px', background: 'white', borderLeft: '6px solid var(--obsidian)', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                          <div className={`status-pulse ${focus.status === 'Hibernated' ? 'status-pulse-hibernated' : ''}`}></div>
+                          <div className="technical-label">[SYSTEM://{focus.status?.toUpperCase() || 'MISSION_LOG'}]</div>
+                        </div>
+                        <div className="mb-6" style={{ display: 'inline-block', padding: '18px 36px', background: 'white', border: '2px solid var(--obsidian)', borderRadius: '4px', boxShadow: '8px 8px 0px var(--obsidian)' }}>
+                            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{focus.problem}</h2>
                         </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="prose" style={{ fontSize: '17px', color: '#444', lineHeight: '1.7', maxWidth: '1000px', position: 'relative' }}>
-                    <div style={isFocusExpanded ? {} : { display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {(() => {
-                        const title = focus.problem || '';
-                        const desc = focus.description || '';
-                        const summary = focus.milestone || '';
-                        
-                        if (isFocusExpanded) {
-                          return (
-                            <div className="fade-in">
-                              <div className="mb-6">
-                                <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[MISSION_OBJECTIVE]</div>
-                                <RenderContent content={title} />
-                              </div>
-                              {desc && desc !== title && (
+                      {focus.projectId && (
+                        <div style={{ textAlign: 'right' }}>
+                          <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>[TARGET_MODULE]</div>
+                          <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                            {(projects as any[]).find((p: any) => p.id.toString() === focus.projectId.toString())?.title || 'System Core'}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="prose" style={{ fontSize: '17px', color: '#444', lineHeight: '1.7', maxWidth: '1000px', position: 'relative' }}>
+                      <div style={isFocusExpanded ? {} : { display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {(() => {
+                          const title = focus.problem || '';
+                          const desc = focus.description || '';
+                          const summary = focus.milestone || '';
+                          
+                          if (isFocusExpanded) {
+                            return (
+                              <div className="fade-in">
                                 <div className="mb-6">
-                                  <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[TECHNICAL_LOG_DETAILS]</div>
-                                  <RenderContent content={desc} />
+                                  <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[MISSION_OBJECTIVE]</div>
+                                  <RenderContent content={title} />
                                 </div>
-                              )}
-                              {summary && summary !== title && summary !== desc && (
-                                <div>
-                                  <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[SUMMARY_BLURB]</div>
-                                  <p>{summary}</p>
-                                </div>
-                              )}
+                                {desc && desc !== title && (
+                                  <div className="mb-6">
+                                    <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[TECHNICAL_LOG_DETAILS]</div>
+                                    <RenderContent content={desc} />
+                                  </div>
+                                )}
+                                {summary && summary !== title && summary !== desc && (
+                                  <div>
+                                    <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[SUMMARY_BLURB]</div>
+                                    <RenderContent content={summary} />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+                          
+                          // Collapsed: Find a non-title blurb
+                          let collapsedText = 'Technical deep-dive into system architectural upgrades and performance optimization.';
+                          if (summary && summary.trim() !== title.trim()) collapsedText = summary;
+                          else if (desc && desc.trim() !== title.trim()) collapsedText = desc;
+                          else if (title.includes('\n')) collapsedText = title.split('\n').slice(1).join(' ');
+                          
+                          return <RenderContent content={collapsedText} />;
+                        })()}
+                      </div>
+                      
+                      <button 
+                        onClick={() => setIsFocusExpanded(!isFocusExpanded)}
+                        style={{ 
+                          marginTop: '12px', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px', 
+                          background: 'none', 
+                          border: 'none', 
+                          color: 'var(--accent)', 
+                          fontWeight: 700, 
+                          fontSize: '13px', 
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
+                      >
+                        {isFocusExpanded ? 'COLLAPSE' : 'READ FULL MISSION'}
+                        <svg 
+                          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" 
+                          style={{ transform: isFocusExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}
+                        >
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end mb-8">
+                    <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                      <button 
+                        onClick={() => setViewMode('list')}
+                        style={{ 
+                          padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                          background: viewMode === 'list' ? 'var(--bg-primary)' : 'transparent',
+                          color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          boxShadow: viewMode === 'list' ? 'var(--shadow-sm)' : 'none',
+                          border: 'none', cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                      >
+                        LIST
+                      </button>
+                      <button 
+                        onClick={() => setShowFocusRoadmap(true)}
+                        style={{ 
+                          padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                          background: 'transparent',
+                          color: 'var(--text-secondary)',
+                          boxShadow: 'none',
+                          border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                          display: 'flex', alignItems: 'center'
+                        }}
+                      >
+                        3D MAP ↗
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* MILESTONE LIST VIEW */}
+                  {viewMode === 'list' && (
+                    <div className="fade-in mb-16">
+                      {(() => {
+                        const missionUpdates = updates.filter((u: any) => {
+                          const pid = focus.projectId;
+                          if (!pid) return !u.projectId;
+                          return u.projectId?.toString() === pid.toString();
+                        });
+
+                        if (missionUpdates.length === 0) {
+                          return (
+                            <div className="p-12 text-center" style={{ background: 'var(--bg-secondary)', borderRadius: '24px', border: '1px solid var(--border-color)' }}>
+                              <div className="mono text-muted mb-4" style={{ fontSize: '11px' }}>[SYSTEM_LOG://NO_MILESTONES_FOUND]</div>
+                              <p className="text-muted">No technical milestones have been logged for this mission yet.</p>
                             </div>
                           );
                         }
-                        
-                        // Collapsed: Find a non-title blurb
-                        if (summary && summary.trim() !== title.trim()) return summary;
-                        if (desc && desc.trim() !== title.trim()) return desc;
-                        if (title.includes('\n')) return title.split('\n').slice(1).join(' ');
-                        
-                        return 'Technical deep-dive into system architectural upgrades and performance optimization.';
+
+                        return (
+                          <div style={{ position: 'relative', paddingLeft: '48px' }}>
+                            <div style={{ position: 'absolute', left: '20px', top: '0', bottom: '0', width: '2px', background: 'var(--border-color)', opacity: 0.5 }}></div>
+                            
+                            <div className="flex flex-col gap-10">
+                              {missionUpdates.map((update: any, idx: number) => (
+                                <div key={update.id} className="relative">
+                                  <div style={{ 
+                                    position: 'absolute', left: '-36px', top: '4px', 
+                                    width: '18px', height: '18px', borderRadius: '50%', 
+                                    background: idx === 0 ? 'var(--accent)' : 'var(--bg-primary)', 
+                                    border: `3px solid ${idx === 0 ? 'var(--accent)' : 'var(--text-primary)'}`,
+                                    boxShadow: idx === 0 ? '0 0 12px var(--accent)' : 'none',
+                                    zIndex: 2
+                                  }}></div>
+                                  
+                                  <div className="card" style={{ padding: '32px', background: 'white' }}>
+                                    <div className="flex justify-between items-start mb-4">
+                                      <div>
+                                        <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[MILESTONE_LOG: {new Date(update.createdAt).toLocaleDateString()}]</div>
+                                        <h3 style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>{update.title}</h3>
+                                      </div>
+                                      <div className="badge" style={{ background: 'var(--bg-secondary)', fontSize: '10px' }}>#{missionUpdates.length - idx}</div>
+                                    </div>
+                                    <div className="prose" style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+                                      <RenderContent content={update.content} />
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
                       })()}
                     </div>
-                    
-                    <button 
-                      onClick={() => setIsFocusExpanded(!isFocusExpanded)}
-                      style={{ 
-                        marginTop: '12px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        background: 'none', 
-                        border: 'none', 
-                        color: 'var(--accent)', 
-                        fontWeight: 700, 
-                        fontSize: '13px', 
-                        cursor: 'pointer',
-                        padding: 0
-                      }}
-                    >
-                      {isFocusExpanded ? 'COLLAPSE' : 'READ FULL MISSION'}
-                      <svg 
-                        width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" 
-                        style={{ transform: isFocusExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}
-                      >
-                        <path d="M6 9l6 6 6-6" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              <div className="flex justify-end mb-8">
-                <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                  <button 
-                    onClick={() => setViewMode('list')}
-                    style={{ 
-                      padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
-                      background: viewMode === 'list' ? 'var(--bg-primary)' : 'transparent',
-                      color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                      boxShadow: viewMode === 'list' ? 'var(--shadow-sm)' : 'none',
-                      border: 'none', cursor: 'pointer', transition: 'all 0.2s'
-                    }}
-                  >
-                    LIST
-                  </button>
-                  <button 
-                    onClick={() => setShowFocusRoadmap(true)}
-                    style={{ 
-                      padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
-                      background: 'transparent',
-                      color: 'var(--text-secondary)',
-                      boxShadow: 'none',
-                      border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                      display: 'flex', alignItems: 'center'
-                    }}
-                  >
-                    3D MAP ↗
-                  </button>
-                </div>
-              </div>
-
-              {viewMode === 'list' ? (
-                <div className="relative pl-12" style={{ borderLeft: '2px solid var(--border-color)', minHeight: '100px' }}>
-                  {updates.map((upd: any) => (
-                    <div key={upd.id} className="timeline-item mb-12 relative">
-                      <div className="timeline-dot" style={{ width: '14px', height: '14px', left: '-51px', border: '3px solid var(--bg-primary)', background: 'var(--text-primary)' }}></div>
-                      <div className="timeline-card">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="badge mono" style={{ background: '#111', color: '#fff', fontSize: '10px', padding: '4px 10px', borderRadius: '4px' }}>
-                            LOGGED: {new Date(upd.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                          </div>
-                        </div>
-                        <div className="mb-6" style={{ display: 'inline-block', padding: '10px 24px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '5px 5px 0px #111' }}>
-                          <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>{upd.title}</h3>
-                        </div>
-                        <div className="prose" style={{ fontSize: '16px', lineHeight: '1.8', color: 'var(--text-secondary)' }}>
-                          <RenderContent content={upd.content} />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="relative overflow-x-auto py-12" style={{ background: '#0a0a0c', backgroundImage: 'radial-gradient(circle at 2px 2px, #1a1a1e 1px, transparent 0)', backgroundSize: '40px 40px', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: '0 40px 100px rgba(0,0,0,0.3)', position: 'relative' }}>
-                  <div style={{ position: 'sticky', left: '40px', top: '40px', zIndex: 100, pointerEvents: 'none' }}>
-                    <div className="mono" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4em', fontWeight: 800, textShadow: '0 0 10px rgba(0,0,0,0.5)' }}>OBJECTIVE_ALPHA</div>
-                    <div className="mono" style={{ fontSize: '26px', fontWeight: 900, color: '#fff', letterSpacing: '0.15em', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>{settings.missionTagline || 'CONQUER THE MARS'}</div>
-                  </div>
-                  <div style={{ minWidth: '2000px', height: '650px', position: 'relative' }}>
-                    <svg width="2000" height="650" viewBox="0 0 2000 650" fill="none">
-                      <path d="M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200" stroke="#000" strokeWidth="64" strokeLinecap="round" />
-                      <path d="M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200" stroke="#222" strokeWidth="60" strokeLinecap="round" />
-                      <path d="M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200" stroke="white" strokeWidth="1" strokeDasharray="10 30" strokeLinecap="round" opacity="0.1" />
-                    </svg>
-
-                    <div className="walking-cat-road">
-                      <div className="cat-inner">
-                        <svg width="70" height="70" viewBox="0 0 100 100">
-                          {/* Tail */}
-                          <path className="cat-tail" d="M20 75 Q10 75 10 60 Q10 50 20 50" stroke="#000" strokeWidth="6" fill="none" strokeLinecap="round" />
-                          {/* Body (Black Back) */}
-                          <path d="M20 80 Q30 40 50 40 Q70 40 80 80" fill="#000" />
-                          {/* White Chest/Belly */}
-                          <path d="M40 80 Q50 50 60 80" fill="#fff" />
-                          {/* Head (Black) */}
-                          <circle cx="50" cy="35" r="24" fill="#000" />
-                          {/* White Muzzle */}
-                          <path d="M40 45 Q50 35 60 45 Q50 55 40 45" fill="#fff" />
-                          {/* Ears */}
-                          <path d="M30 22 L32 5 L45 18" fill="#000" />
-                          <path d="M70 22 L68 5 L55 18" fill="#000" />
-                          {/* Whiskers */}
-                          <path d="M35 42 L10 38" stroke="#fff" strokeWidth="1" opacity="0.6" />
-                          <path d="M35 45 L10 45" stroke="#fff" strokeWidth="1" opacity="0.6" />
-                          <path d="M35 48 L10 52" stroke="#fff" strokeWidth="1" opacity="0.6" />
-                          <path d="M65 42 L90 38" stroke="#fff" strokeWidth="1" opacity="0.6" />
-                          <path d="M65 45 L90 45" stroke="#fff" strokeWidth="1" opacity="0.6" />
-                          <path d="M65 48 L90 52" stroke="#fff" strokeWidth="1" opacity="0.6" />
-                          {/* Eyes */}
-                          <circle cx="42" cy="32" r="4.5" fill="#fff" />
-                          <circle cx="58" cy="32" r="4.5" fill="#fff" />
-                          <circle cx="42" cy="32" r="1.5" fill="#000" />
-                          <circle cx="58" cy="32" r="1.5" fill="#000" />
-                          {/* White Paws (Jumping) */}
-                          <circle cx="35" cy="85" r="7" fill="#fff" />
-                          <circle cx="65" cy="85" r="7" fill="#fff" />
-                        </svg>
-                      </div>
-                    </div>
-
-                    {updates.map((upd: any, index: number) => {
-                      const positions = [ { x: 100, y: 500 }, { x: 250, y: 350 }, { x: 400, y: 200 }, { x: 600, y: 200 }, { x: 800, y: 200 }, { x: 1000, y: 350 }, { x: 1200, y: 500 }, { x: 1400, y: 350 }, { x: 1600, y: 200 }, { x: 1800, y: 200 } ];
-                      const pos = positions[index % positions.length];
-                      return (
-                        <div 
-                          key={upd.id} 
-                          className="signpost" 
-                          onMouseEnter={() => setSelectedUpdate(upd)}
-                          onMouseLeave={() => setSelectedUpdate(null)}
-                          style={{ position: 'absolute', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)' }}
-                        >
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ 
-                              background: '#fff', color: '#000', padding: '10px 16px', borderRadius: '4px', 
-                              border: '2px solid #000', boxShadow: '4px 4px 0 #333', minWidth: '150px', textAlign: 'center' 
-                            }}>
-                              <div className="mono" style={{ fontSize: '9px', fontWeight: 900, marginBottom: '4px', color: '#666' }}>
-                                {new Date(upd.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                  {/* OTHER ACTIVE MISSIONS */}
+                  {otherActiveMissions.length > 0 && (
+                    <div className="mt-16 mb-16">
+                      <div className="mono text-muted mb-8" style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.3em' }}>[SYSTEM://PARALLEL_EXPEDITIONS]</div>
+                      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '32px' }}>
+                        {otherActiveMissions.map((mission: any) => (
+                          <div key={mission.id} className="card" style={{ padding: '32px', background: 'white', borderLeft: '4px solid var(--accent)' }}>
+                            <div className="flex justify-between items-start mb-4">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className="status-pulse"></div>
+                                <div className="technical-label">{mission.status?.toUpperCase()}</div>
                               </div>
-                              <div style={{ fontSize: '12px', fontWeight: 800 }}>
-                                {upd.title.length > 20 ? upd.title.substring(0, 18) + '...' : upd.title}
-                              </div>
+                              <button 
+                                onClick={() => {
+                                    // Swap this mission with the focus one
+                                    const oldFocus = focus;
+                                    setFocus(mission);
+                                    setOtherActiveMissions(prev => [...prev.filter(m => m.id !== mission.id), oldFocus].sort((a,b) => b.id - a.id));
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="mono" 
+                                style={{ fontSize: '10px', fontWeight: 800, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
+                              >
+                                [SWITCH_FOCUS]
+                              </button>
                             </div>
-                            <div style={{ width: '3px', height: '20px', background: '#fff' }}></div>
-                            <div style={{ width: '10px', height: '10px', background: '#fff', borderRadius: '50%', border: '2px solid #000' }}></div>
+                            <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '12px' }}>{mission.problem}</h3>
+                            <div className="prose mb-6" style={{ fontSize: '14px', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              <RenderContent content={mission.description} />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <div className="mono" style={{ fontSize: '10px', color: '#999' }}>LOG_ID: #{mission.id}</div>
+                                <button 
+                                    onClick={() => {
+                                        setFocus(mission); // Temporary focus for roadmap
+                                        setShowFocusRoadmap(true);
+                                    }}
+                                    style={{ background: 'none', border: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                                >
+                                    VIEW ROADMAP ↗
+                                </button>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Final Destination */}
-                    {focus.finalDestination && (
-                      <div 
-                        className="signpost" 
-                        style={{ position: 'absolute', left: 1900, top: 200, transform: 'translate(-50%, -100%)', cursor: 'pointer' }}
-                        onClick={() => {}}
-                      >
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <div style={{ 
-                            background: '#000', color: '#FFD700', padding: '12px 20px', borderRadius: '4px', 
-                            border: '2px solid #FFD700', boxShadow: '6px 6px 0 rgba(255, 215, 0, 0.2)', minWidth: '160px', textAlign: 'center' 
-                          }}>
-                            <div className="mono" style={{ fontSize: '9px', fontWeight: 900, marginBottom: '4px', color: '#aaa' }}>FINAL_DESTINATION</div>
-                            <div style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.05em' }}>{focus.finalDestination}</div>
-                          </div>
-                          <div style={{ width: '4px', height: '24px', background: '#FFD700' }}></div>
-                          <div style={{ width: '12px', height: '12px', background: '#000', borderRadius: '50%', border: '2px solid #FFD700' }}></div>
-                        </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                  <div className="mt-6 text-center mono text-muted" style={{ fontSize: '11px' }}>
-                    [SCROLL HORIZONTALLY] // [CLICK SIGNPOST FOR DETAILS]
-                  </div>
-                </div>
-              )}
-
-              {/* Detail Hover Card */}
-              {selectedUpdate && (
-                <div className="hover-detail-card fade-in">
-                  <div className="mono mb-4" style={{ fontSize: '11px', fontWeight: 900, color: '#888' }}>
-                    [EXPEDITION_LOG] // {new Date(selectedUpdate.date).toLocaleString()}
-                  </div>
-                  <h2 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '20px', lineHeight: 1.2 }}>{selectedUpdate.title}</h2>
-                  <div className="prose" style={{ fontSize: '15px', lineHeight: '1.7', color: '#333' }}>
-                    <RenderContent content={selectedUpdate.content} />
-                  </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="card" style={{ padding: '80px 48px', textAlign: 'center', background: 'var(--bg-secondary)', borderStyle: 'dashed', borderRadius: '24px', marginBottom: '64px' }}>
+                  <div className="mono text-muted mb-6" style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '0.3em' }}>[SYSTEM://STANDBY]</div>
+                  <h2 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--obsidian)', marginBottom: '16px' }}>Currently no mission in progress.</h2>
+                  <p className="text-muted" style={{ fontSize: '18px', maxWidth: '500px', margin: '0 auto' }}>The architect is currently analyzing technical signals and drafting the next high-fidelity blueprint.</p>
                 </div>
               )}
             </div>
           )}
-
           {/* HIBERNATED MISSIONS (TACTICAL ARCHIVE) */}
           {activeTab === 'focus' && hibernatedMissions.length > 0 && (
             <div className="fade-in mt-32 pt-24" style={{ borderTop: '2px dashed var(--border-color)', opacity: 0.8 }}>
