@@ -818,7 +818,7 @@ export default function AdminDashboard() {
                           } else if (e.target.value === '') {
                             setFinalDestination(settings.roadmapFinalDestination || '');
                           } else {
-                            const p = projects.find(proj => proj.id.toString() === e.target.value);
+                            const p = (projects as any[]).find(proj => proj.id.toString() === e.target.value);
                             setFinalDestination(p?.finalDestination || '');
                           }
                         }}

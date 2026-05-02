@@ -684,7 +684,7 @@ export default function Home() {
                       <div style={{ textAlign: 'right' }}>
                         <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>[TARGET_MODULE]</div>
                         <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                          {projects.find((p: any) => p.id.toString() === focus.projectId.toString())?.title || 'System Core'}
+                          {(projects as any[]).find((p: any) => p.id.toString() === focus.projectId.toString())?.title || 'System Core'}
                         </div>
                       </div>
                     )}
