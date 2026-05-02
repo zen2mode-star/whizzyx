@@ -465,6 +465,12 @@ export default function AdminDashboard() {
     fetchAll();
   };
 
+  const handleDeleteSuggestion = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this suggestion?')) return;
+    await fetch(`/api/suggestions/${id}`, { method: 'DELETE' });
+    fetchAll();
+  };
+
   // --- Settings ---
   const handleSettingsSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1174,17 +1180,33 @@ export default function AdminDashboard() {
                   {suggestions.length === 0 && <p className="text-muted">No suggestions received yet.</p>}
                   {suggestions.map((s: any) => (
                     <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px', border: '1px solid var(--border-color)', borderRadius: '16px', background: s.isFeatured ? 'rgba(var(--accent-rgb), 0.05)' : 'white' }}>
-                      <div>
-                        <h4 style={{ marginBottom: '4px' }}>{s.title}</h4>
-                        <p className="text-muted" style={{ fontSize: '14px' }}>{s.description}</p>
+                      <div style={{ flex: 1, marginRight: '24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                          <span className="mono" style={{ fontSize: '10px', fontWeight: 800, color: 'var(--accent)', background: 'rgba(var(--accent-rgb), 0.1)', padding: '2px 8px', borderRadius: '4px' }}>SIGNAL_#{s.id}</span>
+                          <span className="text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>{s.userName || 'Anonymous'} {s.userEmail ? `(${s.userEmail})` : ''}</span>
+                        </div>
+                        <h4 style={{ marginBottom: '8px', fontSize: '18px', fontWeight: 700 }}>{s.problem}</h4>
+                        <div style={{ background: 'var(--bg-secondary)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                          <div className="mono" style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '4px' }}>PROPOSED_SOLUTION:</div>
+                          <p className="text-muted" style={{ fontSize: '14px', lineHeight: 1.6 }}>{s.solution || 'No specific solution proposed.'}</p>
+                        </div>
                       </div>
-                      <button 
-                        className="btn" 
-                        onClick={() => handleFeature(s.id, s.isFeatured)}
-                        style={{ borderColor: s.isFeatured ? 'var(--accent)' : 'var(--border-color)', color: s.isFeatured ? 'var(--accent)' : 'inherit' }}
-                      >
-                        {s.isFeatured ? 'Featured' : 'Mark as Featured'}
-                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <button 
+                          className="btn" 
+                          onClick={() => handleFeature(s.id, s.isFeatured)}
+                          style={{ borderColor: s.isFeatured ? 'var(--accent)' : 'var(--border-color)', color: s.isFeatured ? 'var(--accent)' : 'inherit', height: '44px', fontWeight: 700, padding: '0 20px', whiteSpace: 'nowrap' }}
+                        >
+                          {s.isFeatured ? '✓ Featured' : 'Mark as Featured'}
+                        </button>
+                        <button 
+                          className="btn" 
+                          onClick={() => handleDeleteSuggestion(s.id)}
+                          style={{ borderColor: '#ef4444', color: '#ef4444', height: '44px', fontWeight: 700, padding: '0 20px' }}
+                        >
+                          Delete Signal
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

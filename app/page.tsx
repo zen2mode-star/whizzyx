@@ -1087,13 +1087,27 @@ export default function Home() {
                 <p className="text-muted" style={{ fontSize: '18px' }}>Identify a technical gap or propose a new system module.</p>
               </div>
 
-              <div className="card" style={{ padding: '56px' }}>
+              <div className="card" style={{ padding: '48px' }}>
                 <form onSubmit={handleSuggestSubmit}>
-                  <div className="form-group">
-                    <label className="label">Signal / Inefficiency Description</label>
-                    <textarea className="form-control" rows={7} value={problem} onChange={e => setProblem(e.target.value)} required placeholder="Detail the technical gap or modular proposal..." style={{ fontSize: '16px', padding: '16px' }} />
+                  <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="label">Identity / Name</label>
+                      <input type="text" className="form-control" value={userName} onChange={e => setUserName(e.target.value)} placeholder="e.g. Satoshi" style={{ height: '48px' }} />
+                    </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="label">Contact Email (Optional)</label>
+                      <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} placeholder="satoshi@bitcoin.org" style={{ height: '48px' }} />
+                    </div>
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '40px', height: '60px', fontSize: '18px', fontWeight: 800, borderRadius: '16px' }} disabled={submitting}>
+                  <div className="form-group">
+                    <label className="label">Signal / Technical Gap Description</label>
+                    <textarea className="form-control" rows={4} value={problem} onChange={e => setProblem(e.target.value)} required placeholder="Detail the technical gap or modular proposal..." style={{ fontSize: '15px', padding: '16px' }} />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Proposed Solution / Architecture (Optional)</label>
+                    <textarea className="form-control" rows={4} value={solution} onChange={e => setSolution(e.target.value)} placeholder="How would you engineer the cure?" style={{ fontSize: '15px', padding: '16px' }} />
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '32px', height: '60px', fontSize: '18px', fontWeight: 800, borderRadius: '16px' }} disabled={submitting}>
                     {submitting ? 'Transmitting Signal...' : 'Transmit Signal'}
                   </button>
                   {suggestMsg && <div className="mt-10 p-6 bg-tertiary rounded-xl text-center mono" style={{ fontSize: '14px', fontWeight: 700, border: '1px solid var(--border-color)' }}>{suggestMsg}</div>}
