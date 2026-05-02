@@ -293,32 +293,46 @@ export default function Home() {
           position: relative;
           background: #fff;
           border: 1px solid var(--border-color);
-          border-radius: 20px;
-          padding: 32px;
+          border-radius: 24px;
+          padding: 40px;
           overflow: hidden;
-          transition: all 0.3s ease;
+          transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
         .technical-card::before {
           content: "";
           position: absolute;
           inset: 0;
-          background-image: radial-gradient(#eee 1px, transparent 0);
-          background-size: 20px 20px;
-          opacity: 0.5;
+          background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 0);
+          background-size: 24px 24px;
+          opacity: 1;
           pointer-events: none;
         }
         .technical-card:hover {
           border-color: var(--text-primary);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+          transform: translateY(-5px);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
         .scan-anim {
           position: absolute;
-          left: 0;
-          width: 100%;
+          left: 10%;
+          width: 80%;
           height: 2px;
           background: linear-gradient(to right, transparent, var(--text-primary), transparent);
-          animation: scanLine 3s linear infinite;
+          filter: blur(1px);
+          box-shadow: 0 0 15px var(--text-primary);
+          animation: scanLine 4s linear infinite;
           pointer-events: none;
+          z-index: 10;
+        }
+        @keyframes scanLine {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 0.4; }
+          90% { opacity: 0.4; }
+          100% { top: 100%; opacity: 0; }
         }
         @keyframes quoteGlow {
           0%, 100% { opacity: 0.3; transform: scale(1); }
@@ -575,7 +589,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="technical-card" style={{ background: '#000', color: '#fff' }}>
-                    <div className="scan-anim" style={{ background: 'linear-gradient(to right, transparent, #fff, transparent)' }}></div>
+                    <div className="scan-anim" style={{ background: 'linear-gradient(to right, transparent, #fff, transparent)', boxShadow: '0 0 15px #fff' }}></div>
                     <div className="mono" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.5 }}>{settings.homeHealthLabel || 'ARCHITECTURAL HEALTH'}</div>
                     <div className="mono" style={{ fontSize: '48px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>{settings.homeHealthValue || '99.8%'}</div>
                     <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7 }}>{settings.homeHealthSub || 'UPTIME & OPTIMIZATION RATE'}</div>
