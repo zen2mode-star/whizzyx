@@ -890,7 +890,7 @@ export default function Home() {
                       <div 
                         className="signpost" 
                         style={{ position: 'absolute', left: 1900, top: 200, transform: 'translate(-50%, -100%)', cursor: 'pointer' }}
-                        onClick={() => speak(`Mission goal: to reach ${focus.finalDestination}`)}
+                        onClick={() => {}}
                       >
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <div style={{ 
