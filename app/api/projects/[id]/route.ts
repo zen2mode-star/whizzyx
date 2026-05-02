@@ -30,6 +30,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json(project);
   } catch (error) {
     console.error('PATCH ERROR:', error);
-    return NextResponse.json({ error: 'Failed to update', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update', details: (error as any).message }, { status: 500 });
   }
 }
