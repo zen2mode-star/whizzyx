@@ -1106,11 +1106,11 @@ export default function Home() {
                   <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="label">Identity / Name</label>
-                      <input type="text" className="form-control" value={userName} onChange={e => setUserName(e.target.value)} placeholder="e.g. Satoshi" style={{ height: '48px' }} />
+                      <input type="text" className="form-control" value={userName} onChange={e => setUserName(e.target.value)} placeholder="e.g. System Architect" style={{ height: '48px' }} />
                     </div>
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="label">Contact Email (Optional)</label>
-                      <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} placeholder="satoshi@bitcoin.org" style={{ height: '48px' }} />
+                      <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} placeholder="architect@whizzyx.corp" style={{ height: '48px' }} />
                     </div>
                   </div>
                   <div className="form-group">
