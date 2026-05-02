@@ -21,7 +21,8 @@ export default function AdminDashboard() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [collaborators, setCollaborators] = useState<any[]>([]);
-  const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '', milestone: '' });
+  const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
+  const [focus, setFocus] = useState({ problem: '', description: '', status: 'Noticing & Researching', projectId: '', milestone: '', finalDestination: '' });
   const [settings, setSettings] = useState<Record<string, string>>({
     sectionProjectsTitle: 'Featured Projects',
     sectionCommunityTitle: 'Community Wall',
@@ -38,6 +39,8 @@ export default function AdminDashboard() {
   const [description, setDescription] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [links, setLinks] = useState('');
+  const [projectMilestone, setProjectMilestone] = useState('');
+  const [finalDestination, setFinalDestination] = useState('');
 
   // Quote form
   const [editingQuote, setEditingQuote] = useState<any>(null);
@@ -232,16 +235,24 @@ export default function AdminDashboard() {
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
     fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
-    fetch('/api/focus').then(r => r.json()).then(d => {
-      if (d && d.problem && d.problem !== 'No problem set yet.') {
-        setFocus({ 
-          problem: d.problem, 
-          description: d.description || '',
-          status: d.status || 'Noticing & Researching',
-          projectId: d.projectId?.toString() || '',
-          milestone: d.milestone || ''
-        });
-        if (d.projectId) setUpdateProjectId(d.projectId.toString());
+    fetch('/api/focus?status=all').then(r => r.json()).then(data => {
+      if (Array.isArray(data)) {
+        const active = data.find((f: any) => f.status !== 'Hibernated');
+        const hibernated = data.filter((f: any) => f.status === 'Hibernated');
+        if (active) {
+          setFocus({ 
+            problem: active.problem, 
+            description: active.description || '',
+            status: active.status || 'Active',
+            projectId: active.projectId?.toString() || '',
+            milestone: active.milestone || '',
+            finalDestination: active.finalDestination || ''
+          });
+          if (active.projectId) setUpdateProjectId(active.projectId.toString());
+        } else {
+          setFocus({ problem: '', description: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+        }
+        setHibernatedMissions(hibernated);
       }
     }).catch(console.error);
   };
@@ -305,12 +316,12 @@ export default function AdminDashboard() {
       body: JSON.stringify(focus),
     });
     
-    // If user also entered update text, post it
-    if (updateContent) {
-      await handleAddUpdate(e);
+    if (res.ok) {
+      fetchAll();
+      flash('focus', '✓ Focus updated & live!');
+    } else {
+      flash('focus', '✗ Failed to update.');
     }
-    
-    flash('focus', res.ok ? '✓ Focus updated & live!' : '✗ Failed to update.');
   };
 
   const handleCompleteProject = async () => {
@@ -350,11 +361,11 @@ export default function AdminDashboard() {
 
     const res = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, videoUrl, links }),
+      body: JSON.stringify({ title, description, videoUrl, links, currentMilestone: projectMilestone, finalDestination }),
     });
 
     if (res.ok) {
-      setTitle(''); setDescription(''); setVideoUrl(''); setLinks('');
+      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setProjectMilestone(''); setFinalDestination('');
       setEditingProject(null);
       fetchAll(); flash('projects', editingProject ? '✓ Project updated!' : '✓ Project added!');
     } else flash('projects', '✗ Failed.');
@@ -366,12 +377,14 @@ export default function AdminDashboard() {
     setDescription(p.description);
     setVideoUrl(p.videoUrl || '');
     setLinks(p.links || '');
+    setProjectMilestone(p.currentMilestone || '');
+    setFinalDestination(p.finalDestination || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelEdit = () => {
     setEditingProject(null);
-    setTitle(''); setDescription(''); setVideoUrl(''); setLinks('');
+    setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setProjectMilestone(''); setFinalDestination('');
   };
 
   const handleDeleteProject = async (id: number) => {
@@ -494,13 +507,51 @@ export default function AdminDashboard() {
   // --- Build Updates ---
   const handleAddUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    let finalProjectId = '';
+    let targetFocus = null;
+
+    if (updateProjectId === '__FOCUS__') {
+      finalProjectId = focus.projectId || '';
+      targetFocus = focus;
+    } else if (updateProjectId.startsWith('__FOCUS_HIBERNATED_')) {
+      const id = updateProjectId.replace('__FOCUS_HIBERNATED_', '').replace('__', '');
+      const m = hibernatedMissions.find(miss => miss.id.toString() === id);
+      finalProjectId = m?.projectId?.toString() || '';
+      targetFocus = m;
+    } else {
+      finalProjectId = updateProjectId;
+    }
+
     const res = await fetch('/api/updates', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: updateTitle, content: updateContent, excerpt: updateExcerpt, category: updateCategory, projectId: updateProjectId }),
+      body: JSON.stringify({ title: updateTitle, content: updateContent, excerpt: updateExcerpt, category: updateCategory, projectId: finalProjectId }),
     });
+
     if (res.ok) {
-      setUpdateTitle(''); setUpdateContent(''); setUpdateExcerpt(''); setUpdateCategory('Update'); setUpdateProjectId('');
-      fetchAll(); flash('updates', '✓ Build update posted!');
+      // 1. Automatic Project Module Milestone Update
+      if (finalProjectId) {
+        await fetch(`/api/projects/${finalProjectId}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentMilestone: updateTitle, finalDestination }),
+        });
+      }
+
+      // 2. Automatic Focus Milestone Update
+      if (targetFocus) {
+        const isCurrentActive = updateProjectId === '__FOCUS__';
+        const updatedFocus = { ...targetFocus, milestone: updateTitle, finalDestination };
+        
+        if (isCurrentActive) setFocus(updatedFocus);
+        
+        // Use raw SQL or dedicated focus update API
+        await fetch('/api/focus', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...updatedFocus, id: targetFocus.id }), // Include ID for targeted update
+        });
+      }
+      
+      setUpdateTitle(''); setUpdateContent(''); setUpdateExcerpt(''); setUpdateCategory('Update');
+      fetchAll(); flash('updates', '✓ Build update posted & milestones synced!');
     } else flash('updates', '✗ Failed.');
   };
 
@@ -617,30 +668,100 @@ export default function AdminDashboard() {
                     <label className="label">Focus Title (Problem Statement)</label>
                     <input type="text" className="form-control" value={focus.problem} onChange={e => setFocus({ ...focus, problem: e.target.value })} required style={{ fontSize: '18px', fontWeight: 600, height: '50px' }} />
                   </div>
+                    <div className="form-group">
+                      <label className="label">Home Page Short Summary (Blurb)</label>
+                      <input 
+                        type="text" className="form-control" 
+                        value={focus.milestone || ''} 
+                        onChange={e => setFocus({ ...focus, milestone: e.target.value })} 
+                        placeholder="A short hook for the home page card..." 
+                        style={{ fontSize: '15px', fontWeight: 600, height: '45px' }}
+                      />
+                    </div>
+                  <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-group">
+                      <label className="label">Associated Project (System Module)</label>
+                      <select 
+                        className="form-control" 
+                        value={focus.projectId || ''} 
+                        onChange={e => setFocus({ ...focus, projectId: e.target.value })}
+                        style={{ fontSize: '15px', fontWeight: 600, height: '45px' }}
+                      >
+                        <option value="">-- No Specific Module --</option>
+                        {projects.map(p => (
+                          <option key={p.id} value={p.id}>{p.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Live Milestone (Select from Roadmap)</label>
+                      <select 
+                        className="form-control" 
+                        value={focus.milestone} 
+                        onChange={e => setFocus({ ...focus, milestone: e.target.value })}
+                        style={{ fontSize: '15px', fontWeight: 600, height: '45px' }}
+                      >
+                        <option value="">-- Select a Milestone --</option>
+                        {updates.map(u => (
+                          <option key={u.id} value={u.title}>{u.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Current Status</label>
+                      <select 
+                        className="form-control" 
+                        value={focus.status} 
+                        onChange={e => setFocus({ ...focus, status: e.target.value })}
+                        style={{ fontSize: '15px', fontWeight: 600, height: '45px' }}
+                      >
+                        <option>Noticing & Researching</option>
+                        <option>Drafting Architecture</option>
+                        <option>Building Foundation</option>
+                        <option>Optimizing Logic</option>
+                        <option>Finalizing Systems</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Focus Destination (Ultimate Goal)</label>
+                      <input type="text" className="form-control" value={focus.finalDestination || ''} onChange={e => setFocus({ ...focus, finalDestination: e.target.value })} placeholder="What is the final goal of this mission?" />
+                    </div>
+                  </div>
                   <div className="form-group">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <label className="label" style={{ margin: 0 }}>Detailed Content / Gaps</label>
-                      <button type="button" onClick={() => openFS(focus.description, 'focus')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                      <label className="label" style={{ margin: 0 }}>Progress Log / Current Activity</label>
+                      <button type="button" onClick={() => openFS(focus.description || '', 'focus')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
                     </div>
-                    <textarea 
-                      className="form-control mono" 
-                      rows={10} 
-                      value={focus.description} 
-                      onChange={e => setFocus({ ...focus, description: e.target.value })} 
-                      placeholder="Use two enters for a new paragraph."
-                      style={{ fontSize: '14px', lineHeight: '1.6', padding: '20px', background: '#fcfcfc', border: '1px solid #ddd' }}
-                    />
+                    <textarea className="form-control mono" rows={4} value={focus.description || ''} onChange={e => setFocus({ ...focus, description: e.target.value })} placeholder="Document current architecture choices..." />
                   </div>
-                  {/* ... */}
                   <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
                     <button type="submit" className="btn btn-primary" style={{ height: '48px', padding: '0 32px', borderRadius: '10px', fontWeight: 700 }}>
                       SAVE & PUBLISH
                     </button>
-                    {(focus.projectId || focus.problem) && (
-                      <button type="button" onClick={handleCompleteProject} className="btn" style={{ height: '48px', borderRadius: '10px' }}>
-                        Archive as Project
-                      </button>
-                    )}
+                    <button 
+                      type="button" 
+                      onClick={handleCompleteProject}
+                      className="btn" 
+                      style={{ height: '48px', borderRadius: '10px', borderColor: '#22c55e', color: '#22c55e', fontWeight: 700 }}
+                    >
+                      COMPLETE MISSION
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={async () => {
+                        if (!confirm('HIBERNATION PROTOCOL: This will archive the current active mission. Proceed?')) return;
+                        const res = await fetch('/api/focus/hibernate', { method: 'POST' });
+                        if (res.ok) {
+                          flash('focus', '✓ Mission hibernated.');
+                          setFocus({ problem: '', description: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+                          fetchAll();
+                        }
+                      }}
+                      className="btn" 
+                      style={{ height: '48px', borderRadius: '10px', borderColor: '#ef4444', color: '#ef4444', fontWeight: 700 }}
+                    >
+                      HIBERNATE
+                    </button>
                   </div>
                   {msg.focus && <p className="mt-4 mono text-muted" style={{ fontSize: '12px', color: 'var(--status-success)' }}>{msg.focus}</p>}
                 </form>
@@ -660,8 +781,74 @@ export default function AdminDashboard() {
                   <h3 className="mb-6">New Entry</h3>
                   <form onSubmit={handleAddUpdate}>
                     <div className="form-group">
-                      <label className="label">Entry Title</label>
-                      <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} required />
+                      <label className="label">Focus Title (Problem Statement)</label>
+                      <input 
+                        type="text" className="form-control" 
+                        value={focus.problem} 
+                        onChange={e => setFocus({...focus, problem: e.target.value})} 
+                        placeholder="What problem are you solving?" 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label className="label" style={{ margin: 0 }}>Detailed Content / Gaps</label>
+                        <button type="button" onClick={() => openFS(focus.description, 'focus')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
+                      </div>
+                      <textarea 
+                        className="form-control mono" rows={5} 
+                        value={focus.description} 
+                        onChange={e => setFocus({...focus, description: e.target.value})} 
+                        placeholder="Detailed technical gaps..." 
+                      />
+                    </div>
+                    <div className="sidebar-divider" style={{ margin: '24px 0' }} />
+                    <div className="form-group">
+                      <label className="label">Target Project / Activity</label>
+                      <select 
+                        className="form-control" 
+                        value={updateProjectId} 
+                        onChange={e => {
+                          setUpdateProjectId(e.target.value);
+                          if (e.target.value === '__FOCUS__') {
+                            setFinalDestination(focus.finalDestination || '');
+                          } else if (e.target.value.startsWith('__FOCUS_HIBERNATED_')) {
+                            const id = e.target.value.replace('__FOCUS_HIBERNATED_', '').replace('__', '');
+                            const m = hibernatedMissions.find(miss => miss.id.toString() === id);
+                            setFinalDestination(m?.finalDestination || '');
+                          } else if (e.target.value === '') {
+                            setFinalDestination(settings.roadmapFinalDestination || '');
+                          } else {
+                            const p = projects.find(proj => proj.id.toString() === e.target.value);
+                            setFinalDestination(p?.finalDestination || '');
+                          }
+                        }}
+                        style={{ fontSize: '15px', fontWeight: 600, height: '48px' }}
+                      >
+                        <option value="">-- General Roadmap (Global) --</option>
+                        {focus.problem && (
+                          <option value="__FOCUS__" style={{ fontWeight: 800, color: 'var(--status-success)' }}>
+                            [CURRENTLY_WORKING_ON]: {focus.problem}
+                          </option>
+                        )}
+                        {hibernatedMissions.length > 0 && (
+                          <optgroup label="Hibernated Missions">
+                            {hibernatedMissions.map(m => (
+                              <option key={m.id} value={`__FOCUS_HIBERNATED_${m.id}__`}>
+                                [HIBERNATED]: {m.problem}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        <optgroup label="System Modules">
+                          {projects.map(p => (
+                            <option key={p.id} value={p.id}>{p.title}</option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Entry Title (Milestone Name)</label>
+                      <input type="text" className="form-control" value={updateTitle} onChange={e => setUpdateTitle(e.target.value)} required placeholder="e.g., Kernel Optimization Complete" />
                     </div>
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -670,6 +857,76 @@ export default function AdminDashboard() {
                       </div>
                       <textarea className="form-control mono" rows={5} value={updateContent} onChange={e => setUpdateContent(e.target.value)} placeholder="Log a technical milestone..." />
                     </div>
+                    <div className="form-group">
+                      <label className="label" style={{ color: '#FFD700', fontWeight: 800 }}>Final Destination / Ultimate Goal</label>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <input type="text" className="form-control" value={finalDestination} onChange={e => setFinalDestination(e.target.value)} placeholder="e.g., Global Deployment or AGI Achievement" style={{ flex: 1, border: '2px solid #FFD700', background: 'rgba(255, 215, 0, 0.05)' }} />
+                        <button 
+                          type="button" 
+                          className="btn" 
+                          onClick={async () => {
+                            const isFocus = updateProjectId === '__FOCUS__';
+                            const finalProjectId = isFocus ? (focus.projectId || '') : updateProjectId;
+                            
+                            let success = false;
+                            if (finalProjectId) {
+                              const res = await fetch(`/api/projects/${finalProjectId}`, {
+                                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ finalDestination }),
+                              });
+                              if (res.ok) success = true;
+                            }
+
+                            if (isFocus) {
+                              const newFocus = { ...focus, finalDestination };
+                              setFocus(newFocus);
+                              const res = await fetch('/api/focus', {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(newFocus),
+                              });
+                              if (res.ok) success = true;
+                            }
+
+                            if (success) flash('updates', '✓ Goal updated successfully!');
+                            else flash('updates', finalProjectId || isFocus ? '✗ Failed to update.' : '! Please select a project first.');
+                          }}
+                          style={{ borderColor: '#FFD700', color: '#B8860B', fontWeight: 800, fontSize: '11px', whiteSpace: 'nowrap' }}
+                        >
+                          UPDATE GOAL ONLY
+                        </button>
+                        <div className="mt-4 pt-4" style={{ borderTop: '1px solid #eee' }}>
+                          <button 
+                            type="button"
+                            className="btn"
+                            onClick={handleFocusUpdate}
+                            style={{ width: '100%', borderColor: 'var(--accent)', color: 'var(--accent)', fontWeight: 800, fontSize: '11px', cursor: 'pointer', marginBottom: '8px' }}
+                          >
+                            UPDATE MISSION TITLE & CONTENT
+                          </button>
+                          <button 
+                            type="button"
+                            className="btn"
+                            onClick={async () => {
+                              if (!confirm('HIBERNATION PROTOCOL: This will archive the current active mission. Proceed?')) return;
+                              const res = await fetch('/api/focus/hibernate', { method: 'POST' });
+                              if (res.ok) {
+                                flash('updates', '✓ Mission hibernated. Board cleared.');
+                                setFocus({ problem: '', description: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+                                setFinalDestination('');
+                                setUpdateContent('');
+                                fetchAll(); // Refresh to update hibernated list
+                              } else {
+                                flash('updates', '✗ Hibernation failed.');
+                              }
+                            }}
+                            style={{ width: '100%', borderColor: '#444', color: '#888', fontWeight: 800, fontSize: '11px', cursor: 'pointer' }}
+                          >
+                            HIBERNATE CURRENT MISSION
+                          </button>
+                        </div>
+                      </div>
+                      <p className="mt-1" style={{ fontSize: '10px', color: '#888' }}>This updates the gold signpost at the end of the roadmap.</p>
+                    </div>
                     <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '48px', borderRadius: '12px', marginTop: '16px' }}>Post Update</button>
                     {msg.updates && <p className="mt-4 mono text-muted" style={{ fontSize: '12px' }}>{msg.updates}</p>}
                   </form>
@@ -677,12 +934,33 @@ export default function AdminDashboard() {
                 <div className="card">
                   <h3 className="mb-6">Update History</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {updates.map((u: any) => (
+                    {updates.filter((u: any) => {
+                      const pid = updateProjectId === '__FOCUS__' ? (focus.projectId || '') : updateProjectId;
+                      if (!pid) return !u.projectId;
+                      return u.projectId?.toString() === pid.toString();
+                    }).map((u: any) => (
                       <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border-color)', borderRadius: '10px', background: 'var(--bg-secondary)' }}>
                         <span style={{ fontSize: '14px', fontWeight: 600 }}>{u.title}</span>
-                        <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteUpdate(u.id)}>REMOVE</button>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <button className="btn" style={{ color: '#ef4444', height: '32px', padding: '0 12px', fontSize: '11px', fontWeight: 700 }} onClick={() => handleDeleteUpdate(u.id)}>REMOVE</button>
+                        </div>
                       </div>
                     ))}
+                    
+                    {/* Special Final Destination Entry */}
+                    {(finalDestination || (updateProjectId === '' && settings.roadmapFinalDestination)) && (
+                      <div style={{ 
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', 
+                        border: '2px solid #FFD700', borderRadius: '10px', background: 'rgba(255, 215, 0, 0.1)',
+                        boxShadow: '0 0 15px rgba(255, 215, 0, 0.1)'
+                      }}>
+                        <div>
+                          <div className="mono" style={{ fontSize: '9px', fontWeight: 900, color: '#B8860B', marginBottom: '4px' }}>[FINAL_DESTINATION]</div>
+                          <span style={{ fontSize: '14px', fontWeight: 800, color: '#000' }}>{updateProjectId === '' ? settings.roadmapFinalDestination : finalDestination}</span>
+                        </div>
+                        <div style={{ fontSize: '10px', fontWeight: 900, color: '#B8860B' }}>GOAL_POINT</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -697,12 +975,28 @@ export default function AdminDashboard() {
                 <p className="text-muted">Manage the global module registry.</p>
               </div>
               <div className="grid" style={{ gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
-                <div className="card">
-                  <h3 className="mb-6">{editingProject ? 'Edit Module' : 'Register New Module'}</h3>
+                <div className="card" style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '18px', marginBottom: '20px' }}>{editingProject ? 'Edit Project' : 'Add New Project'}</h3>
                   <form onSubmit={handleAddProject}>
-                    <div className="form-group">
-                      <label className="label">Module Title</label>
-                      <input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required />
+                    <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div className="form-group">
+                        <label className="label">Project Title</label>
+                        <input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="label">Current Milestone (Dropdown Selection)</label>
+                        <select 
+                          className="form-control" 
+                          value={projectMilestone} 
+                          onChange={e => setProjectMilestone(e.target.value)}
+                          style={{ fontSize: '14px', fontWeight: 600 }}
+                        >
+                          <option value="">-- Select Milestone Title --</option>
+                          {updates.map(u => (
+                            <option key={u.id} value={u.title}>{u.title}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -710,6 +1004,10 @@ export default function AdminDashboard() {
                         <button type="button" onClick={() => openFS(description, 'project')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
                       </div>
                       <textarea className="form-control" rows={6} value={description} onChange={e => setDescription(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Final Destination / Ultimate Goal</label>
+                      <input type="text" className="form-control" value={finalDestination} onChange={e => setFinalDestination(e.target.value)} placeholder="e.g., Global Deployment or AGI Achievement" />
                     </div>
                     <div className="form-group">
                       <label className="label">Demo Video URL</label>
@@ -950,7 +1248,11 @@ export default function AdminDashboard() {
                     <input type="text" className="form-control" value={settings.founderTitle || ''} onChange={e => setSettings({ ...settings, founderTitle: e.target.value })} placeholder="e.g. Lead Architect / Systems Engineer" />
                   </div>
                   <div className="form-group">
-                    <label className="label">Avatar URL</label>
+                    <label className="label">Main Roadmap Final Destination</label>
+                    <input type="text" className="form-control" value={settings.roadmapFinalDestination || ''} onChange={e => setSettings({ ...settings, roadmapFinalDestination: e.target.value })} placeholder="Global Architectural Equilibrium" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Donate QR URL</label>
                     <input type="text" className="form-control" value={settings.founderAvatar || ''} onChange={e => setSettings({ ...settings, founderAvatar: e.target.value })} placeholder="https://.../avatar.png" />
                   </div>
                   <div className="form-group">

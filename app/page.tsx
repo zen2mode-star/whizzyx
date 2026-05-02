@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import RoadmapView from '@/components/RoadmapView';
 
 type Tab = 'home' | 'focus' | 'projects' | 'blog' | 'community' | 'join' | 'suggest' | 'support' | 'inquiry';
 
@@ -98,6 +99,7 @@ export default function Home() {
 
   const [projects, setProjects]                   = useState([]);
   const [focus, setFocus]                         = useState<any>(null);
+  const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
   const [featuredSuggestions, setFeaturedSugg]    = useState([]);
   const [quotes, setQuotes]                       = useState<any[]>([]);
   const [settings, setSettings]                   = useState<Record<string, string>>({});
@@ -106,8 +108,10 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [selectedUpdate, setSelectedUpdate] = useState<any>(null);
   const [filterProject, setFilterProject]         = useState<number | 'all'>('all');
+  const [activeProjectRoadmap, setActiveProjectRoadmap] = useState<any | null>(null);
   const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
   const [isFocusDescExpanded, setIsFocusDescExpanded] = useState(false);
+  const [showFocusRoadmap, setShowFocusRoadmap] = useState(false);
 
   // Community contributions
   const [contributions, setContributions] = useState<Record<number, any[]>>({});
@@ -143,7 +147,14 @@ export default function Home() {
 
   useEffect(() => {
     fetch('/api/projects').then(r => r.json()).then(setProjects).catch(console.error);
-    fetch('/api/focus').then(r => r.json()).then(setFocus).catch(console.error);
+    fetch('/api/focus?status=all&t=' + Date.now()).then(r => r.json()).then(data => {
+      if (Array.isArray(data)) {
+        setFocus(data.find((f: any) => f.status !== 'Hibernated') || null);
+        setHibernatedMissions(data.filter((f: any) => f.status === 'Hibernated'));
+      } else {
+        setFocus(data);
+      }
+    }).catch(console.error);
     fetch('/api/suggestions').then(r => r.json()).then(d => setFeaturedSugg(d.filter((s: any) => s.isFeatured))).catch(console.error);
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
@@ -215,7 +226,7 @@ export default function Home() {
           100% { offset-distance: 0%; transform: scaleX(1); }
         }
         .walking-cat-road {
-          offset-path: path("M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100");
+          offset-path: path("M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200");
           position: absolute;
           width: 70px;
           height: 70px;
@@ -509,19 +520,48 @@ export default function Home() {
               </section>
 
               <div className="featured-grid">
-                <div className="featured-card">
-                  <div>
+                <div className={`featured-card ${isFocusExpanded ? 'expanded' : ''}`} style={{ transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)', height: isFocusExpanded ? 'auto' : '400px', cursor: 'default' }}>
+                  <div style={{ flex: 1 }}>
                     <span className="badge badge-info" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', marginBottom: '20px' }}>
                       {settings.homeActiveExpeditionLabel || 'ACTIVE EXPEDITION'}
                     </span>
-                    <h2 style={{ color: 'white', fontSize: '32px', marginBottom: '12px' }}>{focus?.problem || 'Architecting Excellence'}</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px', lineHeight: '1.5', maxWidth: '500px' }}>
-                      {focus?.description?.substring(0, 120) || 'Currently refining the core architectural modules for the WhizzyX platform.'}...
-                    </p>
+                    <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 800, marginBottom: '12px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                      {focus?.problem && focus.problem.length > 50 ? focus.problem.split('\n')[0].substring(0, 50) + '...' : (focus?.problem || 'Architecting Excellence')}
+                    </h2>
+                    
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px', lineHeight: '1.6', maxWidth: '500px' }}>
+                      {isFocusExpanded ? (
+                        <div className="fade-in prose prose-invert" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                           <RenderContent content={focus?.description || focus?.problem} />
+                        </div>
+                      ) : (
+                        <p style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {(() => {
+                            const title = focus?.problem || '';
+                            const summary = focus?.milestone || '';
+                            const desc = focus?.description || '';
+                            
+                            // If summary is just the title, look for description
+                            if (summary.trim() === title.trim() || !summary) {
+                              if (desc && desc.trim() !== title.trim()) return desc;
+                              return 'Technical deep-dive into system architectural upgrades and performance optimization.';
+                            }
+                            return summary;
+                          })()}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <button onClick={() => setActiveTab('focus')} className="btn" style={{ background: 'white', color: 'black', border: 'none', width: 'fit-content', padding: '0 24px', height: '48px', fontWeight: 700, borderRadius: '12px' }}>
-                    {settings.homeViewRoadmapBtn || 'VIEW ROADMAP'}
-                  </button>
+
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                    <button 
+                      onClick={() => { setActiveTab('focus'); setIsFocusExpanded(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                      className="btn" 
+                      style={{ background: 'white', color: 'black', border: 'none', padding: '0 24px', height: '48px', fontSize: '13px', fontWeight: 800, borderRadius: '12px' }}
+                    >
+                      READ FULL MISSION
+                    </button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -627,18 +667,91 @@ export default function Home() {
           {activeTab === 'focus' && (
             <div className="fade-in" style={{ maxWidth: '100%' }}>
               <div className="mb-12">
-                <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Engineering Roadmap</h1>
+                <h1 style={{ fontSize: '48px', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '8px' }}>Engineering Roadmap</h1>
                 <p className="text-muted" style={{ fontSize: '18px' }}>Technical build logs and architectural progress tracking.</p>
               </div>
 
-              {hasFocus && (
-                <div className="card mb-12" style={{ padding: '48px', background: 'var(--bg-primary)', borderLeft: '4px solid var(--text-primary)' }}>
-                  <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>[SYSTEM://FOCUS_MISSION]</div>
-                  <div className="mb-8" style={{ display: 'inline-block', padding: '16px 32px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '6px 6px 0px #111' }}>
-                      <h2 style={{ fontSize: '24px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.2 }}>{focus.problem}</h2>
+              {focus && (
+                <div className="card mb-12" style={{ padding: '48px', background: 'white', borderLeft: '6px solid #111', borderRadius: '12px', border: '1px solid #eee', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <div className="mb-4 mono text-muted" style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.15em' }}>[SYSTEM://FOCUS_MISSION]</div>
+                      <div className="mb-6" style={{ display: 'inline-block', padding: '18px 36px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '8px 8px 0px #111' }}>
+                          <h2 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{focus.problem}</h2>
+                      </div>
+                    </div>
+                    {focus.projectId && (
+                      <div style={{ textAlign: 'right' }}>
+                        <div className="mb-2 mono text-muted" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>[TARGET_MODULE]</div>
+                        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                          {projects.find((p: any) => p.id.toString() === focus.projectId.toString())?.title || 'System Core'}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="prose" style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
-                    <RenderContent content={focus.description} />
+                  <div className="prose" style={{ fontSize: '17px', color: '#444', lineHeight: '1.7', maxWidth: '1000px', position: 'relative' }}>
+                    <div style={isFocusExpanded ? {} : { display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {(() => {
+                        const title = focus.problem || '';
+                        const desc = focus.description || '';
+                        const summary = focus.milestone || '';
+                        
+                        if (isFocusExpanded) {
+                          return (
+                            <div className="fade-in">
+                              <div className="mb-6">
+                                <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[MISSION_OBJECTIVE]</div>
+                                <RenderContent content={title} />
+                              </div>
+                              {desc && desc !== title && (
+                                <div className="mb-6">
+                                  <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[TECHNICAL_LOG_DETAILS]</div>
+                                  <RenderContent content={desc} />
+                                </div>
+                              )}
+                              {summary && summary !== title && summary !== desc && (
+                                <div>
+                                  <div className="mono text-muted mb-2" style={{ fontSize: '10px', fontWeight: 800 }}>[SUMMARY_BLURB]</div>
+                                  <p>{summary}</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        
+                        // Collapsed: Find a non-title blurb
+                        if (summary && summary.trim() !== title.trim()) return summary;
+                        if (desc && desc.trim() !== title.trim()) return desc;
+                        if (title.includes('\n')) return title.split('\n').slice(1).join(' ');
+                        
+                        return 'Technical deep-dive into system architectural upgrades and performance optimization.';
+                      })()}
+                    </div>
+                    
+                    <button 
+                      onClick={() => setIsFocusExpanded(!isFocusExpanded)}
+                      style={{ 
+                        marginTop: '12px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        background: 'none', 
+                        border: 'none', 
+                        color: 'var(--accent)', 
+                        fontWeight: 700, 
+                        fontSize: '13px', 
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    >
+                      {isFocusExpanded ? 'COLLAPSE' : 'READ FULL MISSION'}
+                      <svg 
+                        width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" 
+                        style={{ transform: isFocusExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               )}
@@ -657,20 +770,19 @@ export default function Home() {
                   >
                     LIST
                   </button>
-                  <a 
-                    href="/roadmap" 
-                    target="_blank"
+                  <button 
+                    onClick={() => setShowFocusRoadmap(true)}
                     style={{ 
                       padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
                       background: 'transparent',
                       color: 'var(--text-secondary)',
                       boxShadow: 'none',
                       border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                      textDecoration: 'none', display: 'flex', alignItems: 'center'
+                      display: 'flex', alignItems: 'center'
                     }}
                   >
                     3D MAP ↗
-                  </a>
+                  </button>
                 </div>
               </div>
 
@@ -701,11 +813,11 @@ export default function Home() {
                     <div className="mono" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4em', fontWeight: 800, textShadow: '0 0 10px rgba(0,0,0,0.5)' }}>OBJECTIVE_ALPHA</div>
                     <div className="mono" style={{ fontSize: '26px', fontWeight: 900, color: '#fff', letterSpacing: '0.15em', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>{settings.missionTagline || 'CONQUER THE MARS'}</div>
                   </div>
-                  <div style={{ minWidth: '1500px', height: '550px', position: 'relative' }}>
-                    <svg width="1500" height="550" viewBox="0 0 1500 550" fill="none">
-                      <path d="M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100" stroke="#000" strokeWidth="64" strokeLinecap="round" />
-                      <path d="M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100" stroke="#222" strokeWidth="60" strokeLinecap="round" />
-                      <path d="M 100 400 C 300 400 300 100 600 100 C 900 100 900 400 1200 400 C 1500 400 1500 100 1800 100" stroke="white" strokeWidth="1" strokeDasharray="10 30" strokeLinecap="round" opacity="0.1" />
+                  <div style={{ minWidth: '2000px', height: '650px', position: 'relative' }}>
+                    <svg width="2000" height="650" viewBox="0 0 2000 650" fill="none">
+                      <path d="M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200" stroke="#000" strokeWidth="64" strokeLinecap="round" />
+                      <path d="M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200" stroke="#222" strokeWidth="60" strokeLinecap="round" />
+                      <path d="M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200" stroke="white" strokeWidth="1" strokeDasharray="10 30" strokeLinecap="round" opacity="0.1" />
                     </svg>
 
                     <div className="walking-cat-road">
@@ -744,10 +856,7 @@ export default function Home() {
                     </div>
 
                     {updates.map((upd: any, index: number) => {
-                      const positions = [
-                        { x: 100, y: 400 }, { x: 300, y: 300 }, { x: 500, y: 150 }, { x: 600, y: 100 },
-                        { x: 750, y: 200 }, { x: 900, y: 400 }, { x: 1100, y: 400 }, { x: 1300, y: 200 }
-                      ];
+                      const positions = [ { x: 100, y: 500 }, { x: 250, y: 350 }, { x: 400, y: 200 }, { x: 600, y: 200 }, { x: 800, y: 200 }, { x: 1000, y: 350 }, { x: 1200, y: 500 }, { x: 1400, y: 350 }, { x: 1600, y: 200 }, { x: 1800, y: 200 } ];
                       const pos = positions[index % positions.length];
                       return (
                         <div 
@@ -775,6 +884,27 @@ export default function Home() {
                         </div>
                       );
                     })}
+
+                    {/* Final Destination */}
+                    {focus.finalDestination && (
+                      <div 
+                        className="signpost" 
+                        style={{ position: 'absolute', left: 1900, top: 200, transform: 'translate(-50%, -100%)', cursor: 'pointer' }}
+                        onClick={() => speak(`Mission goal: to reach ${focus.finalDestination}`)}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ 
+                            background: '#000', color: '#FFD700', padding: '12px 20px', borderRadius: '4px', 
+                            border: '2px solid #FFD700', boxShadow: '6px 6px 0 rgba(255, 215, 0, 0.2)', minWidth: '160px', textAlign: 'center' 
+                          }}>
+                            <div className="mono" style={{ fontSize: '9px', fontWeight: 900, marginBottom: '4px', color: '#aaa' }}>FINAL_DESTINATION</div>
+                            <div style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '0.05em' }}>{focus.finalDestination}</div>
+                          </div>
+                          <div style={{ width: '4px', height: '24px', background: '#FFD700' }}></div>
+                          <div style={{ width: '12px', height: '12px', background: '#000', borderRadius: '50%', border: '2px solid #FFD700' }}></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-6 text-center mono text-muted" style={{ fontSize: '11px' }}>
                     [SCROLL HORIZONTALLY] // [CLICK SIGNPOST FOR DETAILS]
@@ -797,6 +927,30 @@ export default function Home() {
             </div>
           )}
 
+          {/* HIBERNATED MISSIONS (TACTICAL ARCHIVE) */}
+          {activeTab === 'focus' && hibernatedMissions.length > 0 && (
+            <div className="fade-in mt-32 pt-24" style={{ borderTop: '2px dashed var(--border-color)', opacity: 0.8 }}>
+              <div className="mb-12">
+                <div className="mono text-muted mb-4" style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.3em' }}>[SYSTEM://TACTICAL_ARCHIVE]</div>
+                <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>Hibernated Missions</h2>
+                <p className="text-muted" style={{ fontSize: '17px', maxWidth: '700px' }}>Historical technical gaps identified and partially engineered, currently in long-term stasis.</p>
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '32px' }}>
+                {hibernatedMissions.map((mission: any) => (
+                  <div key={mission.id} className="card" style={{ padding: '40px', background: 'var(--bg-secondary)', borderStyle: 'dashed', borderColor: '#ccc' }}>
+                    <div className="mono mb-4" style={{ fontSize: '10px', color: '#999', fontWeight: 900 }}>MISSION_STASIS_LOG: #{mission.id}</div>
+                    <h3 style={{ fontSize: '22px', fontWeight: 800, marginBottom: '16px' }}>{mission.problem}</h3>
+                    <p className="text-muted" style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '24px' }}>{mission.description}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '8px', height: '8px', background: '#888', borderRadius: '50%' }}></div>
+                      <span className="mono" style={{ fontSize: '11px', fontWeight: 800, color: '#888' }}>POWER_CONSUMPTION_MINIMAL</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ══ PROJECTS TAB ══ */}
           {activeTab === 'projects' && (
             <div className="fade-in">
@@ -813,18 +967,36 @@ export default function Home() {
                       <span className="mono text-muted" style={{ fontSize: '12px', fontWeight: 700 }}>VER-2.4.0</span>
                     </div>
                     <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[MODULE://TARGET_INEFFICIENCY]</div>
-                    <div className="mb-8" style={{ display: 'inline-block', padding: '14px 28px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '6px 6px 0px #111' }}>
+                    <div style={{ marginBottom: '32px', display: 'inline-block', padding: '14px 28px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '6px 6px 0px #111' }}>
                       <h3 style={{ fontSize: '22px', fontWeight: 800, margin: 0 }}>{p.title}</h3>
                     </div>
                     <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[LOG://ENGINEERED_SOLUTION]</div>
-                    <div className="prose" style={{ fontSize: '15px', lineHeight: '1.7', color: 'var(--text-secondary)', flex: 1, marginBottom: '32px' }}>
+                    <div className="prose" style={{ fontSize: '15px', lineHeight: '1.7', color: 'var(--text-secondary)', flex: 1, marginBottom: '24px' }}>
                       <RenderContent content={p.description} />
                     </div>
-                    {p.links && (
-                      <a href={p.links} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ width: '100%', height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700 }}>
-                        Open Architecture
-                      </a>
+                    {p.currentMilestone && (
+                      <div className="mb-8">
+                        <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[LOG://LATEST_MILESTONE]</div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
+                          <div style={{ width: '6px', height: '6px', background: '#10B981', borderRadius: '50%', boxShadow: '0 0 8px #10B981' }}></div>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{p.currentMilestone}</span>
+                        </div>
+                      </div>
                     )}
+                    <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
+                      {p.links && (
+                        <a href={p.links} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700 }}>
+                          Open Architecture
+                        </a>
+                      )}
+                      <button 
+                        onClick={() => setActiveProjectRoadmap(p)}
+                        className="btn" 
+                        style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: '2px solid #000' }}
+                      >
+                        VIEW ROADMAP
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -998,6 +1170,36 @@ export default function Home() {
               </div>
               <div className="mt-8 p-6 mono" style={{ background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '12px', color: 'var(--text-muted)' }}>
                 DIRECT_CHANNEL: {settings.contactEmail || 'contact@whizzyx.corp'}
+              </div>
+            </div>
+          )}
+          {activeProjectRoadmap && (
+            <div className="modal-overlay" style={{ background: 'rgba(0,0,0,0.98)', pointerEvents: 'auto', padding: '2.5vh 2.5vw' }} onClick={() => setActiveProjectRoadmap(null)}>
+              <div style={{ width: '95vw', height: '95vh', display: 'flex', borderRadius: '24px', overflow: 'hidden', border: '1px solid #333', boxShadow: '0 0 50px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+                <RoadmapView 
+                  updates={updates.filter((u: any) => u.projectId?.toString() === activeProjectRoadmap.id?.toString())} 
+                  title={`${activeProjectRoadmap.title} Roadmap`}
+                  finalDestination={activeProjectRoadmap.finalDestination}
+                  isModal={true}
+                  onClose={() => setActiveProjectRoadmap(null)}
+                />
+              </div>
+            </div>
+          )}
+          {showFocusRoadmap && (
+            <div className="modal-overlay" style={{ background: 'rgba(0,0,0,0.98)', pointerEvents: 'auto', padding: '2.5vh 2.5vw' }} onClick={() => setShowFocusRoadmap(false)}>
+              <div style={{ width: '95vw', height: '95vh', display: 'flex', borderRadius: '24px', overflow: 'hidden', border: '1px solid #333', boxShadow: '0 0 50px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+                <RoadmapView 
+                  updates={updates.filter((u: any) => {
+                    const pid = focus.projectId;
+                    if (!pid) return !u.projectId;
+                    return u.projectId?.toString() === pid.toString();
+                  })} 
+                  title={focus.problem || "Current Focus Mission"} 
+                  finalDestination={focus.finalDestination}
+                  isModal={true}
+                  onClose={() => setShowFocusRoadmap(false)}
+                />
               </div>
             </div>
           )}
