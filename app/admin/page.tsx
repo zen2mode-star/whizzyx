@@ -355,7 +355,7 @@ export default function AdminDashboard() {
       body: JSON.stringify({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: null }),
     });
     
-    setFocus({ problem: 'Looking for the next challenge...', description: '', status: 'Idealizing', projectId: '', milestone: '', finalDestination: '' });
+    setFocus({ id: null, problem: 'Looking for the next challenge...', description: '', blurb: '', status: 'Idealizing', projectId: '', milestone: '', finalDestination: '' });
     fetchAll();
     flash('focus', '✓ Project moved to Projects list!');
   };
@@ -970,7 +970,7 @@ export default function AdminDashboard() {
                               const res = await fetch('/api/focus/hibernate', { method: 'POST' });
                               if (res.ok) {
                                 flash('updates', '✓ Mission hibernated. Board cleared.');
-                                setFocus({ problem: '', description: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
+                                setFocus({ id: null, problem: '', description: '', blurb: '', status: 'Active', projectId: '', milestone: '', finalDestination: '' });
                                 setFinalDestination('');
                                 setUpdateContent('');
                                 fetchAll(); // Refresh to update hibernated list

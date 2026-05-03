@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Protect admin dashboard
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://whizzyx.vercel.app/sitemap.xml
