@@ -1125,8 +1125,8 @@ export default function AdminDashboard() {
                           onClick={() => {
                             // @ts-ignore
                             const widget = window.cloudinary.createUploadWidget({
-                              cloudName: 'demo', // USER: Change this to your cloud name
-                              uploadPreset: 'unsigned_preset' // USER: Change this to your preset
+                              cloudName: 'dztz30gio',
+                              uploadPreset: 'whizzyx_preset'
                             }, (error, result) => { 
                               if (!error && result && result.event === "success") { 
                                 setThumbnailUrl(result.info.secure_url);
