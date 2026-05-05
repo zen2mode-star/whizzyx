@@ -1040,7 +1040,7 @@ export default function Home() {
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
                             {demoLink && (
                               <div onClick={(e) => { e.stopPropagation(); window.open(demoLink, '_blank'); }} className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
-                                LIVE DEMO
+                                LIVE PROJECT
                               </div>
                             )}
                             <button 
