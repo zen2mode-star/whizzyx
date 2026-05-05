@@ -48,7 +48,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                </a>
              )}
              {pdfLink && (
-               <a href={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfLink)}&embedded=true`} target="_blank" rel="noopener noreferrer" style={{ padding: '0 32px', height: '56px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3B82F6', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontWeight: 800, textDecoration: 'none', fontSize: '14px', letterSpacing: '0.05em' }}>
+               <a href={pdfLink} target="_blank" rel="noopener noreferrer" style={{ padding: '0 32px', height: '56px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3B82F6', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontWeight: 800, textDecoration: 'none', fontSize: '14px', letterSpacing: '0.05em' }}>
                  VIEW DOCUMENTATION
                </a>
              )}
