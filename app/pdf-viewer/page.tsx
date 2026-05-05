@@ -18,16 +18,18 @@ function PDFViewerContent() {
     );
   }
 
+  const googleDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+
   return (
-    <div style={{ height: '100vh', width: '100vw', background: '#0a0a0c', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ height: '100vh', width: '100vw', background: '#0a0a0c', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: 'var(--font-mono), monospace' }}>
       <header style={{ height: '60px', background: '#111', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 10px #ef4444' }}></div>
+          <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981', animation: 'pulse 2s infinite' }}></div>
           <span className="mono" style={{ fontSize: '13px', fontWeight: 800, color: '#fff', letterSpacing: '0.1em' }}>WHIZZYX_SECURE_VIEWER // MODULE_STASIS_DOCS</span>
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
-           <a href={url} download className="mono" style={{ color: '#aaa', fontSize: '12px', textDecoration: 'none', border: '1px solid #444', padding: '6px 16px', borderRadius: '4px' }}>DOWNLOAD_LOCAL_COPY</a>
-           <button onClick={() => window.close()} className="mono" style={{ background: 'none', border: '1px solid #ef4444', color: '#ef4444', fontSize: '12px', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer' }}>TERMINATE_SESSION</button>
+           <a href={url} download className="mono" style={{ color: '#aaa', fontSize: '12px', textDecoration: 'none', border: '1px solid #444', padding: '6px 16px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)' }}>DOWNLOAD_LOCAL_COPY</a>
+           <button onClick={() => window.history.back()} className="mono" style={{ background: 'none', border: '1px solid #ef4444', color: '#ef4444', fontSize: '12px', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer' }}>TERMINATE_SESSION</button>
         </div>
       </header>
       
@@ -37,14 +39,14 @@ function PDFViewerContent() {
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
           pointerEvents: 'none',
-          background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02))',
+          background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(0, 255, 0, 0.01), rgba(0, 0, 0, 0.05), rgba(0, 255, 0, 0.01))',
           backgroundSize: '100% 4px, 3px 100%',
           zIndex: 5
         }}></div>
 
         <iframe 
-          src={url} 
-          style={{ width: '100%', height: '100%', border: 'none' }}
+          src={googleDocsUrl} 
+          style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }}
           title="Project Documentation"
         />
       </main>

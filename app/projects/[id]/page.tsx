@@ -48,9 +48,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                </a>
              )}
              {pdfLink && (
-               <a href={pdfLink} target="_blank" rel="noopener noreferrer" style={{ padding: '0 32px', height: '56px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3B82F6', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontWeight: 800, textDecoration: 'none', fontSize: '14px', letterSpacing: '0.05em' }}>
+               <Link href={`/pdf-viewer?url=${encodeURIComponent(pdfLink)}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0 32px', height: '56px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3B82F6', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontWeight: 800, textDecoration: 'none', fontSize: '14px', letterSpacing: '0.05em' }}>
                  VIEW DOCUMENTATION
-               </a>
+               </Link>
              )}
              <a href="#roadmap" style={{ padding: '0 32px', height: '56px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid #444', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontWeight: 800, textDecoration: 'none', fontSize: '14px', letterSpacing: '0.05em' }}>
                EXPLORE ROADMAP ↓

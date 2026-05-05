@@ -17,12 +17,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { title, description, videoUrl, links, demoUrl, pdfUrl, currentMilestone, finalDestination } = body;
     
+    // Strategy: Combine Architecture, Demo, PDF into the single existing 'links' field if provided separately
+    let finalLinks = links;
+    if (!links && (demoUrl || pdfUrl)) {
+      finalLinks = `|||${demoUrl || ''}|||${pdfUrl || ''}|||${body.thumbnailUrl || ''}|||${body.displayTitle || ''}`;
+    }
+
     const project = await prisma.project.create({
       data: {
         title,
         description,
         videoUrl,
-        links,
+        links: finalLinks,
         currentMilestone,
         finalDestination
       }
