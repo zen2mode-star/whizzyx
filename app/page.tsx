@@ -145,6 +145,14 @@ export default function Home() {
   const [joinPortfolio, setJoinPortfolio] = useState('');
   const [joinSubmitting, setJoinSubmitting] = useState(false);
   const [joinMsg, setJoinMsg]             = useState('');
+
+  // Inquiry form
+  const [inquiryName, setInInquiryName]   = useState('');
+  const [inquiryCompany, setInquiryCompany] = useState('');
+  const [inquiryEmail, setInquiryEmail]   = useState('');
+  const [inquiryMsg, setInquiryMsg]       = useState('');
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const [inquiryResult, setInquiryResult] = useState('');
   
   const fetchAll = async () => {
     try {
