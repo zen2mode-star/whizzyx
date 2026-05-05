@@ -15,18 +15,22 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, videoUrl, links, currentMilestone, finalDestination } = body;
+    const { title, description, videoUrl, links, demoUrl, pdfUrl, currentMilestone, finalDestination } = body;
     
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO "Project" (title, description, "videoUrl", links, "currentMilestone", "finalDestination") VALUES ($1, $2, $3, $4, $5, $6)`,
-      title, description, videoUrl, links, currentMilestone, finalDestination
-    );
-    
-    const projects = await prisma.$queryRawUnsafe(`SELECT * FROM "Project" ORDER BY id DESC LIMIT 1`);
-    const project = Array.isArray(projects) ? projects[0] : null;
+    const project = await prisma.project.create({
+      data: {
+        title,
+        description,
+        videoUrl,
+        links,
+        currentMilestone,
+        finalDestination
+      }
+    });
     
     return NextResponse.json(project);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });
+    console.error('POST ERROR:', error);
+    return NextResponse.json({ error: 'Failed to create project', details: (error as any).message }, { status: 500 });
   }
 }

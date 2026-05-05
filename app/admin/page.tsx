@@ -41,6 +41,8 @@ export default function AdminDashboard() {
   const [links, setLinks] = useState('');
   const [projectMilestone, setProjectMilestone] = useState('');
   const [finalDestination, setFinalDestination] = useState('');
+  const [demoUrl, setDemoUrl] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
 
   // Quote form
   const [editingQuote, setEditingQuote] = useState<any>(null);
@@ -366,13 +368,23 @@ export default function AdminDashboard() {
     const url = editingProject ? `/api/projects/${editingProject.id}` : '/api/projects';
     const method = editingProject ? 'PATCH' : 'POST';
 
+    // Strategy: Combine Architecture, Demo, and PDF into the single existing 'links' field
+    const combinedLinks = `${links || ''}|||${demoUrl || ''}|||${pdfUrl || ''}`;
+    
     const res = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, videoUrl, links, currentMilestone: projectMilestone, finalDestination }),
+      body: JSON.stringify({ 
+        title, 
+        description, 
+        videoUrl, 
+        links: combinedLinks, 
+        currentMilestone: projectMilestone, 
+        finalDestination 
+      }),
     });
 
     if (res.ok) {
-      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setProjectMilestone(''); setFinalDestination('');
+      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setDemoUrl(''); setPdfUrl(''); setProjectMilestone(''); setFinalDestination('');
       setEditingProject(null);
       fetchAll(); flash('projects', editingProject ? '✓ Project updated!' : '✓ Project added!');
     } else flash('projects', '✗ Failed.');
@@ -383,7 +395,10 @@ export default function AdminDashboard() {
     setTitle(p.title);
     setDescription(p.description);
     setVideoUrl(p.videoUrl || '');
-    setLinks(p.links || '');
+    const parts = (p.links || '').split('|||');
+    setLinks(parts[0] || '');
+    setDemoUrl(parts[1] || '');
+    setPdfUrl(parts[2] || '');
     setProjectMilestone(p.currentMilestone || '');
     setFinalDestination(p.finalDestination || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -391,7 +406,7 @@ export default function AdminDashboard() {
 
   const handleCancelEdit = () => {
     setEditingProject(null);
-    setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setProjectMilestone(''); setFinalDestination('');
+    setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setDemoUrl(''); setPdfUrl(''); setProjectMilestone(''); setFinalDestination('');
   };
 
   const handleDeleteProject = async (id: number) => {
@@ -1069,7 +1084,15 @@ export default function AdminDashboard() {
                       <input type="text" className="form-control" value={finalDestination} onChange={e => setFinalDestination(e.target.value)} placeholder="e.g., Global Deployment or AGI Achievement" />
                     </div>
                     <div className="form-group">
-                      <label className="label">Demo Video URL</label>
+                      <label className="label">Live Working Project Link (Demo)</label>
+                      <input type="text" className="form-control" value={demoUrl} onChange={e => setDemoUrl(e.target.value)} placeholder="https://..." />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Documentation PDF Link</label>
+                      <input type="text" className="form-control" value={pdfUrl} onChange={e => setPdfUrl(e.target.value)} placeholder="https://path-to-pdf.pdf" />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Demo Video URL (Optional)</label>
                       <input type="text" className="form-control" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://..." />
                     </div>
                     <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>

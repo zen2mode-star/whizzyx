@@ -15,18 +15,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     const body = await request.json();
-    // Using raw query to bypass client-sync issues where 'finalDestination' is seen as unknown
-    if (body.finalDestination !== undefined) {
-      await prisma.$executeRawUnsafe(
-        `UPDATE "Project" SET "finalDestination" = $1 WHERE id = $2`,
-        body.finalDestination,
-        parseInt(id)
-      );
-    }
     
-    // Fetch updated project using raw query to ensure all fields (even unrecognized ones) are returned
-    const projects = await prisma.$queryRawUnsafe(`SELECT * FROM "Project" WHERE id = $1`, parseInt(id));
-    const project = Array.isArray(projects) ? projects[0] : null;
+    // Using standard prisma update to handle fields properly
+    const project = await prisma.project.update({
+      where: { id: parseInt(id) },
+      data: {
+        title: body.title,
+        description: body.description,
+        videoUrl: body.videoUrl,
+        links: body.links,
+        currentMilestone: body.currentMilestone,
+        finalDestination: body.finalDestination
+      }
+    });
+    
     return NextResponse.json(project);
   } catch (error) {
     console.error('PATCH ERROR:', error);

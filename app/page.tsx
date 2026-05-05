@@ -999,19 +999,48 @@ export default function Home() {
                         </div>
                       </div>
                     )}
-                    <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
-                      {p.links && (
-                        <a href={p.links} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700 }}>
-                          Open Architecture
-                        </a>
-                      )}
-                      <button 
-                        onClick={() => setActiveProjectRoadmap(p)}
-                        className="btn" 
-                        style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: '2px solid #000' }}
-                      >
-                        VIEW ROADMAP
-                      </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: 'auto' }}>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        {(() => {
+                          const parts = (p.links || '').split('|||');
+                          const archLink = parts[0];
+                          const demoLink = parts[1];
+                          const pdfLink  = parts[2];
+                          
+                          return (
+                            <>
+                              {demoLink && (
+                                <a href={demoLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, background: '#10B981', borderColor: '#10B981', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.2)' }}>
+                                  LIVE PROJECT
+                                </a>
+                              )}
+                              {pdfLink && (
+                                <a href={`/pdf-viewer?url=${encodeURIComponent(pdfLink)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: '2px solid #3B82F6', color: '#3B82F6' }}>
+                                  VIEW PDF
+                                </a>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        {(() => {
+                          const parts = (p.links || '').split('|||');
+                          const archLink = parts[0];
+                          return archLink ? (
+                            <a href={archLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700 }}>
+                              ARCHITECTURE
+                            </a>
+                          ) : null;
+                        })()}
+                        <button 
+                          onClick={() => setActiveProjectRoadmap(p)}
+                          className="btn" 
+                          style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: '2px solid #000' }}
+                        >
+                          ROADMAP
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
