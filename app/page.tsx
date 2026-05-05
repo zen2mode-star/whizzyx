@@ -586,6 +586,20 @@ export default function Home() {
             backdrop-filter: blur(8px);
             z-index: 999;
           }
+          .projects-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+          .project-card-image {
+            height: 200px !important;
+          }
+          .project-detail-header {
+            flex-direction: column !important;
+            gap: 24px !important;
+          }
+          .project-stats {
+            grid-template-columns: 1fr 1fr !important;
+          }
         }
       `}</style>
       {/* ── Top Bar ── */}
@@ -1057,7 +1071,7 @@ export default function Home() {
                   {otherActiveMissions.length > 0 && (
                     <div className="mt-16 mb-16">
                       <div className="mono text-muted mb-8" style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.3em' }}>[SYSTEM://PARALLEL_EXPEDITIONS]</div>
-                      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '32px' }}>
+                      <div className="grid projects-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '32px' }}>
                         {otherActiveMissions.map((mission: any) => (
                           <div key={mission.id} className="card" style={{ padding: '32px', background: 'white', borderLeft: '4px solid var(--accent)' }}>
                             <div className="flex justify-between items-start mb-4">
@@ -1118,7 +1132,7 @@ export default function Home() {
                 <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--text-primary)' }}>Hibernated Missions</h2>
                 <p className="text-muted" style={{ fontSize: '17px', maxWidth: '700px' }}>Historical technical gaps identified and partially engineered, currently in long-term stasis.</p>
               </div>
-              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '32px' }}>
+              <div className="grid projects-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '32px' }}>
                 {hibernatedMissions.map((mission: any) => (
                   <div key={mission.id} className="card" style={{ padding: '40px', background: 'var(--bg-secondary)', borderStyle: 'dashed', borderColor: '#ccc' }}>
                     <div className="mono mb-4" style={{ fontSize: '10px', color: '#999', fontWeight: 900 }}>MISSION_STASIS_LOG: #{mission.id}</div>
@@ -1139,10 +1153,10 @@ export default function Home() {
             <div className="fade-in">
               <div className="mb-12">
                 <h1 style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.03em' }}>Module Index</h1>
-                <p className="text-muted" style={{ fontSize: '18px' }}>Stable systems and production-grade engineering deployments.</p>
+                <p className="text-muted" style={{ fontSize: '18px' }}>The technical registry of WhizzyX engineering modules and modular systems.</p>
               </div>
 
-              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '32px' }}>
+              <div className="grid projects-grid" style={{ gap: '32px' }}>
                 {projects.map((p: any) => {
                   const getYouTubeId = (url: string) => {
                     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -1269,7 +1283,7 @@ export default function Home() {
                 <p className="text-muted" style={{ fontSize: '18px' }}>Community-identified inefficiencies and modular feature signals.</p>
               </div>
 
-              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '32px' }}>
+              <div className="grid projects-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '32px' }}>
                 {featuredSuggestions.map((s: any) => (
                   <div key={s.id} className="card" style={{ borderLeft: '6px solid var(--text-primary)', padding: '32px' }}>
                     <div className="mb-6">
@@ -1513,26 +1527,33 @@ export default function Home() {
               <div className="card" style={{ width: '100%', maxWidth: '550px', padding: '48px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
                 <div className="mono text-muted mb-6" style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.2em' }}>[ PROTOCOL_ESTABLISHED_2026 ]</div>
                 <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '24px' }}>Terms of Architectural Access</h2>
-                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px', maxHeight: '400px', overflowY: 'auto', paddingRight: '12px' }}>
                   <div style={{ display: 'flex', gap: '16px' }}>
                     <div style={{ fontSize: '20px' }}>🛡️</div>
                     <div>
-                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Experimental Registry</h4>
-                      <p className="text-muted" style={{ fontSize: '14px' }}>You acknowledge that WhizzyX is a technical lab. All projects are experimental and provided for research purposes only.</p>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Section 1.1: Experimental System Registry</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>WhizzyX is a non-linear technical laboratory. You acknowledge that all architectural blueprints, modular structures, and logic systems are in a perpetual state of 'Alpha' flux and are provided strictly for research and observation.</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '16px' }}>
                     <div style={{ fontSize: '20px' }}>👁️</div>
                     <div>
-                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Data & Integrity</h4>
-                      <p className="text-muted" style={{ fontSize: '14px' }}>We log system interactions and visitor metadata to optimize architectural performance and platform security.</p>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Section 2.4: Metadata & Telemetry Integrity</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>To maintain platform stability, we collect high-fidelity session telemetry, including IP-based vector tracking and interaction logs. This data is used exclusively for internal system optimization and security audit trails.</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '16px' }}>
                     <div style={{ fontSize: '20px' }}>⚖️</div>
                     <div>
-                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Usage Limitation</h4>
-                      <p className="text-muted" style={{ fontSize: '14px' }}>Reproduction of blueprints or system logic without strategic authorization is strictly prohibited under WhizzyX protocol.</p>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Section 3.7: Intellectual Property Governance</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>The modular systems and engineering concepts displayed here are the proprietary intellectual property of WhizzyX. Unauthorized redistribution, redlining, or commercial reverse-engineering is prohibited under global technical protocols.</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ fontSize: '20px' }}>🚫</div>
+                    <div>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Section 4.2: Liability & System Failure</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>WhizzyX assumes zero liability for external system integrations or logical interpretations of provided documentation. Use of any modular logic is at the sole discretion and risk of the visiting entity.</p>
                     </div>
                   </div>
                 </div>
