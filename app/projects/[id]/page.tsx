@@ -2,9 +2,10 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-export default async function ProjectPage({ params }: { params: { id: string } }) {
+export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const project = await prisma.project.findUnique({
-    where: { id: parseInt(params.id) },
+    where: { id: parseInt(id) },
   });
 
   if (!project) notFound();
@@ -56,7 +57,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {demoLink && (
-                <a href={demoLink} target="_blank" rel="noopener noreferrer" style={{ width: '100%', height: '64px', background: '#10B981', color: 'white', display: 'flex', alignItems: 'center', justifyCenter: 'center', borderRadius: '16px', fontWeight: 800, textDecoration: 'none', textAlign: 'center', justifyContent: 'center' }}>
+                <a href={demoLink} target="_blank" rel="noopener noreferrer" style={{ width: '100%', height: '64px', background: '#10B981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
                   ACCESS LIVE PROJECT
                 </a>
               )}

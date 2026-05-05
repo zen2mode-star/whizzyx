@@ -1133,7 +1133,7 @@ export default function AdminDashboard() {
                             const widget = window.cloudinary.createUploadWidget({
                               cloudName: 'dztz30gio',
                               uploadPreset: 'whizzyx_preset'
-                            }, (error, result) => { 
+                            }, (error: any, result: any) => { 
                               if (!error && result && result.event === "success") { 
                                 setThumbnailUrl(result.info.secure_url);
                               }
