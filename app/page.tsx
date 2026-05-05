@@ -153,6 +153,12 @@ export default function Home() {
   const [inquiryMsg, setInquiryMsg]       = useState('');
   const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const [inquiryResult, setInquiryResult] = useState('');
+
+  // New States
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProjectNav, setShowProjectNav] = useState(false);
   
   const fetchAll = async () => {
     try {
@@ -203,11 +209,21 @@ export default function Home() {
     const auth = localStorage.getItem('whizzyx_visitor_auth');
     if (auth) setIsAuthorized(true);
 
+    const terms = localStorage.getItem('whizzyx_terms_accepted');
+    if (!terms) setShowTermsModal(true);
+
     fetch('/api/visits', { method: 'POST' }).catch(() => {});
     
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
     fetchAll();
     const interval = setInterval(fetchAll, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -225,6 +241,23 @@ export default function Home() {
       return;
     }
     setActiveTab(tab);
+    setIsMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const acceptTerms = () => {
+    localStorage.setItem('whizzyx_terms_accepted', 'true');
+    setShowTermsModal(false);
+  };
+
+  const navigateToProject = (id: number) => {
+    if (!isAuthorized) {
+      setShowLeadModal(true);
+      return;
+    }
+    setFilterProject(id);
+    setActiveTab('projects');
+    setShowProjectNav(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -522,24 +555,69 @@ export default function Home() {
           margin: 16px 24px;
           opacity: 0.5;
         }
+        @media (max-width: 1024px) {
+          .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 72px;
+            bottom: 0;
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 280px;
+          }
+          .sidebar.mobile-open {
+            left: 0;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+          }
+          .main-content {
+            margin-left: 0 !important;
+            padding: 24px 16px !important;
+          }
+          .header-inner {
+            padding: 0 16px !important;
+          }
+          .sidebar-overlay {
+            position: fixed;
+            top: 72px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+          }
+        }
       `}</style>
       {/* ── Top Bar ── */}
       <header className="header">
         <div className="header-inner">
-          <div className="logo" onClick={() => setActiveTab('home')} style={{ cursor: 'pointer' }}>
-            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
-            <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>WhizzyX</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {isMobile && (
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                style={{ background: 'none', border: 'none', padding: '8px', cursor: 'pointer' }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {isMobileMenuOpen ? <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /> : <><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></>}
+                </svg>
+              </button>
+            )}
+            <div className="logo" onClick={() => setActiveTab('home')} style={{ cursor: 'pointer' }}>
+              <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+              <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>WhizzyX</span>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <a href="/admin" className="btn" style={{ border: 'none', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ADMIN CONSOLE</a>
+            {!isMobile && <a href="/admin" className="btn" style={{ border: 'none', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ADMIN CONSOLE</a>}
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 600 }}>WX</div>
           </div>
         </div>
       </header>
 
       <div className="main-layout">
+        {isMobile && isMobileMenuOpen && <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
         {/* ── Sidebar ── */}
-        <aside className="sidebar">
+        <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           <div style={{ padding: '0 24px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '6px', height: '6px', background: '#10B981', borderRadius: '50%', boxShadow: '0 0 8px #10B981', animation: 'pulse 2s infinite' }}></div>
             <div className="mono" style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.2em' }}>ENGINEERING_CORE</div>
@@ -737,6 +815,30 @@ export default function Home() {
                   </div>
                 </div>
               </section>
+
+              <div style={{ padding: '80px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+                <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.2em' }}>[SYSTEM://QUICK_ACCESS]</div>
+                <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '32px' }}>Navigate the Engineering Registry</h3>
+                <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
+                  {projects.slice(0, 3).map(p => (
+                    <button 
+                      key={p.id}
+                      onClick={() => navigateToProject(p.id)}
+                      className="btn"
+                      style={{ padding: '16px 32px', borderRadius: '16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontWeight: 800, fontSize: '14px', transition: 'all 0.3s' }}
+                    >
+                      {p.title} →
+                    </button>
+                  ))}
+                  <button 
+                    onClick={() => handleTabChange('projects')}
+                    className="btn btn-primary"
+                    style={{ padding: '16px 32px', borderRadius: '16px', fontWeight: 800, fontSize: '14px' }}
+                  >
+                    EXPLORE ALL MODULES
+                  </button>
+                </div>
+              </div>
 
               <div style={{ padding: '80px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
                 <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.2em' }}>[SYSTEM://TRANSITION_READY]</div>
@@ -1398,6 +1500,45 @@ export default function Home() {
                     {isSubmittingLead ? 'SYNCHRONIZING...' : 'INITIALIZE SESSION →'}
                   </button>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {showTermsModal && (
+            <div className="modal-overlay" style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)' }}>
+              <div className="card" style={{ width: '100%', maxWidth: '550px', padding: '48px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}>
+                <div className="mono text-muted mb-6" style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.2em' }}>[ PROTOCOL_ESTABLISHED_2026 ]</div>
+                <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '24px' }}>Terms of Architectural Access</h2>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ fontSize: '20px' }}>🛡️</div>
+                    <div>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Experimental Registry</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>You acknowledge that WhizzyX is a technical lab. All projects are experimental and provided for research purposes only.</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ fontSize: '20px' }}>👁️</div>
+                    <div>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Data & Integrity</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>We log system interactions and visitor metadata to optimize architectural performance and platform security.</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ fontSize: '20px' }}>⚖️</div>
+                    <div>
+                      <h4 style={{ fontWeight: 800, fontSize: '15px' }}>Usage Limitation</h4>
+                      <p className="text-muted" style={{ fontSize: '14px' }}>Reproduction of blueprints or system logic without strategic authorization is strictly prohibited under WhizzyX protocol.</p>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={acceptTerms} 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', height: '56px', borderRadius: '16px', fontWeight: 800, fontSize: '15px' }}
+                >
+                  I ACKNOWLEDGE & AGREE →
+                </button>
               </div>
             </div>
           )}
