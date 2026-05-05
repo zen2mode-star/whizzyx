@@ -1125,6 +1125,7 @@ export default function AdminDashboard() {
                             const widget = window.cloudinary.createUploadWidget({
                               cloudName: 'dztz30gio',
                               uploadPreset: 'whizzyx_preset',
+                              resourceType: 'raw',
                               clientAllowedFormats: ['pdf']
                             }, (error: any, result: any) => { 
                               if (!error && result && result.event === "success") { 
