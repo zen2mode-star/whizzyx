@@ -29,7 +29,7 @@ const HighlightedText = ({ text, highlightCharIndex }: { text: string, highlight
   );
 };
 
-const RenderContent = ({ content, highlightCharIndex = -1 }: { content: string, highlightCharIndex?: number }) => {
+export const RenderContent = ({ content, highlightCharIndex = -1 }: { content: string, highlightCharIndex?: number }) => {
   if (!content) return null;
   let processed = content
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')

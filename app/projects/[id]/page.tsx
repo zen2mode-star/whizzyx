@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import RoadmapView from '@/components/RoadmapView';
+import RoadmapView, { RenderContent } from '@/components/RoadmapView';
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -63,10 +63,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         {/* Main Content */}
         <div>
           <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '32px', borderBottom: '1px solid #222', paddingBottom: '16px' }}>Core Architecture & Logic</h2>
-          <div 
-            style={{ fontSize: '18px', lineHeight: '1.8', color: '#bbb', marginBottom: '64px', overflowWrap: 'break-word', fontWeight: 400 }}
-            dangerouslySetInnerHTML={{ __html: project.description }} 
-          />
+          <div style={{ fontSize: '18px', lineHeight: '1.8', color: '#bbb', marginBottom: '64px', overflowWrap: 'break-word', fontWeight: 400 }}>
+            <RenderContent content={project.description || ''} />
+          </div>
         </div>
 
         {/* Sidebar */}
