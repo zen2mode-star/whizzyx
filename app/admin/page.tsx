@@ -395,7 +395,7 @@ export default function AdminDashboard() {
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = editingProject ? `/api/projects/${editingProject.id}` : '/api/projects';
-    const method = editingProject ? 'PUT' : 'POST';
+    const method = editingProject ? 'PATCH' : 'POST';
 
     const body = { 
         title, 
