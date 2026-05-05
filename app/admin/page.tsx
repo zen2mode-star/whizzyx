@@ -1121,14 +1121,23 @@ export default function AdminDashboard() {
                         <button 
                           type="button" 
                           onClick={() => {
+                            console.log('INITIALIZING_CLOUDINARY_WIDGET...');
                             // @ts-ignore
                             const widget = window.cloudinary.createUploadWidget({
                               cloudName: 'dztz30gio',
                               uploadPreset: 'whizzyx_preset',
-                              resourceType: 'raw',
-                              clientAllowedFormats: ['pdf']
+                              resourceType: 'auto', // Allow Cloudinary to decide, but we'll inspect result
+                              clientAllowedFormats: ['pdf'],
+                              maxFiles: 1,
+                              sources: ['local', 'url', 'camera']
                             }, (error: any, result: any) => { 
-                              if (!error && result && result.event === "success") { 
+                              if (error) console.error('CLOUDINARY_WIDGET_ERROR:', error);
+                              if (result && result.event === "success") { 
+                                console.log('UPLOAD_SUCCESSFUL:', result.info);
+                                // If it's a PDF and came back as image, we log a warning
+                                if (result.info.format === 'pdf' && result.info.resource_type === 'image') {
+                                  console.warn('PDF_UPLOADED_AS_IMAGE: This may cause 401 errors in viewer.');
+                                }
                                 setPdfUrl(result.info.secure_url);
                               }
                             });

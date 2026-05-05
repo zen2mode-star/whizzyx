@@ -15,6 +15,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log('PROJECT_POST_RECEIVED:', body);
     const { title, description, videoUrl, links, demoUrl, pdfUrl, currentMilestone, finalDestination } = body;
     
     // Strategy: Combine Architecture, Demo, PDF into the single existing 'links' field if provided separately

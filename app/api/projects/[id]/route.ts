@@ -15,6 +15,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     const body = await request.json();
+    console.log('PROJECT_PATCH_RECEIVED:', { id, body });
     
     // Using standard prisma update to handle fields properly
     const project = await prisma.project.update({
