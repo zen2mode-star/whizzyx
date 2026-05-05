@@ -159,6 +159,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProjectNav, setShowProjectNav] = useState(false);
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
   
   const fetchAll = async () => {
     try {
@@ -214,7 +215,13 @@ export default function Home() {
 
     fetch('/api/visits', { method: 'POST' }).catch(() => {});
     
-    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile && !sessionStorage.getItem('whizzyx_mobile_warned')) {
+        setShowMobileWarning(true);
+      }
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
 
@@ -259,6 +266,11 @@ export default function Home() {
     setActiveTab('projects');
     setShowProjectNav(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const dismissMobileWarning = () => {
+    sessionStorage.setItem('whizzyx_mobile_warned', 'true');
+    setShowMobileWarning(false);
   };
 
   const submitLead = async (e: React.FormEvent) => {
@@ -626,6 +638,12 @@ export default function Home() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            {isMobile && showMobileWarning && (
+              <div className="fade-in" style={{ background: 'var(--obsidian)', color: '#fff', padding: '6px 14px', borderRadius: '8px', fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                <span>[RESOLUTION_ALERT]: USE_DESKTOP_FOR_OPTIMAL_VIEW</span>
+                <button onClick={dismissMobileWarning} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer' }}>×</button>
+              </div>
+            )}
             {!isMobile && <a href="/admin" className="btn" style={{ border: 'none', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ADMIN CONSOLE</a>}
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 600 }}>WX</div>
           </div>
