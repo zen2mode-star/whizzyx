@@ -988,13 +988,21 @@ export default function Home() {
                   const demoLink = parts[1];
                   const pdfLink  = parts[2];
                   const uploadedThumb = parts[3];
+                  const displayTitle = parts[4];
 
                   const youtubeId = getYouTubeId(p.videoUrl || '');
                   const youtubeThumb = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
                   const thumbnailUrl = uploadedThumb || youtubeThumb;
 
                   return (
-                    <div key={p.id} className="project-card">
+                    <a 
+                      key={p.id} 
+                      href={`/projects/${p.id}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="project-card"
+                      style={{ cursor: 'pointer', textDecoration: 'none' }}
+                    >
                       <div className="project-thumbnail">
                         {thumbnailUrl ? (
                           <img src={thumbnailUrl} alt={p.title} className="thumbnail-img" />
@@ -1024,31 +1032,22 @@ export default function Home() {
                           {p.title.charAt(0)}
                         </div>
                         <div className="project-details">
-                          <h3 className="project-title" style={{ fontSize: '16px' }}>{p.title}</h3>
+                          <h3 className="project-title" style={{ fontSize: '16px' }}>{displayTitle || p.title}</h3>
                           <p className="project-desc" style={{ fontSize: '13px' }}>{p.description.replace(/[#*]/g, '').slice(0, 80)}...</p>
                           
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
                             {demoLink && (
-                              <a href={demoLink} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
+                              <div className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
                                 LIVE DEMO
-                              </a>
+                              </div>
                             )}
-                            {pdfLink && (
-                              <a href={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfLink)}&embedded=true`} target="_blank" rel="noopener noreferrer" className="btn" style={{ border: '1px solid #3B82F6', color: '#3B82F6', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
-                                VIEW PDF
-                              </a>
-                            )}
-                            <button 
-                              onClick={() => setActiveProjectRoadmap(p)}
-                              className="btn" 
-                              style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}
-                            >
-                              ROADMAP
-                            </button>
+                            <div className="btn" style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
+                              VIEW SPECS
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </a>
                   );
                 })}
               </div>

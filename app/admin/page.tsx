@@ -44,6 +44,7 @@ export default function AdminDashboard() {
   const [demoUrl, setDemoUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [displayTitle, setDisplayTitle] = useState('');
 
   // Quote form
   const [editingQuote, setEditingQuote] = useState<any>(null);
@@ -388,8 +389,8 @@ export default function AdminDashboard() {
     const url = editingProject ? `/api/projects/${editingProject.id}` : '/api/projects';
     const method = editingProject ? 'PATCH' : 'POST';
 
-    // Strategy: Combine Architecture, Demo, PDF, and Thumbnail into the single existing 'links' field
-    const combinedLinks = `${links || ''}|||${demoUrl || ''}|||${pdfUrl || ''}|||${thumbnailUrl || ''}`;
+    // Strategy: Combine Architecture, Demo, PDF, Thumbnail, and DisplayTitle into the single existing 'links' field
+    const combinedLinks = `${links || ''}|||${demoUrl || ''}|||${pdfUrl || ''}|||${thumbnailUrl || ''}|||${displayTitle || ''}`;
     
     const res = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json' },
@@ -404,7 +405,7 @@ export default function AdminDashboard() {
     });
 
     if (res.ok) {
-      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setDemoUrl(''); setPdfUrl(''); setThumbnailUrl(''); setProjectMilestone(''); setFinalDestination('');
+      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setDemoUrl(''); setPdfUrl(''); setThumbnailUrl(''); setDisplayTitle(''); setProjectMilestone(''); setFinalDestination('');
       setEditingProject(null);
       fetchAll(); flash('projects', editingProject ? '✓ Project updated!' : '✓ Project added!');
     } else flash('projects', '✗ Failed.');
@@ -420,6 +421,7 @@ export default function AdminDashboard() {
     setDemoUrl(parts[1] || '');
     setPdfUrl(parts[2] || '');
     setThumbnailUrl(parts[3] || '');
+    setDisplayTitle(parts[4] || '');
     setProjectMilestone(p.currentMilestone || '');
     setFinalDestination(p.finalDestination || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1075,8 +1077,12 @@ export default function AdminDashboard() {
                   <form onSubmit={handleAddProject}>
                     <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div className="form-group">
-                        <label className="label">Project Title</label>
-                        <input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required />
+                        <label className="label">Project ID / Short Title</label>
+                        <input type="text" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. AALSI_BUDDY" />
+                      </div>
+                      <div className="form-group">
+                        <label className="label">Display Title (Thumbnail)</label>
+                        <input type="text" className="form-control" value={displayTitle} onChange={e => setDisplayTitle(e.target.value)} placeholder="e.g. Aalsi Buddy - Campus Radar" />
                       </div>
                       <div className="form-group">
                         <label className="label">Current Milestone (Dropdown Selection)</label>
