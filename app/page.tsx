@@ -975,15 +975,23 @@ export default function Home() {
                 <p className="text-muted" style={{ fontSize: '18px' }}>Stable systems and production-grade engineering deployments.</p>
               </div>
 
-              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '40px' }}>
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '32px' }}>
                 {projects.map((p: any) => {
                   const getYouTubeId = (url: string) => {
                     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
                     const match = url?.match(regExp);
                     return (match && match[2].length === 11) ? match[2] : null;
                   };
+                  
+                  const parts = (p.links || '').split('|||');
+                  const archLink = parts[0];
+                  const demoLink = parts[1];
+                  const pdfLink  = parts[2];
+                  const uploadedThumb = parts[3];
+
                   const youtubeId = getYouTubeId(p.videoUrl || '');
-                  const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
+                  const youtubeThumb = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
+                  const thumbnailUrl = uploadedThumb || youtubeThumb;
 
                   return (
                     <div key={p.id} className="project-card">
@@ -1016,38 +1024,27 @@ export default function Home() {
                           {p.title.charAt(0)}
                         </div>
                         <div className="project-details">
-                          <h3 className="project-title">{p.title}</h3>
-                          <p className="project-desc">{p.description.replace(/[#*]/g, '').slice(0, 100)}...</p>
+                          <h3 className="project-title" style={{ fontSize: '16px' }}>{p.title}</h3>
+                          <p className="project-desc" style={{ fontSize: '13px' }}>{p.description.replace(/[#*]/g, '').slice(0, 80)}...</p>
                           
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
-                            {(() => {
-                              const parts = (p.links || '').split('|||');
-                              const archLink = parts[0];
-                              const demoLink = parts[1];
-                              const pdfLink  = parts[2];
-                              
-                              return (
-                                <>
-                                  {demoLink && (
-                                    <a href={demoLink} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: '#10B981', color: 'white', fontSize: '11px', height: '32px', borderRadius: '8px' }}>
-                                      LIVE DEMO
-                                    </a>
-                                  )}
-                                  {pdfLink && (
-                                    <a href={`/pdf-viewer?url=${encodeURIComponent(pdfLink)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ border: '1px solid #3B82F6', color: '#3B82F6', fontSize: '11px', height: '32px', borderRadius: '8px' }}>
-                                      PDF DOCS
-                                    </a>
-                                  )}
-                                  <button 
-                                    onClick={() => setActiveProjectRoadmap(p)}
-                                    className="btn" 
-                                    style={{ border: '1px solid #000', fontSize: '11px', height: '32px', borderRadius: '8px' }}
-                                  >
-                                    ROADMAP
-                                  </button>
-                                </>
-                              );
-                            })()}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
+                            {demoLink && (
+                              <a href={demoLink} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
+                                LIVE DEMO
+                              </a>
+                            )}
+                            {pdfLink && (
+                              <a href={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfLink)}&embedded=true`} target="_blank" rel="noopener noreferrer" className="btn" style={{ border: '1px solid #3B82F6', color: '#3B82F6', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
+                                VIEW PDF
+                              </a>
+                            )}
+                            <button 
+                              onClick={() => setActiveProjectRoadmap(p)}
+                              className="btn" 
+                              style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}
+                            >
+                              ROADMAP
+                            </button>
                           </div>
                         </div>
                       </div>

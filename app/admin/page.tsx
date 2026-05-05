@@ -43,6 +43,7 @@ export default function AdminDashboard() {
   const [finalDestination, setFinalDestination] = useState('');
   const [demoUrl, setDemoUrl] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
 
   // Quote form
   const [editingQuote, setEditingQuote] = useState<any>(null);
@@ -68,6 +69,13 @@ export default function AdminDashboard() {
   const [fsTarget, setFSTarget] = useState<'focus' | 'project' | 'blog' | 'update' | 'settings_subtitle' | 'homeHeroTitle' | 'founderBio' | 'quote' | 'focus_milestone' | 'focus_blurb' | null>(null);
   const [fsFontSize, setFSFontSize] = useState(18);
   const fsTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://widget.cloudinary.com/v2.0/global/all.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   const openFS = (content: string, target: any) => {
     setFSContent(content);
@@ -380,8 +388,8 @@ export default function AdminDashboard() {
     const url = editingProject ? `/api/projects/${editingProject.id}` : '/api/projects';
     const method = editingProject ? 'PATCH' : 'POST';
 
-    // Strategy: Combine Architecture, Demo, and PDF into the single existing 'links' field
-    const combinedLinks = `${links || ''}|||${demoUrl || ''}|||${pdfUrl || ''}`;
+    // Strategy: Combine Architecture, Demo, PDF, and Thumbnail into the single existing 'links' field
+    const combinedLinks = `${links || ''}|||${demoUrl || ''}|||${pdfUrl || ''}|||${thumbnailUrl || ''}`;
     
     const res = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json' },
@@ -396,7 +404,7 @@ export default function AdminDashboard() {
     });
 
     if (res.ok) {
-      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setDemoUrl(''); setPdfUrl(''); setProjectMilestone(''); setFinalDestination('');
+      setTitle(''); setDescription(''); setVideoUrl(''); setLinks(''); setDemoUrl(''); setPdfUrl(''); setThumbnailUrl(''); setProjectMilestone(''); setFinalDestination('');
       setEditingProject(null);
       fetchAll(); flash('projects', editingProject ? '✓ Project updated!' : '✓ Project added!');
     } else flash('projects', '✗ Failed.');
@@ -411,6 +419,7 @@ export default function AdminDashboard() {
     setLinks(parts[0] || '');
     setDemoUrl(parts[1] || '');
     setPdfUrl(parts[2] || '');
+    setThumbnailUrl(parts[3] || '');
     setProjectMilestone(p.currentMilestone || '');
     setFinalDestination(p.finalDestination || '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1106,6 +1115,31 @@ export default function AdminDashboard() {
                     <div className="form-group">
                       <label className="label">Demo Video URL (Optional)</label>
                       <input type="text" className="form-control" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://..." />
+                    </div>
+                    <div className="form-group">
+                      <label className="label">Project Thumbnail (Cloudinary Upload)</label>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <input type="text" className="form-control" value={thumbnailUrl} onChange={e => setThumbnailUrl(e.target.value)} placeholder="Image URL or upload below..." />
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            // @ts-ignore
+                            const widget = window.cloudinary.createUploadWidget({
+                              cloudName: 'demo', // USER: Change this to your cloud name
+                              uploadPreset: 'unsigned_preset' // USER: Change this to your preset
+                            }, (error, result) => { 
+                              if (!error && result && result.event === "success") { 
+                                setThumbnailUrl(result.info.secure_url);
+                              }
+                            });
+                            widget.open();
+                          }}
+                          className="btn" 
+                          style={{ height: '42px', padding: '0 20px', background: '#000', color: '#fff', fontSize: '11px', fontWeight: 800 }}
+                        >
+                          UPLOAD
+                        </button>
+                      </div>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
                       <button type="submit" className="btn btn-primary" style={{ flex: 1, height: '48px', borderRadius: '12px' }}>
