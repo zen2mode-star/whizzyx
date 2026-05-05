@@ -1115,8 +1115,30 @@ export default function AdminDashboard() {
                       <input type="text" className="form-control" value={demoUrl} onChange={e => setDemoUrl(e.target.value)} placeholder="https://..." />
                     </div>
                     <div className="form-group">
-                      <label className="label">Documentation PDF Link</label>
-                      <input type="text" className="form-control" value={pdfUrl} onChange={e => setPdfUrl(e.target.value)} placeholder="https://path-to-pdf.pdf" />
+                      <label className="label">Documentation PDF (Cloudinary Upload)</label>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <input type="text" className="form-control" value={pdfUrl} onChange={e => setPdfUrl(e.target.value)} placeholder="PDF URL or upload below..." />
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            // @ts-ignore
+                            const widget = window.cloudinary.createUploadWidget({
+                              cloudName: 'dztz30gio',
+                              uploadPreset: 'whizzyx_preset',
+                              clientAllowedFormats: ['pdf']
+                            }, (error: any, result: any) => { 
+                              if (!error && result && result.event === "success") { 
+                                setPdfUrl(result.info.secure_url);
+                              }
+                            });
+                            widget.open();
+                          }}
+                          className="btn" 
+                          style={{ height: '42px', padding: '0 20px', background: '#3B82F6', color: '#fff', fontSize: '11px', fontWeight: 800 }}
+                        >
+                          UPLOAD PDF
+                        </button>
+                      </div>
                     </div>
                     <div className="form-group">
                       <label className="label">Demo Video URL (Optional)</label>
