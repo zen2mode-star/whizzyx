@@ -27,9 +27,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             <div className="mono" style={{ fontSize: '11px', color: '#10B981', fontWeight: 800, marginBottom: '12px' }}>[MODULE://{project.title}]</div>
             <h1 style={{ fontSize: '48px', fontWeight: 900, marginBottom: '32px', letterSpacing: '-0.04em' }}>{displayTitle || project.title}</h1>
             
-            <div style={{ fontSize: '18px', lineHeight: '1.8', color: '#444', marginBottom: '48px', whiteSpace: 'pre-wrap' }}>
-              {project.description}
-            </div>
+            <div 
+              style={{ fontSize: '18px', lineHeight: '1.8', color: '#444', marginBottom: '48px', overflowWrap: 'break-word' }}
+              dangerouslySetInnerHTML={{ __html: project.description }} 
+            />
 
             <div style={{ background: 'white', border: '1px solid #eee', borderRadius: '24px', padding: '40px', marginBottom: '40px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '24px' }}>Engineering Specs</h2>

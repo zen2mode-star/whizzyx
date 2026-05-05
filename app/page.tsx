@@ -1039,11 +1039,18 @@ export default function Home() {
                           
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
                             {demoLink && (
-                              <div className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
+                              <div onClick={(e) => { e.stopPropagation(); window.open(demoLink, '_blank'); }} className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
                                 LIVE DEMO
                               </div>
                             )}
-                            <div className="btn" style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setActiveProjectRoadmap(p); }}
+                              className="btn" 
+                              style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}
+                            >
+                              ROADMAP
+                            </button>
+                            <div className="btn" style={{ border: '1px solid #3B82F6', color: '#3B82F6', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
                               VIEW SPECS
                             </div>
                           </div>
