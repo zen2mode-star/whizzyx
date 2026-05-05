@@ -975,75 +975,85 @@ export default function Home() {
                 <p className="text-muted" style={{ fontSize: '18px' }}>Stable systems and production-grade engineering deployments.</p>
               </div>
 
-              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '48px' }}>
-                {projects.map((p: any) => (
-                  <div key={p.id} className="card" style={{ display: 'flex', flexDirection: 'column', padding: '40px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '28px' }}>
-                      <span className="badge badge-success" style={{ borderRadius: '8px', padding: '6px 14px', background: 'rgba(34, 197, 94, 0.1)', color: '#16a34a', border: '1px solid rgba(34, 197, 94, 0.2)' }}>Production</span>
-                      <span className="mono text-muted" style={{ fontSize: '12px', fontWeight: 700 }}>VER-2.4.0</span>
-                    </div>
-                    <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[MODULE://TARGET_INEFFICIENCY]</div>
-                    <div style={{ marginBottom: '32px', display: 'inline-block', padding: '14px 28px', background: 'white', border: '2px solid #111', borderRadius: '4px', boxShadow: '6px 6px 0px #111' }}>
-                      <h3 style={{ fontSize: '22px', fontWeight: 800, margin: 0 }}>{p.title}</h3>
-                    </div>
-                    <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[LOG://ENGINEERED_SOLUTION]</div>
-                    <div className="prose" style={{ fontSize: '15px', lineHeight: '1.7', color: 'var(--text-secondary)', flex: 1, marginBottom: '24px' }}>
-                      <RenderContent content={p.description} />
-                    </div>
-                    {p.currentMilestone && (
-                      <div className="mb-8">
-                        <div className="mb-2 mono text-muted" style={{ fontSize: '9px', fontWeight: 800 }}>[LOG://LATEST_MILESTONE]</div>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                          <div style={{ width: '6px', height: '6px', background: '#10B981', borderRadius: '50%', boxShadow: '0 0 8px #10B981' }}></div>
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{p.currentMilestone}</span>
+              <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '40px' }}>
+                {projects.map((p: any) => {
+                  const getYouTubeId = (url: string) => {
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = url?.match(regExp);
+                    return (match && match[2].length === 11) ? match[2] : null;
+                  };
+                  const youtubeId = getYouTubeId(p.videoUrl || '');
+                  const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
+
+                  return (
+                    <div key={p.id} className="project-card">
+                      <div className="project-thumbnail">
+                        {thumbnailUrl ? (
+                          <img src={thumbnailUrl} alt={p.title} className="thumbnail-img" />
+                        ) : (
+                          <div className="thumbnail-img" style={{ 
+                            background: 'linear-gradient(135deg, #0a0a0a 0%, #2a2a2a 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative'
+                          }}>
+                            <div style={{ position: 'absolute', inset: 0, opacity: 0.1, backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                            <div className="mono" style={{ color: 'rgba(255,255,255,0.2)', fontSize: '12px', fontWeight: 900 }}>[MODULE_PREVIEW://{p.title.toUpperCase()}]</div>
+                          </div>
+                        )}
+                        <div className="thumbnail-overlay">
+                          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                            <span className="badge" style={{ background: 'rgba(0,0,0,0.8)', color: 'white', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                              {p.currentMilestone || 'STABLE'}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: 'auto' }}>
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        {(() => {
-                          const parts = (p.links || '').split('|||');
-                          const archLink = parts[0];
-                          const demoLink = parts[1];
-                          const pdfLink  = parts[2];
+                      
+                      <div className="project-info">
+                        <div className="project-avatar">
+                          {p.title.charAt(0)}
+                        </div>
+                        <div className="project-details">
+                          <h3 className="project-title">{p.title}</h3>
+                          <p className="project-desc">{p.description.replace(/[#*]/g, '').slice(0, 100)}...</p>
                           
-                          return (
-                            <>
-                              {demoLink && (
-                                <a href={demoLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, background: '#10B981', borderColor: '#10B981', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.2)' }}>
-                                  LIVE PROJECT
-                                </a>
-                              )}
-                              {pdfLink && (
-                                <a href={`/pdf-viewer?url=${encodeURIComponent(pdfLink)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: '2px solid #3B82F6', color: '#3B82F6' }}>
-                                  VIEW PDF
-                                </a>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        {(() => {
-                          const parts = (p.links || '').split('|||');
-                          const archLink = parts[0];
-                          return archLink ? (
-                            <a href={archLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '15px', fontWeight: 700 }}>
-                              ARCHITECTURE
-                            </a>
-                          ) : null;
-                        })()}
-                        <button 
-                          onClick={() => setActiveProjectRoadmap(p)}
-                          className="btn" 
-                          style={{ flex: 1, height: '52px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: '2px solid #000' }}
-                        >
-                          ROADMAP
-                        </button>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
+                            {(() => {
+                              const parts = (p.links || '').split('|||');
+                              const archLink = parts[0];
+                              const demoLink = parts[1];
+                              const pdfLink  = parts[2];
+                              
+                              return (
+                                <>
+                                  {demoLink && (
+                                    <a href={demoLink} target="_blank" rel="noopener noreferrer" className="btn" style={{ background: '#10B981', color: 'white', fontSize: '11px', height: '32px', borderRadius: '8px' }}>
+                                      LIVE DEMO
+                                    </a>
+                                  )}
+                                  {pdfLink && (
+                                    <a href={`/pdf-viewer?url=${encodeURIComponent(pdfLink)}`} target="_blank" rel="noopener noreferrer" className="btn" style={{ border: '1px solid #3B82F6', color: '#3B82F6', fontSize: '11px', height: '32px', borderRadius: '8px' }}>
+                                      PDF DOCS
+                                    </a>
+                                  )}
+                                  <button 
+                                    onClick={() => setActiveProjectRoadmap(p)}
+                                    className="btn" 
+                                    style={{ border: '1px solid #000', fontSize: '11px', height: '32px', borderRadius: '8px' }}
+                                  >
+                                    ROADMAP
+                                  </button>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
