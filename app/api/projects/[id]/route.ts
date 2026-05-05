@@ -26,7 +26,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         videoUrl: body.videoUrl,
         links: body.links,
         currentMilestone: body.currentMilestone,
-        finalDestination: body.finalDestination
+        finalDestination: body.finalDestination,
+        statusTag: body.statusTag,
+        isHidden: body.isHidden !== undefined ? body.isHidden : undefined
       }
     });
     

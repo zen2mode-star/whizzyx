@@ -15,6 +15,8 @@ model Project {
   links       String?
   finalDestination String? @db.Text
   currentMilestone String? @db.Text
+  statusTag   String?       @default("Just Idea") // Completed, Will Work in Future, Just Idea
+  isHidden    Boolean       @default(false)
   createdAt   DateTime      @default(now())
   updates     BuildUpdate[]
   focus       CurrentFocus?
@@ -67,6 +69,7 @@ model CurrentFocus {
   project   Project? @relation(fields: [projectId], references: [id])
   milestone   String?  @db.Text
   finalDestination String? @db.Text
+  isHidden    Boolean  @default(false)
   updatedAt DateTime @updatedAt
 }
 
@@ -93,12 +96,29 @@ model Collaborator {
   portfolio String?
   createdAt DateTime @default(now())
 }
+
 model BlogPost {
   id        Int      @id @default(autoincrement())
   title     String
   content   String   @db.Text
   excerpt   String?
   author    String   @default("MJ")
+  isHidden  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model VisitorLead {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  interest  String?
+  createdAt DateTime @default(now())
+}
+
+model VisitLog {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  userAgent String?
+  createdAt DateTime @default(now())
 }

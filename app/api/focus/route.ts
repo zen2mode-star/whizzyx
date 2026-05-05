@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, problem, description, blurb, status, projectId, milestone, finalDestination } = body;
+    const { id, problem, description, blurb, status, projectId, milestone, finalDestination, isHidden } = body;
     
     const parsedProjectId = (projectId && !isNaN(parseInt(projectId.toString()))) ? parseInt(projectId.toString()) : null;
 
@@ -48,7 +48,8 @@ export async function POST(request: Request) {
           status: status || 'Active',
           projectId: parsedProjectId,
           milestone,
-          finalDestination
+          finalDestination,
+          isHidden: isHidden !== undefined ? !!isHidden : undefined
         }
       });
       return NextResponse.json(updated);
@@ -72,7 +73,8 @@ export async function POST(request: Request) {
           status: status || 'Active',
           projectId: parsedProjectId,
           milestone,
-          finalDestination
+          finalDestination,
+          isHidden: isHidden !== undefined ? !!isHidden : undefined
         }
       });
       return NextResponse.json(updated);
@@ -85,7 +87,8 @@ export async function POST(request: Request) {
           status: status || 'Active',
           projectId: parsedProjectId,
           milestone,
-          finalDestination
+          finalDestination,
+          isHidden: !!isHidden
         }
       });
       return NextResponse.json(created);

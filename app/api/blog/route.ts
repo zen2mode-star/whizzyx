@@ -17,9 +17,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, content, excerpt } = body;
+    const { title, content, excerpt, isHidden } = body;
     const post = await prisma.blogPost.create({
-      data: { title, content, excerpt },
+      data: { title, content, excerpt, isHidden: !!isHidden },
     });
     return NextResponse.json(post);
   } catch (error) {

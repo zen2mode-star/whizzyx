@@ -97,22 +97,30 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
 
-  const [projects, setProjects]                   = useState([]);
-  const [focus, setFocus]                         = useState<any>(null);
-  const [otherActiveMissions, setOtherActiveMissions] = useState<any[]>([]);
-  const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
-  const [featuredSuggestions, setFeaturedSugg]    = useState([]);
-  const [quotes, setQuotes]                       = useState<any[]>([]);
-  const [settings, setSettings]                   = useState<Record<string, string>>({});
+  const [projects, setProjects]                   = useState<any[]>([]);
   const [blogPosts, setBlogPosts]                 = useState<any[]>([]);
-  const [updates, setUpdates] = useState<any[]>([]);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [selectedUpdate, setSelectedUpdate] = useState<any>(null);
+  const [focus, setFocus]                         = useState<any>(null);
+  const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
+  const [otherActiveMissions, setOtherActiveMissions] = useState<any[]>([]);
+  const [updates, setUpdates]                     = useState<any[]>([]);
+  const [featuredSuggestions, setFeaturedSuggestions] = useState<any[]>([]);
+  const [quotes, setQuotes]                       = useState<any[]>([]);
+  
+  const [showFocusRoadmap, setShowFocusRoadmap]   = useState(false);
+  const [activeProjectRoadmap, setActiveProjectRoadmap] = useState<any>(null);
+  const [viewMode, setViewMode]                   = useState<'list' | '3d'>('list');
+
+  // Lead Generation State
+  const [showLeadModal, setShowLeadModal] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [leadForm, setLeadForm] = useState({ name: '', email: '', interest: '' });
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+
+  const [settings, setSettings]                   = useState<Record<string, string>>({});
+  const [selectedUpdate, setSelectedUpdate]       = useState<any>(null);
   const [filterProject, setFilterProject]         = useState<number | 'all'>('all');
-  const [activeProjectRoadmap, setActiveProjectRoadmap] = useState<any | null>(null);
   const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
   const [isFocusDescExpanded, setIsFocusDescExpanded] = useState(false);
-  const [showFocusRoadmap, setShowFocusRoadmap] = useState(false);
 
   // Community contributions
   const [contributions, setContributions] = useState<Record<number, any[]>>({});
@@ -137,50 +145,62 @@ export default function Home() {
   const [joinPortfolio, setJoinPortfolio] = useState('');
   const [joinSubmitting, setJoinSubmitting] = useState(false);
   const [joinMsg, setJoinMsg]             = useState('');
- 
-  // Inquiry form
-  const [inquiryName, setInInquiryName]   = useState('');
-  const [inquiryCompany, setInquiryCompany] = useState('');
-  const [inquiryEmail, setInquiryEmail]   = useState('');
-  const [inquiryMsg, setInquiryMsg]       = useState('');
-  const [inquirySubmitting, setInquirySubmitting] = useState(false);
-  const [inquiryResult, setInquiryResult] = useState('');
+  
+  const fetchAll = async () => {
+    try {
+      const [projRes, blogRes, focusRes, updateRes, suggestRes, quoteRes, settingsRes] = await Promise.all([
+        fetch('/api/projects'),
+        fetch('/api/blog'),
+        fetch('/api/focus?status=all'),
+        fetch('/api/updates'),
+        fetch('/api/suggestions'),
+        fetch('/api/quotes'),
+        fetch('/api/settings')
+      ]);
+
+      const allProjects = await projRes.json();
+      const allBlogs    = await blogRes.json();
+      const allFocus    = await focusRes.json();
+      const allUpdates  = await updateRes.json();
+      const allSuggest  = await suggestRes.json();
+      const allQuotes   = await quoteRes.json();
+      const allSettings = await settingsRes.json();
+
+      setSettings(allSettings);
+      setProjects(Array.isArray(allProjects) ? allProjects.filter((p: any) => !p.isHidden) : []);
+      setBlogPosts(Array.isArray(allBlogs) ? allBlogs.filter((b: any) => !b.isHidden) : []);
+      setUpdates(Array.isArray(allUpdates) ? allUpdates : []);
+      setFeaturedSuggestions(Array.isArray(allSuggest) ? allSuggest.filter((s: any) => s.isFeatured) : []);
+      
+      if (Array.isArray(allQuotes)) {
+        setQuotes(allQuotes.length > 0 ? allQuotes : [
+          { text: "Building efficient systems.", designation: "SYSTEM_CORE" },
+          { text: "Technical innovation.", designation: "ARCHITECT" },
+          { text: "Execution is everything.", designation: "LEAD_ENG" }
+        ]);
+      }
+
+      if (Array.isArray(allFocus)) {
+        const active = allFocus.filter((f: any) => f.status !== 'Hibernated' && !f.isHidden);
+        setFocus(active[0] || null);
+        setOtherActiveMissions(active.slice(1));
+        setHibernatedMissions(allFocus.filter((f: any) => f.status === 'Hibernated' && !f.isHidden));
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/projects').then(r => r.json()).then(setProjects).catch(console.error);
-    fetch('/api/focus?status=all&t=' + Date.now()).then(r => r.json()).then(data => {
-      if (Array.isArray(data)) {
-        const active = data.filter((f: any) => f.status !== 'Hibernated');
-        // Filter for unique problems to avoid duplicates in the UI
-        const uniqueActive: any[] = [];
-        const seenProblems = new Set();
-        active.forEach(m => {
-          if (!seenProblems.has(m.problem)) {
-            uniqueActive.push(m);
-            seenProblems.add(m.problem);
-          }
-        });
-        
-        setFocus(uniqueActive[0] || null);
-        setOtherActiveMissions(uniqueActive.slice(1));
-        setHibernatedMissions(data.filter((f: any) => f.status === 'Hibernated'));
-      } else {
-        setFocus(data);
-      }
-    }).catch(console.error);
-    fetch('/api/suggestions').then(r => r.json()).then(d => setFeaturedSugg(d.filter((s: any) => s.isFeatured))).catch(console.error);
-    fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
-    fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
-    fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
-    fetch('/api/quotes').then(r => r.json()).then((data: any[]) => {
-      setQuotes(data.length > 0 ? data : [
-        { text: "Building efficient systems.", designation: "SYSTEM_CORE" },
-        { text: "Technical innovation.", designation: "ARCHITECT" },
-        { text: "Execution is everything.", designation: "LEAD_ENG" }
-      ]);
-    }).catch(console.error);
-  }, []);
+    const auth = localStorage.getItem('whizzyx_visitor_auth');
+    if (auth) setIsAuthorized(true);
 
+    fetch('/api/visits', { method: 'POST' }).catch(() => {});
+    
+    fetchAll();
+    const interval = setInterval(fetchAll, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (quotes.length > 0) {
@@ -190,6 +210,39 @@ export default function Home() {
       return () => clearInterval(interval);
     }
   }, [quotes]);
+
+  const handleTabChange = (tab: Tab) => {
+    if (tab === 'projects' && !isAuthorized) {
+      setShowLeadModal(true);
+      return;
+    }
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const submitLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadForm.name || !leadForm.email) return;
+    
+    setIsSubmittingLead(true);
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(leadForm)
+      });
+      if (res.ok) {
+        localStorage.setItem('whizzyx_visitor_auth', 'true');
+        setIsAuthorized(true);
+        setShowLeadModal(false);
+        setActiveTab('projects');
+      }
+    } catch (err) {
+      console.error('Lead submission failed', err);
+    } finally {
+      setIsSubmittingLead(false);
+    }
+  };
 
   const repeatedQuotes = [...quotes, ...quotes, ...quotes];
 
@@ -488,7 +541,7 @@ export default function Home() {
           {NAV_TABS.slice(0, 4).map((t) => (
             <button
               key={t.id}
-              onClick={() => { setActiveTab(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => handleTabChange(t.id)}
               className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
             >
               <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
@@ -501,7 +554,7 @@ export default function Home() {
           {NAV_TABS.slice(4, 7).map((t) => (
             <button
               key={t.id}
-              onClick={() => { setActiveTab(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => handleTabChange(t.id)}
               className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
             >
               <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
@@ -514,7 +567,7 @@ export default function Home() {
           {NAV_TABS.slice(7).map((t) => (
             <button
               key={t.id}
-              onClick={() => { setActiveTab(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => handleTabChange(t.id)}
               className={`sidebar-item ${activeTab === t.id ? 'active' : ''}`}
             >
               <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === t.id ? 1 : 0.6 }}>{t.icon}</span>
@@ -1021,10 +1074,18 @@ export default function Home() {
                           </div>
                         )}
                         <div className="thumbnail-overlay">
-                          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                            <span className="badge" style={{ background: 'rgba(0,0,0,0.8)', color: 'white', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                              {p.currentMilestone || 'STABLE'}
-                            </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <span className="badge" style={{ 
+                                background: p.statusTag === 'Completed' ? '#10B981' : p.statusTag === 'Will Work in Future' ? '#3B82F6' : '#6B7280', 
+                                color: 'white', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '9px' 
+                              }}>
+                                {p.statusTag || 'Just Idea'}
+                              </span>
+                              <span className="badge" style={{ background: 'rgba(0,0,0,0.8)', color: 'white', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '9px' }}>
+                                {p.currentMilestone || 'STABLE'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1274,6 +1335,61 @@ export default function Home() {
                   isModal={true}
                   onClose={() => setShowFocusRoadmap(false)}
                 />
+              </div>
+            </div>
+          )}
+
+          {showLeadModal && (
+            <div className="modal-overlay" style={{ pointerEvents: 'auto', background: 'rgba(0,0,0,0.85)' }}>
+              <div className="card" style={{ width: '100%', maxWidth: '450px', background: 'var(--obsidian)', color: '#fff', border: '1px solid #333', padding: '48px', position: 'relative' }}>
+                <button onClick={() => setShowLeadModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: '#666', fontSize: '20px', cursor: 'pointer' }}>×</button>
+                <div className="mono text-muted mb-8" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.3em' }}>[SYSTEM://ACCESS_RESTRICTED]</div>
+                <h2 style={{ fontSize: '28px', color: '#fff', marginBottom: '16px' }}>Project Archive Access</h2>
+                <p className="text-muted mb-10" style={{ fontSize: '14px', lineHeight: 1.6 }}>To explore the WhizzyX engineering blueprints and modular systems, please identify yourself.</p>
+                
+                <form onSubmit={submitLead}>
+                  <div className="form-group mb-6">
+                    <label className="label" style={{ color: '#aaa' }}>LEGAL_NAME</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      style={{ background: '#111', border: '1px solid #333', color: '#fff', height: '48px' }}
+                      value={leadForm.name}
+                      onChange={e => setLeadForm({...leadForm, name: e.target.value})}
+                      placeholder="Enter your name"
+                      required
+                    />
+                  </div>
+                  <div className="form-group mb-6">
+                    <label className="label" style={{ color: '#aaa' }}>COMMUNICATION_ENDPOINT (EMAIL)</label>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      style={{ background: '#111', border: '1px solid #333', color: '#fff', height: '48px' }}
+                      value={leadForm.email}
+                      onChange={e => setLeadForm({...leadForm, email: e.target.value})}
+                      placeholder="email@example.com"
+                      required
+                    />
+                  </div>
+                  <div className="form-group mb-10">
+                    <label className="label" style={{ color: '#aaa' }}>PRIMARY_INTEREST</label>
+                    <select 
+                      className="form-control" 
+                      style={{ background: '#111', border: '1px solid #333', color: '#fff', height: '48px' }}
+                      value={leadForm.interest}
+                      onChange={e => setLeadForm({...leadForm, interest: e.target.value})}
+                    >
+                      <option value="Research">Technical Research</option>
+                      <option value="Collaboration">Collaboration</option>
+                      <option value="Licensing">System Licensing</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', height: '56px', background: '#fff', color: '#000', fontWeight: 800, fontSize: '14px' }} disabled={isSubmittingLead}>
+                    {isSubmittingLead ? 'SYNCHRONIZING...' : 'INITIALIZE SESSION →'}
+                  </button>
+                </form>
               </div>
             </div>
           )}

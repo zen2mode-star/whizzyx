@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-type Tab = 'focus' | 'updates' | 'projects' | 'blog' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials';
+type Tab = 'focus' | 'updates' | 'projects' | 'blog' | 'quotes' | 'suggestions' | 'collaborators' | 'settings' | 'credentials' | 'analytics';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('focus');
@@ -32,6 +32,8 @@ export default function AdminDashboard() {
   });
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [visitLogs, setVisitLogs] = useState<any[]>([]);
 
   // Project form
   const [editingProject, setEditingProject] = useState<any>(null);
@@ -45,6 +47,8 @@ export default function AdminDashboard() {
   const [pdfUrl, setPdfUrl] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [displayTitle, setDisplayTitle] = useState('');
+  const [statusTag, setStatusTag] = useState('Just Idea');
+  const [isHidden, setIsHidden] = useState(false);
 
   // Quote form
   const [editingQuote, setEditingQuote] = useState<any>(null);
@@ -56,6 +60,7 @@ export default function AdminDashboard() {
   const [blogTitle, setBlogTitle] = useState('');
   const [blogContent, setBlogContent] = useState('');
   const [blogExcerpt, setBlogExcerpt] = useState('');
+  const [blogIsHidden, setBlogIsHidden] = useState(false);
 
   // Update form
   const [updateTitle, setUpdateTitle] = useState('');
@@ -249,6 +254,9 @@ export default function AdminDashboard() {
     fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
     fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
     fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
+    fetch('/api/leads').then(r => r.json()).then(setLeads).catch(console.error);
+    fetch('/api/visits').then(r => r.json()).then(setVisitLogs).catch(console.error);
+    fetch('/api/quotes').then(r => r.json()).then(setQuotes).catch(console.error);
     fetch('/api/focus?status=all&t=' + Date.now()).then(r => r.json()).then(data => {
       if (Array.isArray(data)) {
         const active = data.find((f: any) => f.status !== 'Hibernated');
@@ -387,21 +395,26 @@ export default function AdminDashboard() {
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = editingProject ? `/api/projects/${editingProject.id}` : '/api/projects';
-    const method = editingProject ? 'PATCH' : 'POST';
+    const method = editingProject ? 'PUT' : 'POST';
 
-    // Strategy: Combine Architecture, Demo, PDF, Thumbnail, and DisplayTitle into the single existing 'links' field
-    const combinedLinks = `${links || ''}|||${demoUrl || ''}|||${pdfUrl || ''}|||${thumbnailUrl || ''}|||${displayTitle || ''}`;
-    
-    const res = await fetch(url, {
-      method, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+    const body = { 
         title, 
         description, 
         videoUrl, 
-        links: combinedLinks, 
+        links, 
         currentMilestone: projectMilestone, 
-        finalDestination 
-      }),
+        finalDestination, 
+        demoUrl, 
+        pdfUrl, 
+        thumbnailUrl, 
+        displayTitle,
+        statusTag,
+        isHidden
+      };
+    
+    const res = await fetch(url, {
+      method, headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
 
     if (res.ok) {
@@ -412,19 +425,27 @@ export default function AdminDashboard() {
   };
 
   const handleEditProject = (p: any) => {
-    setEditingProject(p);
     setTitle(p.title);
     setDescription(p.description);
     setVideoUrl(p.videoUrl || '');
-    const parts = (p.links || '').split('|||');
-    setLinks(parts[0] || '');
-    setDemoUrl(parts[1] || '');
-    setPdfUrl(parts[2] || '');
-    setThumbnailUrl(parts[3] || '');
-    setDisplayTitle(parts[4] || '');
+    setLinks(p.links || '');
     setProjectMilestone(p.currentMilestone || '');
     setFinalDestination(p.finalDestination || '');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStatusTag(p.statusTag || 'Just Idea');
+    setIsHidden(!!p.isHidden);
+    
+    // Parse links if they follow the format: Architecture|||Demo|||PDF|||Thumbnail|||DisplayTitle
+    if (p.links && p.links.includes('|||')) {
+      const parts = p.links.split('|||');
+      setDemoUrl(parts[1] || '');
+      setPdfUrl(parts[2] || '');
+      setThumbnailUrl(parts[3] || '');
+      setDisplayTitle(parts[4] || '');
+    } else {
+      setDemoUrl(''); setPdfUrl(''); setThumbnailUrl(''); setDisplayTitle('');
+    }
+    setEditingProject(p);
+    setActiveTab('projects');
   };
 
   const handleCancelEdit = () => {
@@ -529,24 +550,26 @@ export default function AdminDashboard() {
   // --- Blog ---
   const handleAddBlog = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = editingBlog ? `/api/blog/${editingBlog.id}` : '/api/blog';
-    const method = editingBlog ? 'PATCH' : 'POST';
-    const res = await fetch(url, {
-      method, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: blogTitle, content: blogContent, excerpt: blogExcerpt }),
+    const body = { title: blogTitle, content: blogContent, excerpt: blogExcerpt, isHidden: blogIsHidden };
+    const res = await fetch(editingBlog ? `/api/blog/${editingBlog.id}` : '/api/blog', {
+      method: editingBlog ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-    if (res.ok) {
-      setBlogTitle(''); setBlogContent(''); setBlogExcerpt(''); setEditingBlog(null);
-      fetchAll(); flash('blog', editingBlog ? '✓ Blog post updated!' : '✓ Blog post published!');
-    } else flash('blog', '✗ Failed.');
+    setMsg(prev => ({ ...prev, blog: res.ok ? (editingBlog ? '✓ Blog post updated' : '✓ Blog post published') : '✗ Operation failed' }));
+    if (res.ok) { 
+      setBlogTitle(''); setBlogContent(''); setBlogExcerpt(''); setEditingBlog(null); setBlogIsHidden(false);
+      fetch('/api/blog').then(r => r.json()).then(setBlogPosts);
+    }
+    setTimeout(() => setMsg(prev => ({ ...prev, blog: '' })), 5000);
   };
 
-  const handleEditBlog = (b: any) => {
-    setEditingBlog(b);
-    setBlogTitle(b.title);
-    setBlogContent(b.content);
-    setBlogExcerpt(b.excerpt || '');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleEditBlog = (post: any) => {
+    setBlogTitle(post.title);
+    setBlogContent(post.content);
+    setBlogExcerpt(post.excerpt || '');
+    setBlogIsHidden(!!post.isHidden);
+    setEditingBlog(post);
   };
 
   const handleDeleteBlog = async (id: number) => {
@@ -702,6 +725,17 @@ export default function AdminDashboard() {
               {t.label}
             </button>
           ))}
+          <button onClick={() => setActiveTab('analytics')} className={`sidebar-item ${activeTab === 'analytics' ? 'active' : ''}`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Website Info
+          </button>
+          <div className="sidebar-divider" />
+          <button onClick={() => setActiveTab('credentials')} className={`sidebar-item ${activeTab === 'credentials' ? 'active' : ''}`}>
+            <span style={{ display: 'flex', alignItems: 'center', opacity: activeTab === 'credentials' ? 1 : 0.6 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            Credentials
+          </button>
         </aside>
 
         {/* ── Main Content Area ── */}
@@ -1098,6 +1132,23 @@ export default function AdminDashboard() {
                           ))}
                         </select>
                       </div>
+                      <div className="form-group">
+                        <label className="label">Project Status Tag</label>
+                        <select 
+                          className="form-control" 
+                          value={statusTag} 
+                          onChange={e => setStatusTag(e.target.value)}
+                          style={{ fontSize: '14px', fontWeight: 600 }}
+                        >
+                          <option value="Completed">Completed</option>
+                          <option value="Will Work in Future">Will Work in Future</option>
+                          <option value="Just Idea">Just Idea</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <input type="checkbox" id="isHidden" checked={isHidden} onChange={e => setIsHidden(e.target.checked)} style={{ width: '20px', height: '20px' }} />
+                      <label htmlFor="isHidden" className="label" style={{ margin: 0, cursor: 'pointer' }}>TEMPORARILY HIDE FROM PUBLIC VIEW</label>
                     </div>
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -1232,7 +1283,11 @@ export default function AdminDashboard() {
                         <label className="label" style={{ margin: 0 }}>Full Content (Markdown)</label>
                         <button type="button" onClick={() => openFS(blogContent, 'blog')} className="btn" style={{ fontSize: '11px', fontWeight: 700, padding: '4px 12px' }}>FULL SCREEN EDITOR</button>
                       </div>
-                      <textarea className="form-control mono" rows={12} value={blogContent} onChange={e => setBlogContent(e.target.value)} required style={{ fontSize: '13px' }} />
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-secondary)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                      <input type="checkbox" id="blogIsHidden" checked={blogIsHidden} onChange={e => setBlogIsHidden(e.target.checked)} style={{ width: '20px', height: '20px' }} />
+                      <label htmlFor="blogIsHidden" className="label" style={{ margin: 0, cursor: 'pointer' }}>TEMPORARILY HIDE BLOG POST</label>
+                    </div>
+                    <textarea className="form-control mono" rows={12} value={blogContent} onChange={e => setBlogContent(e.target.value)} required style={{ fontSize: '13px' }} />
                     </div>
                     <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
                       <button type="submit" className="btn btn-primary" style={{ flex: 1, height: '48px', borderRadius: '12px' }}>
@@ -1331,8 +1386,48 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* SUGGESTIONS TAB */}
-          {activeTab === 'suggestions' && (
+          {/* ANALYTICS TAB */}
+          {activeTab === 'analytics' && (
+            <div className="fade-in">
+              <div className="mb-8">
+                <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Website Info & Traffic</h1>
+                <p className="text-muted">Monitor leads and visitor interactions.</p>
+              </div>
+              <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                <div className="card">
+                  <h3 className="mb-6">Visitor Leads (Project Interest)</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {leads.length === 0 && <p className="text-muted">No leads collected yet.</p>}
+                    {leads.map((l: any) => (
+                      <div key={l.id} style={{ padding: '16px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'white' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontWeight: 800, fontSize: '16px' }}>{l.name}</span>
+                          <span className="mono" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{new Date(l.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{l.email}</div>
+                        <div className="badge mono" style={{ fontSize: '10px', background: 'rgba(var(--accent-rgb), 0.1)', color: 'var(--accent)' }}>INTEREST: {l.interest || 'N/A'}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="card">
+                  <h3 className="mb-6">Recent Traffic Logs (IP Tracking)</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {visitLogs.length === 0 && <p className="text-muted">No traffic data available.</p>}
+                    {visitLogs.map((v: any) => (
+                      <div key={v.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <span className="mono" style={{ fontSize: '13px', fontWeight: 700 }}>{v.ip}</span>
+                          <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>{v.userAgent?.substring(0, 50)}...</div>
+                        </div>
+                        <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{new Date(v.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}          {activeTab === 'suggestions' && (
             <div className="fade-in">
               <div className="mb-8">
                 <h1 style={{ fontSize: '28px', fontWeight: 800 }}>Community Feedback</h1>

@@ -6,11 +6,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const blogId = parseInt(id);
     const body = await request.json();
-    const { title, content, excerpt } = body;
+    const { title, content, excerpt, isHidden } = body;
     
     const post = await prisma.blogPost.update({
       where: { id: blogId },
-      data: { title, content, excerpt },
+      data: { 
+        title, 
+        content, 
+        excerpt,
+        isHidden: isHidden !== undefined ? isHidden : undefined
+      },
     });
     
     return NextResponse.json(post);
