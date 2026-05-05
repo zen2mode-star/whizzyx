@@ -984,9 +984,7 @@ export default function Home() {
                   };
                   
                   const parts = (p.links || '').split('|||');
-                  const archLink = parts[0];
                   const demoLink = parts[1];
-                  const pdfLink  = parts[2];
                   const uploadedThumb = parts[3];
                   const displayTitle = parts[4];
 
@@ -994,14 +992,18 @@ export default function Home() {
                   const youtubeThumb = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg` : null;
                   const thumbnailUrl = uploadedThumb || youtubeThumb;
 
+                  // Clean description for preview (strip Markdown and HTML)
+                  const cleanDesc = p.description
+                    .replace(/<[^>]*>?/gm, '') // Strip HTML
+                    .replace(/[#*_~`]/g, '')   // Strip Markdown
+                    .slice(0, 85);
+
                   return (
-                    <a 
+                    <div 
                       key={p.id} 
-                      href={`/projects/${p.id}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                      onClick={() => window.open(`/projects/${p.id}`, '_blank')}
                       className="project-card"
-                      style={{ cursor: 'pointer', textDecoration: 'none' }}
+                      style={{ cursor: 'pointer' }}
                     >
                       <div className="project-thumbnail">
                         {thumbnailUrl ? (
@@ -1033,7 +1035,7 @@ export default function Home() {
                         </div>
                         <div className="project-details">
                           <h3 className="project-title" style={{ fontSize: '16px' }}>{displayTitle || p.title}</h3>
-                          <p className="project-desc" style={{ fontSize: '13px' }}>{p.description.replace(/[#*]/g, '').slice(0, 80)}...</p>
+                          <p className="project-desc" style={{ fontSize: '13px' }}>{cleanDesc}...</p>
                           
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
                             {demoLink && (
@@ -1047,7 +1049,7 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                    </a>
+                    </div>
                   );
                 })}
               </div>
