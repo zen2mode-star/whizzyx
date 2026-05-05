@@ -340,15 +340,27 @@ export default function AdminDashboard() {
     let targetProjectId = focus.projectId;
     
     if (!targetProjectId) {
-      const title = prompt('Enter a title for this new project:');
+      const title = prompt('Enter a title for this new project:', focus.problem);
       if (!title) return;
       
       const res = await fetch('/api/projects', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description: focus.problem }),
+        body: JSON.stringify({ 
+          title, 
+          description: focus.description || focus.problem,
+          currentMilestone: focus.milestone,
+          finalDestination: focus.finalDestination
+        }),
       });
       const newProj = await res.json();
       targetProjectId = newProj.id.toString();
+
+      // NEW: Link all "Current Focus" updates (projectId is null) to this new project
+      await fetch('/api/updates/link-focus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: targetProjectId })
+      });
     }
     
     // Clear focus
