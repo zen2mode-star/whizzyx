@@ -619,26 +619,10 @@ export default function Home() {
             box-shadow: 20px 0 50px rgba(0,0,0,0.1);
           }
           .content-area {
-            padding: 24px 16px !important;
-            width: 100% !important;
-            max-width: 100vw !important;
+            padding: 24px !important;
           }
           .header-inner {
-            padding: 0 16px !important;
-          }
-          .main-layout {
-            width: 100% !important;
-          }
-          .quote-module {
-            padding: 40px 16px !important;
-            margin: 0 -16px 24px !important;
-            border-radius: 0 !important;
-          }
-          .technical-card {
-            padding: 24px 20px !important;
-          }
-          .card {
-            padding: 20px !important;
+            padding: 0 24px !important;
           }
         }
           .sidebar-overlay {
