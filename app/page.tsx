@@ -613,6 +613,64 @@ export default function Home() {
             grid-template-columns: 1fr 1fr !important;
           }
         }
+        @media (max-width: 768px) {
+          .bottom-nav {
+            display: flex !important;
+          }
+          .sidebar {
+            display: none !important;
+          }
+          .main-content, .content-area {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .bottom-nav {
+            display: none !important;
+          }
+        }
+        .bottom-nav {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: calc(64px + env(safe-area-inset-bottom));
+          padding-bottom: env(safe-area-inset-bottom);
+          background: rgba(255,255,255,0.92);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-top: 1px solid var(--border-color);
+          z-index: 1100;
+          align-items: center;
+          justify-content: space-around;
+          box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+        }
+        .bottom-nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding: 8px 12px;
+          border: none;
+          background: none;
+          cursor: pointer;
+          color: var(--text-muted);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          transition: all 0.2s;
+          border-radius: 12px;
+          flex: 1;
+        }
+        .bottom-nav-item.active {
+          color: var(--text-primary);
+          background: var(--bg-tertiary);
+        }
+        .bottom-nav-item svg {
+          width: 22px;
+          height: 22px;
+        }
       `}</style>
       {/* ── Top Bar ── */}
       <header className="header">
@@ -633,7 +691,7 @@ export default function Home() {
               </button>
             )}
             <div className="logo" onClick={() => setActiveTab('home')} style={{ cursor: 'pointer' }}>
-              <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
+              <img src="/logo.png" alt="Whizzyx Logo — Engineering Innovation Lab" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
               <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>WhizzyX</span>
             </div>
           </div>
@@ -698,8 +756,8 @@ export default function Home() {
           ))}
           <div style={{ padding: '40px 24px 0', borderTop: '1px solid var(--border-color)', marginTop: '32px' }}>
             <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.7' }}>
-              Systematic optimization.<br/>
-              © {new Date().getFullYear()} WhizzyX Lab
+              Whizzyx — Systematic optimization.<br/>
+              © {new Date().getFullYear()} <strong>Whizzyx</strong> Lab
             </p>
           </div>
         </aside>
@@ -747,7 +805,7 @@ export default function Home() {
               <section className="mb-16">
                 <h1 
                   style={{ fontSize: '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.15 }}
-                  dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
+                  dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Whizzyx — Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
                 />
                 <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
                   {heroSubtitle}
@@ -1587,6 +1645,27 @@ export default function Home() {
           )}
         </main>
       </div>
+
+      {/* ── Mobile Bottom Navigation Bar ── */}
+      <nav className="bottom-nav" role="navigation" aria-label="Whizzyx Mobile Navigation">
+        {[
+          { id: 'home' as Tab, label: 'Home', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+          { id: 'focus' as Tab, label: 'Working', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> },
+          { id: 'projects' as Tab, label: 'Projects', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+          { id: 'community' as Tab, label: 'Community', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+          { id: 'inquiry' as Tab, label: 'Contact', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
+        ].map(({ id, label, icon }) => (
+          <button
+            key={id}
+            className={`bottom-nav-item ${activeTab === id ? 'active' : ''}`}
+            onClick={() => handleTabChange(id)}
+            aria-label={`Whizzyx ${label}`}
+          >
+            {icon}
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

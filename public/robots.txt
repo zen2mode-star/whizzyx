@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 
-# Protect admin dashboard
+# Protect admin and API
 Disallow: /admin/
 Disallow: /api/
 
+# Canonical sitemap location for Whizzyx
 Sitemap: https://whizzyx.vercel.app/sitemap.xml

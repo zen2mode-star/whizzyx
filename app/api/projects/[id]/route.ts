@@ -16,15 +16,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await request.json();
     console.log('PROJECT_PATCH_RECEIVED:', { id, body });
-    
-    // Using standard prisma update to handle fields properly
+
+    // The frontend sends individual fields (demoUrl, pdfUrl, thumbnailUrl, displayTitle).
+    // We must reconstruct the 'links' string from them, otherwise uploaded PDFs are lost.
+    // Format: |||demoUrl|||pdfUrl|||thumbnailUrl|||displayTitle
+    let linksToSave = body.links;
+    if (body.demoUrl !== undefined || body.pdfUrl !== undefined || body.thumbnailUrl !== undefined || body.displayTitle !== undefined) {
+      linksToSave = `|||${body.demoUrl || ''}|||${body.pdfUrl || ''}|||${body.thumbnailUrl || ''}|||${body.displayTitle || ''}`;
+    }
+
     const project = await prisma.project.update({
       where: { id: parseInt(id) },
       data: {
         title: body.title,
         description: body.description,
         videoUrl: body.videoUrl,
-        links: body.links,
+        links: linksToSave,
         currentMilestone: body.currentMilestone,
         finalDestination: body.finalDestination,
         statusTag: body.statusTag,
