@@ -28,11 +28,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fff', paddingBottom: '100px' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 768px) {
-          .project-hero { padding: 60px 20px !important; }
+          .project-hero { padding: 60px 32px !important; }
           .project-title-text { font-size: 36px !important; }
           .project-actions { flex-direction: column !important; width: 100% !important; }
           .project-actions a, .project-actions button { width: 100% !important; height: 52px !important; font-size: 13px !important; }
-          .project-main-grid { grid-template-columns: 1fr !important; gap: 40px !important; padding: 40px 20px !important; }
+          .project-main-grid { grid-template-columns: 1fr !important; gap: 40px !important; padding: 40px 32px !important; }
           .specs-sidebar { position: relative !important; top: 0 !important; padding: 32px 24px !important; }
         }
         .cyber-btn {

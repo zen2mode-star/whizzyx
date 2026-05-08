@@ -620,10 +620,10 @@ export default function Home() {
           }
           .main-content {
             margin-left: 0 !important;
-            padding: 24px 16px !important;
+            padding: 32px 24px !important;
           }
           .header-inner {
-            padding: 0 16px !important;
+            padding: 0 24px !important;
           }
           .sidebar-overlay {
             position: fixed;
