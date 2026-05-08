@@ -7,39 +7,57 @@ import RoadmapView from '@/components/RoadmapView';
 type Tab = 'home' | 'focus' | 'projects' | 'blog' | 'community' | 'join' | 'suggest' | 'support' | 'inquiry';
 
 const NAV_TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'home', label: 'Home', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-  )},
-  { id: 'focus', label: 'Working On', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-  )},
-  { id: 'projects', label: 'Projects', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  )},
-  { id: 'blog', label: 'Blog', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-  )},
-  { id: 'community', label: 'Community', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-  )},
-  { id: 'join', label: 'Join WhizzyX', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-  )},
-  { id: 'suggest', label: 'Suggest', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-  )},
-  { id: 'support', label: 'Support', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-  )},
-  { id: 'inquiry', label: 'Reach Us', icon: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
-  )},
+  {
+    id: 'home', label: 'Home', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+    )
+  },
+  {
+    id: 'focus', label: 'Working On', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
+    )
+  },
+  {
+    id: 'projects', label: 'Projects', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+    )
+  },
+  {
+    id: 'blog', label: 'Blog', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+    )
+  },
+  {
+    id: 'community', label: 'Community', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+    )
+  },
+  {
+    id: 'join', label: 'Join WhizzyX', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
+    )
+  },
+  {
+    id: 'suggest', label: 'Suggest', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" /><line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" /><line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" /><line x1="4.93" y1="19.07" x2="7.76" y2="16.24" /><line x1="16.24" y1="7.76" x2="19.07" y2="4.93" /></svg>
+    )
+  },
+  {
+    id: 'support', label: 'Support', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1" /><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" /><line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" /></svg>
+    )
+  },
+  {
+    id: 'inquiry', label: 'Reach Us', icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.29 7 12 12 20.71 7" /><line x1="12" y1="22" x2="12" y2="12" /></svg>
+    )
+  },
 ];
 
 /* Utility to render content with markdown-like breaks and HTML support */
 const RenderContent = ({ content }: { content: string }) => {
   if (!content) return null;
-  
+
   // 1. Convert Markdown-like syntax to HTML strings
   let processed = content
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -76,9 +94,9 @@ const RenderContent = ({ content }: { content: string }) => {
   safe = safe.replace(/\n/g, '<br/>');
 
   return (
-    <div 
+    <div
       className="prose-content"
-      dangerouslySetInnerHTML={{ __html: safe }} 
+      dangerouslySetInnerHTML={{ __html: safe }}
     />
   );
 };
@@ -97,18 +115,18 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
 
-  const [projects, setProjects]                   = useState<any[]>([]);
-  const [blogPosts, setBlogPosts]                 = useState<any[]>([]);
-  const [focus, setFocus]                         = useState<any>(null);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [focus, setFocus] = useState<any>(null);
   const [hibernatedMissions, setHibernatedMissions] = useState<any[]>([]);
   const [otherActiveMissions, setOtherActiveMissions] = useState<any[]>([]);
-  const [updates, setUpdates]                     = useState<any[]>([]);
+  const [updates, setUpdates] = useState<any[]>([]);
   const [featuredSuggestions, setFeaturedSuggestions] = useState<any[]>([]);
-  const [quotes, setQuotes]                       = useState<any[]>([]);
-  
-  const [showFocusRoadmap, setShowFocusRoadmap]   = useState(false);
+  const [quotes, setQuotes] = useState<any[]>([]);
+
+  const [showFocusRoadmap, setShowFocusRoadmap] = useState(false);
   const [activeProjectRoadmap, setActiveProjectRoadmap] = useState<any>(null);
-  const [viewMode, setViewMode]                   = useState<'list' | '3d'>('list');
+  const [viewMode, setViewMode] = useState<'list' | '3d'>('list');
 
   // Lead Generation State
   const [showLeadModal, setShowLeadModal] = useState(false);
@@ -116,41 +134,41 @@ export default function Home() {
   const [leadForm, setLeadForm] = useState({ name: '', email: '', interest: '' });
   const [isSubmittingLead, setIsSubmittingLead] = useState(false);
 
-  const [settings, setSettings]                   = useState<Record<string, string>>({});
-  const [selectedUpdate, setSelectedUpdate]       = useState<any>(null);
-  const [filterProject, setFilterProject]         = useState<number | 'all'>('all');
-  const [isFocusExpanded, setIsFocusExpanded]     = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [selectedUpdate, setSelectedUpdate] = useState<any>(null);
+  const [filterProject, setFilterProject] = useState<number | 'all'>('all');
+  const [isFocusExpanded, setIsFocusExpanded] = useState(false);
   const [isFocusDescExpanded, setIsFocusDescExpanded] = useState(false);
 
   // Community contributions
   const [contributions, setContributions] = useState<Record<number, any[]>>({});
-  const [openContrib, setOpenContrib]     = useState<number | null>(null);
-  const [contribText, setContribText]     = useState('');
-  const [contribName, setContribName]     = useState('');
+  const [openContrib, setOpenContrib] = useState<number | null>(null);
+  const [contribText, setContribText] = useState('');
+  const [contribName, setContribName] = useState('');
   const [contribSubmitting, setContribSubmitting] = useState(false);
 
   // Suggest form
-  const [problem, setProblem]       = useState('');
-  const [solution, setSolution]     = useState('');
-  const [email, setEmail]           = useState('');
-  const [userName, setUserName]     = useState('');
+  const [problem, setProblem] = useState('');
+  const [solution, setSolution] = useState('');
+  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [suggestMsg, setSuggestMsg] = useState('');
 
   // Join form
-  const [joinName, setJoinName]           = useState('');
-  const [joinEmail, setJoinEmail]         = useState('');
-  const [joinSkills, setJoinSkills]       = useState('');
-  const [joinWhy, setJoinWhy]             = useState('');
+  const [joinName, setJoinName] = useState('');
+  const [joinEmail, setJoinEmail] = useState('');
+  const [joinSkills, setJoinSkills] = useState('');
+  const [joinWhy, setJoinWhy] = useState('');
   const [joinPortfolio, setJoinPortfolio] = useState('');
   const [joinSubmitting, setJoinSubmitting] = useState(false);
-  const [joinMsg, setJoinMsg]             = useState('');
+  const [joinMsg, setJoinMsg] = useState('');
 
   // Inquiry form
-  const [inquiryName, setInInquiryName]   = useState('');
+  const [inquiryName, setInInquiryName] = useState('');
   const [inquiryCompany, setInquiryCompany] = useState('');
-  const [inquiryEmail, setInquiryEmail]   = useState('');
-  const [inquiryMsg, setInquiryMsg]       = useState('');
+  const [inquiryEmail, setInquiryEmail] = useState('');
+  const [inquiryMsg, setInquiryMsg] = useState('');
   const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const [inquiryResult, setInquiryResult] = useState('');
 
@@ -160,7 +178,7 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showProjectNav, setShowProjectNav] = useState(false);
   const [showMobileWarning, setShowMobileWarning] = useState(false);
-  
+
   const fetchAll = async () => {
     try {
       const [projRes, blogRes, focusRes, updateRes, suggestRes, quoteRes, settingsRes] = await Promise.all([
@@ -174,11 +192,11 @@ export default function Home() {
       ]);
 
       const allProjects = await projRes.json();
-      const allBlogs    = await blogRes.json();
-      const allFocus    = await focusRes.json();
-      const allUpdates  = await updateRes.json();
-      const allSuggest  = await suggestRes.json();
-      const allQuotes   = await quoteRes.json();
+      const allBlogs = await blogRes.json();
+      const allFocus = await focusRes.json();
+      const allUpdates = await updateRes.json();
+      const allSuggest = await suggestRes.json();
+      const allQuotes = await quoteRes.json();
       const allSettings = await settingsRes.json();
 
       setSettings(allSettings);
@@ -186,7 +204,7 @@ export default function Home() {
       setBlogPosts(Array.isArray(allBlogs) ? allBlogs.filter((b: any) => !b.isHidden) : []);
       setUpdates(Array.isArray(allUpdates) ? allUpdates : []);
       setFeaturedSuggestions(Array.isArray(allSuggest) ? allSuggest.filter((s: any) => s.isFeatured) : []);
-      
+
       if (Array.isArray(allQuotes)) {
         setQuotes(allQuotes.length > 0 ? allQuotes : [
           { text: "Building efficient systems.", designation: "SYSTEM_CORE" },
@@ -213,8 +231,8 @@ export default function Home() {
     const terms = localStorage.getItem('whizzyx_terms_accepted');
     if (!terms) setShowTermsModal(true);
 
-    fetch('/api/visits', { method: 'POST' }).catch(() => {});
-    
+    fetch('/api/visits', { method: 'POST' }).catch(() => { });
+
     const handleResize = () => {
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
@@ -276,7 +294,7 @@ export default function Home() {
   const submitLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!leadForm.name || !leadForm.email) return;
-    
+
     setIsSubmittingLead(true);
     try {
       const res = await fetch('/api/leads', {
@@ -300,8 +318,8 @@ export default function Home() {
   const repeatedQuotes = [...quotes, ...quotes, ...quotes];
 
   const heroSubtitle = settings.heroSubtitle || 'Identifying and solving real-world inefficiencies through technical innovation and non-linear thinking.';
-  const heroTagline  = settings.heroTagline  || '— Welcome to my workshop! 🛠️';
-  const hasFocus     = focus && focus.problem && focus.problem !== 'No problem set yet.';
+  const heroTagline = settings.heroTagline || '— Welcome to my workshop! 🛠️';
+  const hasFocus = focus && focus.problem && focus.problem !== 'No problem set yet.';
 
   const handleSuggestSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSubmitting(true);
@@ -685,7 +703,7 @@ export default function Home() {
         <div className="header-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {isMobile && (
-              <button 
+              <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 style={{ background: 'none', border: 'none', padding: '8px', cursor: 'pointer' }}
               >
@@ -736,7 +754,7 @@ export default function Home() {
               {t.label}
             </button>
           ))}
-          
+
           <div className="sidebar-divider" />
           <div className="sidebar-label">[ COMMUNITY_HUB ]</div>
           {NAV_TABS.slice(4, 7).map((t) => (
@@ -764,7 +782,7 @@ export default function Home() {
           ))}
           <div style={{ padding: '40px 24px 0', borderTop: '1px solid var(--border-color)', marginTop: '32px' }}>
             <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.7' }}>
-              Whizzyx — Systematic optimization.<br/>
+              Whizzyx — Systematic optimization.<br />
               © {new Date().getFullYear()} <strong>Whizzyx</strong> Lab
             </p>
           </div>
@@ -787,20 +805,20 @@ export default function Home() {
                   — {quotes[currentQuoteIndex]?.designation || 'SYSTEM_CORE'}
                 </div>
               </div>
-              
+
               <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px' }}>
                 {quotes.map((_: any, idx: number) => (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     onClick={() => setCurrentQuoteIndex(idx)}
-                    style={{ 
-                      width: idx === currentQuoteIndex ? '24px' : '6px', 
-                      height: '6px', 
-                      background: idx === currentQuoteIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)', 
+                    style={{
+                      width: idx === currentQuoteIndex ? '24px' : '6px',
+                      height: '6px',
+                      background: idx === currentQuoteIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
                       borderRadius: '3px',
                       cursor: 'pointer',
                       transition: 'all 0.3s'
-                    }} 
+                    }}
                   />
                 ))}
               </div>
@@ -811,7 +829,7 @@ export default function Home() {
           {activeTab === 'home' && (
             <div className="fade-in" style={{ maxWidth: '1200px', paddingTop: '0px' }}>
               <section className="mb-16">
-                <h1 
+                <h1
                   style={{ fontSize: isMobile ? '36px' : '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.15 }}
                   dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Whizzyx — Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
                 />
@@ -900,10 +918,10 @@ export default function Home() {
                 <div style={{ display: 'flex', gap: '48px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
                   <div style={{ flexShrink: 0 }}>
                     <div style={{ width: '180px', height: '180px', borderRadius: '24px', overflow: 'hidden', border: '4px solid #fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-                      <img 
-                        src={settings.founderAvatar || 'https://ui-avatars.com/api/?name=Architect&background=111&color=fff&size=256&bold=true'} 
-                        alt="Founder" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      <img
+                        src={settings.founderAvatar || 'https://ui-avatars.com/api/?name=Architect&background=111&color=fff&size=256&bold=true'}
+                        alt="Founder"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     </div>
                   </div>
@@ -923,7 +941,7 @@ export default function Home() {
                 <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '32px' }}>Navigate the Engineering Registry</h3>
                 <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
                   {projects.slice(0, 3).map(p => (
-                    <button 
+                    <button
                       key={p.id}
                       onClick={() => navigateToProject(p.id)}
                       className="btn"
@@ -932,7 +950,7 @@ export default function Home() {
                       {p.title} →
                     </button>
                   ))}
-                  <button 
+                  <button
                     onClick={() => handleTabChange('projects')}
                     className="btn btn-primary"
                     style={{ padding: '16px 32px', borderRadius: '16px', fontWeight: 800, fontSize: '14px' }}
@@ -945,16 +963,16 @@ export default function Home() {
               <div style={{ padding: '80px 0', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
                 <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.2em' }}>[SYSTEM://TRANSITION_READY]</div>
                 <h3 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '32px' }}>Ready to see the blueprint?</h3>
-                <button 
+                <button
                   onClick={() => {
                     setActiveTab('focus');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="btn btn-primary" 
+                  className="btn btn-primary"
                   style={{ height: '64px', padding: '0 48px', borderRadius: '32px', fontSize: '18px', fontWeight: 800, gap: '16px' }}
                 >
                   PROCEED TO ROADMAP
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                 </button>
               </div>
 
@@ -978,7 +996,7 @@ export default function Home() {
                           <div className="technical-label">[SYSTEM://{focus.status?.toUpperCase() || 'MISSION_LOG'}]</div>
                         </div>
                         <div className="mb-6" style={{ display: 'inline-block', padding: '18px 36px', background: 'white', border: '2px solid var(--obsidian)', borderRadius: '4px', boxShadow: '8px 8px 0px var(--obsidian)' }}>
-                            <h2 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{focus.problem}</h2>
+                          <h2 style={{ fontSize: '32px', fontWeight: 900, margin: 0, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{focus.problem}</h2>
                         </div>
                       </div>
                       {focus.projectId && (
@@ -997,7 +1015,7 @@ export default function Home() {
                           const desc = focus.description || '';
                           const blurb = focus.blurb || '';
                           const milestone = focus.milestone || '';
-                          
+
                           if (isFocusExpanded) {
                             return (
                               <div className="fade-in">
@@ -1026,37 +1044,37 @@ export default function Home() {
                               </div>
                             );
                           }
-                          
+
                           // Collapsed: Find a non-title blurb
                           let collapsedText = 'Technical deep-dive into system architectural upgrades and performance optimization.';
                           if (blurb && blurb.trim() !== title.trim()) collapsedText = blurb;
                           else if (milestone && milestone.trim() !== title.trim()) collapsedText = milestone;
                           else if (desc && desc.trim() !== title.trim()) collapsedText = desc;
                           else if (title.includes('\n')) collapsedText = title.split('\n').slice(1).join(' ');
-                          
+
                           return <RenderContent content={collapsedText} />;
                         })()}
                       </div>
-                      
-                      <button 
+
+                      <button
                         onClick={() => setIsFocusExpanded(!isFocusExpanded)}
-                        style={{ 
-                          marginTop: '12px', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '8px', 
-                          background: 'none', 
-                          border: 'none', 
-                          color: 'var(--accent)', 
-                          fontWeight: 700, 
-                          fontSize: '13px', 
+                        style={{
+                          marginTop: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--accent)',
+                          fontWeight: 700,
+                          fontSize: '13px',
                           cursor: 'pointer',
                           padding: 0
                         }}
                       >
                         {isFocusExpanded ? 'COLLAPSE' : 'READ FULL MISSION'}
-                        <svg 
-                          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" 
+                        <svg
+                          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"
                           style={{ transform: isFocusExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}
                         >
                           <path d="M6 9l6 6 6-6" />
@@ -1067,9 +1085,9 @@ export default function Home() {
 
                   <div className="flex justify-end mb-8">
                     <div style={{ display: 'flex', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                      <button 
+                      <button
                         onClick={() => setViewMode('list')}
-                        style={{ 
+                        style={{
                           padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
                           background: viewMode === 'list' ? 'var(--bg-primary)' : 'transparent',
                           color: viewMode === 'list' ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -1079,9 +1097,9 @@ export default function Home() {
                       >
                         LIST
                       </button>
-                      <button 
+                      <button
                         onClick={() => setShowFocusRoadmap(true)}
-                        style={{ 
+                        style={{
                           padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
                           background: 'transparent',
                           color: 'var(--text-secondary)',
@@ -1117,19 +1135,19 @@ export default function Home() {
                         return (
                           <div style={{ position: 'relative', paddingLeft: '48px' }}>
                             <div style={{ position: 'absolute', left: '20px', top: '0', bottom: '0', width: '2px', background: 'var(--border-color)', opacity: 0.5 }}></div>
-                            
+
                             <div className="flex flex-col gap-10">
                               {missionUpdates.map((update: any, idx: number) => (
                                 <div key={update.id} className="relative">
-                                  <div style={{ 
-                                    position: 'absolute', left: '-36px', top: '4px', 
-                                    width: '18px', height: '18px', borderRadius: '50%', 
-                                    background: idx === 0 ? 'var(--accent)' : 'var(--bg-primary)', 
+                                  <div style={{
+                                    position: 'absolute', left: '-36px', top: '4px',
+                                    width: '18px', height: '18px', borderRadius: '50%',
+                                    background: idx === 0 ? 'var(--accent)' : 'var(--bg-primary)',
                                     border: `3px solid ${idx === 0 ? 'var(--accent)' : 'var(--text-primary)'}`,
                                     boxShadow: idx === 0 ? '0 0 12px var(--accent)' : 'none',
                                     zIndex: 2
                                   }}></div>
-                                  
+
                                   <div className="card" style={{ padding: '32px', background: 'white' }}>
                                     <div className="flex justify-between items-start mb-4">
                                       <div>
@@ -1163,15 +1181,15 @@ export default function Home() {
                                 <div className="status-pulse"></div>
                                 <div className="technical-label">{mission.status?.toUpperCase()}</div>
                               </div>
-                              <button 
+                              <button
                                 onClick={() => {
-                                    // Swap this mission with the focus one
-                                    const oldFocus = focus;
-                                    setFocus(mission);
-                                    setOtherActiveMissions(prev => [...prev.filter(m => m.id !== mission.id), oldFocus].sort((a,b) => b.id - a.id));
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  // Swap this mission with the focus one
+                                  const oldFocus = focus;
+                                  setFocus(mission);
+                                  setOtherActiveMissions(prev => [...prev.filter(m => m.id !== mission.id), oldFocus].sort((a, b) => b.id - a.id));
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }}
-                                className="mono" 
+                                className="mono"
                                 style={{ fontSize: '10px', fontWeight: 800, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
                               >
                                 [SWITCH_FOCUS]
@@ -1182,16 +1200,16 @@ export default function Home() {
                               <RenderContent content={mission.description} />
                             </div>
                             <div className="flex justify-between items-center">
-                                <div className="mono" style={{ fontSize: '10px', color: '#999' }}>LOG_ID: #{mission.id}</div>
-                                <button 
-                                    onClick={() => {
-                                        setFocus(mission); // Temporary focus for roadmap
-                                        setShowFocusRoadmap(true);
-                                    }}
-                                    style={{ background: 'none', border: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
-                                >
-                                    VIEW ROADMAP ↗
-                                </button>
+                              <div className="mono" style={{ fontSize: '10px', color: '#999' }}>LOG_ID: #{mission.id}</div>
+                              <button
+                                onClick={() => {
+                                  setFocus(mission); // Temporary focus for roadmap
+                                  setShowFocusRoadmap(true);
+                                }}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                              >
+                                VIEW ROADMAP ↗
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -1247,7 +1265,7 @@ export default function Home() {
                     const match = url?.match(regExp);
                     return (match && match[2].length === 11) ? match[2] : null;
                   };
-                  
+
                   const parts = (p.links || '').split('|||');
                   const demoLink = parts[1];
                   const uploadedThumb = parts[3];
@@ -1264,8 +1282,8 @@ export default function Home() {
                     .slice(0, 85);
 
                   return (
-                    <div 
-                      key={p.id} 
+                    <div
+                      key={p.id}
                       onClick={() => window.open(`/projects/${p.id}`, '_blank')}
                       className="project-card"
                       style={{ cursor: 'pointer' }}
@@ -1274,7 +1292,7 @@ export default function Home() {
                         {thumbnailUrl ? (
                           <img src={thumbnailUrl} alt={p.title} className="thumbnail-img" />
                         ) : (
-                          <div className="thumbnail-img" style={{ 
+                          <div className="thumbnail-img" style={{
                             background: 'linear-gradient(135deg, #0a0a0a 0%, #2a2a2a 100%)',
                             display: 'flex',
                             alignItems: 'center',
@@ -1288,9 +1306,9 @@ export default function Home() {
                         <div className="thumbnail-overlay">
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                              <span className="badge" style={{ 
-                                background: p.statusTag === 'Completed' ? '#10B981' : p.statusTag === 'Will Work in Future' ? '#3B82F6' : '#6B7280', 
-                                color: 'white', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '9px' 
+                              <span className="badge" style={{
+                                background: p.statusTag === 'Completed' ? '#10B981' : p.statusTag === 'Will Work in Future' ? '#3B82F6' : '#6B7280',
+                                color: 'white', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '9px'
                               }}>
                                 {p.statusTag || 'Just Idea'}
                               </span>
@@ -1301,7 +1319,7 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="project-info">
                         <div className="project-avatar">
                           {p.title.charAt(0)}
@@ -1309,16 +1327,16 @@ export default function Home() {
                         <div className="project-details">
                           <h3 className="project-title" style={{ fontSize: '16px' }}>{displayTitle || p.title}</h3>
                           <p className="project-desc" style={{ fontSize: '13px' }}>{cleanDesc}...</p>
-                          
+
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
                             {demoLink && (
                               <div onClick={(e) => { e.stopPropagation(); window.open(demoLink, '_blank'); }} className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
                                 LIVE PROJECT
                               </div>
                             )}
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); setActiveProjectRoadmap(p); }}
-                              className="btn" 
+                              className="btn"
                               style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}
                             >
                               ROADMAP
@@ -1461,7 +1479,7 @@ export default function Home() {
                     <img src={settings.donateQrUrl} alt="Donate QR" style={{ width: '250px', height: '250px', borderRadius: '12px' }} />
                   ) : (
                     <div style={{ width: '250px', height: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center' }}>
-                      QR Code Pending.<br/>Please check back soon!
+                      QR Code Pending.<br />Please check back soon!
                     </div>
                   )}
                 </div>
@@ -1523,8 +1541,8 @@ export default function Home() {
           {activeProjectRoadmap && (
             <div className="modal-overlay" style={{ background: 'rgba(0,0,0,0.98)', pointerEvents: 'auto', padding: '2.5vh 2.5vw' }} onClick={() => setActiveProjectRoadmap(null)}>
               <div style={{ width: '95vw', height: '95vh', display: 'flex', borderRadius: '24px', overflow: 'hidden', border: '1px solid #333', boxShadow: '0 0 50px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
-                <RoadmapView 
-                  updates={updates.filter((u: any) => u.projectId?.toString() === activeProjectRoadmap.id?.toString())} 
+                <RoadmapView
+                  updates={updates.filter((u: any) => u.projectId?.toString() === activeProjectRoadmap.id?.toString())}
                   title={`${activeProjectRoadmap.title} Roadmap`}
                   finalDestination={activeProjectRoadmap.finalDestination}
                   isModal={true}
@@ -1536,13 +1554,13 @@ export default function Home() {
           {showFocusRoadmap && (
             <div className="modal-overlay" style={{ background: 'rgba(0,0,0,0.98)', pointerEvents: 'auto', padding: '2.5vh 2.5vw' }} onClick={() => setShowFocusRoadmap(false)}>
               <div style={{ width: '95vw', height: '95vh', display: 'flex', borderRadius: '24px', overflow: 'hidden', border: '1px solid #333', boxShadow: '0 0 50px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
-                <RoadmapView 
+                <RoadmapView
                   updates={updates.filter((u: any) => {
                     const pid = focus.projectId;
                     if (!pid) return !u.projectId;
                     return u.projectId?.toString() === pid.toString();
-                  })} 
-                  title={focus.problem || "Current Focus Mission"} 
+                  })}
+                  title={focus.problem || "Current Focus Mission"}
                   finalDestination={focus.finalDestination}
                   isModal={true}
                   onClose={() => setShowFocusRoadmap(false)}
@@ -1558,39 +1576,39 @@ export default function Home() {
                 <div className="mono text-muted mb-8" style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.3em' }}>[SYSTEM://ACCESS_RESTRICTED]</div>
                 <h2 style={{ fontSize: '28px', color: '#fff', marginBottom: '16px' }}>Project Archive Access</h2>
                 <p className="text-muted mb-10" style={{ fontSize: '14px', lineHeight: 1.6 }}>To explore the WhizzyX engineering blueprints and modular systems, please identify yourself.</p>
-                
+
                 <form onSubmit={submitLead}>
                   <div className="form-group mb-6">
                     <label className="label" style={{ color: '#aaa' }}>LEGAL_NAME</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <input
+                      type="text"
+                      className="form-control"
                       style={{ background: '#111', border: '1px solid #333', color: '#fff', height: '48px' }}
                       value={leadForm.name}
-                      onChange={e => setLeadForm({...leadForm, name: e.target.value})}
+                      onChange={e => setLeadForm({ ...leadForm, name: e.target.value })}
                       placeholder="Enter your name"
                       required
                     />
                   </div>
                   <div className="form-group mb-6">
                     <label className="label" style={{ color: '#aaa' }}>COMMUNICATION_ENDPOINT (EMAIL)</label>
-                    <input 
-                      type="email" 
-                      className="form-control" 
+                    <input
+                      type="email"
+                      className="form-control"
                       style={{ background: '#111', border: '1px solid #333', color: '#fff', height: '48px' }}
                       value={leadForm.email}
-                      onChange={e => setLeadForm({...leadForm, email: e.target.value})}
+                      onChange={e => setLeadForm({ ...leadForm, email: e.target.value })}
                       placeholder="email@example.com"
                       required
                     />
                   </div>
                   <div className="form-group mb-10">
                     <label className="label" style={{ color: '#aaa' }}>PRIMARY_INTEREST</label>
-                    <select 
-                      className="form-control" 
+                    <select
+                      className="form-control"
                       style={{ background: '#111', border: '1px solid #333', color: '#fff', height: '48px' }}
                       value={leadForm.interest}
-                      onChange={e => setLeadForm({...leadForm, interest: e.target.value})}
+                      onChange={e => setLeadForm({ ...leadForm, interest: e.target.value })}
                     >
                       <option value="Research">Technical Research</option>
                       <option value="Collaboration">Collaboration</option>
@@ -1641,9 +1659,9 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <button 
-                  onClick={acceptTerms} 
-                  className="btn btn-primary" 
+                <button
+                  onClick={acceptTerms}
+                  className="btn btn-primary"
                   style={{ width: '100%', height: '56px', borderRadius: '16px', fontWeight: 800, fontSize: '15px' }}
                 >
                   I ACKNOWLEDGE & AGREE →
@@ -1657,11 +1675,11 @@ export default function Home() {
       {/* ── Mobile Bottom Navigation Bar ── */}
       <nav className="bottom-nav" role="navigation" aria-label="Whizzyx Mobile Navigation">
         {[
-          { id: 'home' as Tab, label: 'Home', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-          { id: 'projects' as Tab, label: 'Projects', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
-          { id: 'suggest' as Tab, label: 'Suggest', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> },
-          { id: 'community' as Tab, label: 'Feed', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-          { id: 'more' as any, label: 'Menu', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg> },
+          { id: 'home' as Tab, label: 'Home', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
+          { id: 'projects' as Tab, label: 'Projects', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> },
+          { id: 'suggest' as Tab, label: 'Suggest', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" /><line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" /><line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" /><line x1="4.93" y1="19.07" x2="7.76" y2="16.24" /><line x1="16.24" y1="7.76" x2="19.07" y2="4.93" /></svg> },
+          { id: 'community' as Tab, label: 'Feed', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+          { id: 'more' as any, label: 'Menu', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg> },
         ].map(({ id, label, icon }) => (
           <button
             key={id}
