@@ -621,14 +621,12 @@ export default function Home() {
           .content-area {
             padding: 24px 20px !important;
             width: 100% !important;
-            overflow-x: hidden !important;
           }
           .header-inner {
             padding: 0 20px !important;
           }
           .main-layout {
-            overflow-x: hidden !important;
-            width: 100vw !important;
+            width: 100% !important;
           }
           .quote-module {
             padding: 40px 20px !important;
@@ -946,11 +944,11 @@ export default function Home() {
                 <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
                   {heroSubtitle}
                 </p>
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                  <div className="mono" style={{ fontSize: '13px', background: 'var(--text-primary)', color: 'white', padding: '10px 20px', borderRadius: '12px', display: 'inline-block', fontWeight: 600 }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div className="mono" style={{ fontSize: '12px', background: 'var(--text-primary)', color: 'white', padding: '10px 16px', borderRadius: '12px', display: 'inline-block', fontWeight: 600, maxWidth: '100%' }}>
                     {heroTagline}
                   </div>
-                  <button onClick={() => setActiveTab('projects')} className="btn" style={{ height: '44px', fontWeight: 600, border: '1px solid var(--border-color)', background: 'white' }}>
+                  <button onClick={() => setActiveTab('projects')} className="btn" style={{ height: '44px', fontWeight: 600, border: '1px solid var(--border-color)', background: 'white', flex: isMobile ? '1 1 100%' : 'none' }}>
                     {settings.homeExploreModulesBtn || 'EXPLORE MODULES →'}
                   </button>
                 </div>
@@ -1283,7 +1281,7 @@ export default function Home() {
                   {otherActiveMissions.length > 0 && (
                     <div className="mt-16 mb-16">
                       <div className="mono text-muted mb-8" style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.3em' }}>[SYSTEM://PARALLEL_EXPEDITIONS]</div>
-                      <div className="grid projects-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '32px' }}>
+                      <div className="grid projects-grid" style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(450px, 1fr))', gap: '32px' }}>
                         {otherActiveMissions.map((mission: any) => (
                           <div key={mission.id} className="card" style={{ padding: '32px', background: 'white', borderLeft: '4px solid var(--accent)' }}>
                             <div className="flex justify-between items-start mb-4">
