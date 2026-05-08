@@ -619,10 +619,20 @@ export default function Home() {
             box-shadow: 20px 0 50px rgba(0,0,0,0.1);
           }
           .content-area {
-            padding: 24px !important;
+            padding: 24px 20px !important;
+            width: 100% !important;
           }
           .header-inner {
-            padding: 0 24px !important;
+            padding: 0 20px !important;
+          }
+          .main-layout {
+            width: 100% !important;
+          }
+          .quote-module {
+            padding: 40px 20px !important;
+            margin: 0 !important;
+            border-radius: 24px !important;
+            width: 100% !important;
           }
         }
           .sidebar-overlay {
@@ -935,12 +945,24 @@ export default function Home() {
                 <p style={{ fontSize: isMobile ? '18px' : '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
                   {heroSubtitle}
                 </p>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div className="mono" style={{ fontSize: '12px', background: 'var(--text-primary)', color: 'white', padding: '10px 16px', borderRadius: '12px', display: 'inline-block', fontWeight: 600, maxWidth: '100%' }}>
-                    {heroTagline}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
+                  <div className="mono" style={{ 
+                    fontSize: '12px', background: 'var(--text-primary)', color: 'white', 
+                    padding: '12px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, width: isMobile ? '100%' : 'auto', textAlign: 'center' 
+                  }}>
+                    Welcome to my Virtual Office ! 🛠️
                   </div>
-                  <button onClick={() => setActiveTab('projects')} className="btn" style={{ height: '44px', fontWeight: 600, border: '1px solid var(--border-color)', background: 'white', flex: isMobile ? '1 1 100%' : 'none' }}>
-                    {settings.homeExploreModulesBtn || 'EXPLORE MODULES →'}
+                  <button 
+                    onClick={() => setActiveTab('projects')} 
+                    className="btn" 
+                    style={{ 
+                      height: '48px', fontWeight: 700, border: '1px solid var(--border-color)', 
+                      background: 'white', width: isMobile ? '100%' : 'auto', borderRadius: '12px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    EXPLORE MODULES →
                   </button>
                 </div>
               </section>
@@ -994,27 +1016,27 @@ export default function Home() {
                   <p className="text-muted" style={{ fontSize: '18px', maxWidth: '700px' }}>Our systematic architectural approach to identifying, engineering, and deploying modular solutions.</p>
                 </div>
 
-                <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
-                  <div className="technical-card">
-                    <div className="mono mb-4" style={{ color: 'var(--accent)', fontWeight: 800 }}>01. SIGNAL_DETECTION</div>
-                    <p className="text-muted" style={{ fontSize: '14px', lineHeight: 1.6 }}>Scanning the real world for inefficiencies and technical gaps. We broadcast signals for problems that need a modular cure.</p>
+                <div className="grid" style={{ gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', gap: isMobile ? '12px' : '32px' }}>
+                  <div className="technical-card" style={{ padding: isMobile ? '16px 12px' : '32px' }}>
+                    <div className="mono mb-4" style={{ color: 'var(--accent)', fontWeight: 800, fontSize: isMobile ? '8px' : '12px' }}>01. SIGNAL_DETECTION</div>
+                    <p className="text-muted" style={{ fontSize: isMobile ? '10px' : '14px', lineHeight: 1.5 }}>Scanning the real world for inefficiencies and technical gaps. We broadcast signals for problems that need a modular cure.</p>
                   </div>
-                  <div className="technical-card" style={{ background: '#000', color: '#fff' }}>
+                  <div className="technical-card" style={{ background: '#000', color: '#fff', padding: isMobile ? '16px 12px' : '32px' }}>
                     <div className="scan-anim" style={{ background: 'linear-gradient(to right, transparent, #fff, transparent)' }}></div>
-                    <div className="mono mb-4" style={{ color: '#fff', fontWeight: 800, opacity: 0.8 }}>02. SYSTEM_ARCHITECT</div>
-                    <p style={{ fontSize: '14px', lineHeight: 1.6, opacity: 0.7 }}>Designing the high-fidelity blueprint. We engineer robust, non-linear systems to bridge identified gaps with code and logic.</p>
+                    <div className="mono mb-4" style={{ color: '#fff', fontWeight: 800, opacity: 0.8, fontSize: isMobile ? '8px' : '12px' }}>02. SYSTEM_ARCHITECT</div>
+                    <p style={{ fontSize: isMobile ? '10px' : '14px', lineHeight: 1.5, opacity: 0.7 }}>Designing the high-fidelity blueprint. We engineer robust, non-linear systems to bridge identified gaps with code and logic.</p>
                   </div>
-                  <div className="technical-card">
-                    <div className="mono mb-4" style={{ color: 'var(--accent)', fontWeight: 800 }}>03. PRODUCTION_DEPLOY</div>
-                    <p className="text-muted" style={{ fontSize: '14px', lineHeight: 1.6 }}>Releasing stable, production-ready modules. Every deployment is a verified solution to an original technical signal.</p>
+                  <div className="technical-card" style={{ padding: isMobile ? '16px 12px' : '32px' }}>
+                    <div className="mono mb-4" style={{ color: 'var(--accent)', fontWeight: 800, fontSize: isMobile ? '8px' : '12px' }}>03. PRODUCTION_DEPLOY</div>
+                    <p className="text-muted" style={{ fontSize: isMobile ? '10px' : '14px', lineHeight: 1.5 }}>Releasing stable, production-ready modules. Every deployment is a verified solution to an original technical signal.</p>
                   </div>
                 </div>
               </section>
 
               {/* ABOUT THE FOUNDER / ARCHITECT */}
-              <section className="mb-24" style={{ padding: '60px', background: 'var(--bg-secondary)', borderRadius: '32px', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+              <section className="mb-24" style={{ padding: isMobile ? '32px 24px' : '60px', background: 'var(--bg-secondary)', borderRadius: '32px', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)', opacity: 0.05 }}></div>
-                <div style={{ display: 'flex', gap: '48px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '32px' : '48px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
                   <div style={{ flexShrink: 0 }}>
                     <div style={{ width: '180px', height: '180px', borderRadius: '24px', overflow: 'hidden', border: '4px solid #fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
                       <img
