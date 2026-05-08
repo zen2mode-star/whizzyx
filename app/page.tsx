@@ -939,10 +939,10 @@ export default function Home() {
             <div className="fade-in" style={{ maxWidth: '1200px', paddingTop: '0px' }}>
               <section className="mb-16">
                 <h1
-                  style={{ fontSize: isMobile ? '32px' : '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.1 }}
+                  style={{ fontSize: isMobile ? '28px' : '56px', fontWeight: 800, marginBottom: isMobile ? '12px' : '24px', letterSpacing: '-0.05em', lineHeight: 1.1 }}
                   dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Whizzyx — Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
                 />
-                <p style={{ fontSize: isMobile ? '18px' : '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
+                <p style={{ fontSize: isMobile ? '15px' : '22px', color: 'var(--text-secondary)', marginBottom: isMobile ? '24px' : '40px', maxWidth: '850px', lineHeight: '1.6' }}>
                   {heroSubtitle}
                 </p>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexDirection: isMobile ? 'column' : 'row' }}>
@@ -984,26 +984,26 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-col gap-8" style={{ gap: isMobile ? '20px' : '32px' }}>
-                    <div className="technical-card" style={{ background: 'var(--ghost)', padding: isMobile ? '24px' : '32px' }}>
+                    <div className="technical-card" style={{ background: 'var(--ghost)', padding: isMobile ? '20px' : '32px' }}>
                       <div className="technical-label mb-2">ACTIVE DEPLOYMENTS</div>
-                      <div style={{ fontSize: isMobile ? '48px' : '64px', fontWeight: 800, lineHeight: 1, color: 'var(--obsidian)' }}>{projects.length}</div>
-                      <div className="text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>LIVE IN PRODUCTION</div>
+                      <div style={{ fontSize: isMobile ? '36px' : '64px', fontWeight: 800, lineHeight: 1, color: 'var(--obsidian)' }}>{projects.length}</div>
+                      <div className="text-muted" style={{ fontSize: '11px', fontWeight: 600 }}>LIVE IN PRODUCTION</div>
                     </div>
-                    <div className="technical-card card-obsidian" style={{ padding: isMobile ? '24px' : '32px' }}>
+                    <div className="technical-card card-obsidian" style={{ padding: isMobile ? '20px' : '32px' }}>
                       <div className="scan-line" style={{ animationDelay: '1.5s' }}></div>
                       <div className="technical-label mb-2" style={{ opacity: 0.5 }}>ARCHITECTURAL HEALTH</div>
-                      <div style={{ fontSize: isMobile ? '48px' : '64px', fontWeight: 800, lineHeight: 1 }}>{settings.homeHealthValue || '99.8%'}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7 }}>UPTIME & OPTIMIZATION RATE</div>
+                      <div style={{ fontSize: isMobile ? '36px' : '64px', fontWeight: 800, lineHeight: 1 }}>{settings.homeHealthValue || '99.8%'}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, opacity: 0.7 }}>UPTIME & OPTIMIZATION RATE</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <section className="mb-20">
-                <div className="mono text-muted mb-6" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.15em' }}>{settings.techStackTitle || 'TECHNOLOGY STACK'}</div>
-                <div className="flex flex-wrap gap-4">
+               <section className={isMobile ? "mb-10" : "mb-20"}>
+                <div className="mono text-muted mb-4" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em' }}>{settings.techStackTitle || 'TECHNOLOGY STACK'}</div>
+                <div className="flex flex-wrap gap-3">
                   {(settings.techStack ? settings.techStack.split(',') : ['React', 'Next.js', 'TypeScript', 'Prisma', 'PostgreSQL', 'TailwindCSS', 'Node.js', 'Rust', 'Vercel', 'AWS']).map((tech: string) => (
-                    <div key={tech} className="badge" style={{ padding: '12px 24px', fontSize: '14px', background: 'var(--bg-secondary)', fontWeight: 600 }}>{tech.trim()}</div>
+                    <div key={tech} className="badge" style={{ padding: isMobile ? '8px 16px' : '12px 24px', fontSize: isMobile ? '12px' : '14px', background: 'var(--bg-secondary)', fontWeight: 600 }}>{tech.trim()}</div>
                   ))}
                 </div>
               </section>
