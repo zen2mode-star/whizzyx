@@ -668,8 +668,16 @@ export default function Home() {
           background: var(--bg-tertiary);
         }
         .bottom-nav-item svg {
-          width: 22px;
-          height: 22px;
+          width: 20px;
+          height: 20px;
+        }
+        @media (max-width: 480px) {
+          .bottom-nav-item span {
+            font-size: 8px;
+          }
+          .bottom-nav-item {
+            padding: 6px 4px;
+          }
         }
       `}</style>
       {/* ── Top Bar ── */}
@@ -804,7 +812,7 @@ export default function Home() {
             <div className="fade-in" style={{ maxWidth: '1200px', paddingTop: '0px' }}>
               <section className="mb-16">
                 <h1 
-                  style={{ fontSize: '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.15 }}
+                  style={{ fontSize: isMobile ? '36px' : '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.15 }}
                   dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Whizzyx — Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
                 />
                 <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
@@ -821,31 +829,31 @@ export default function Home() {
               </section>
 
               {focus && (
-                <div className="grid" style={{ gridTemplateColumns: '1.6fr 1fr', gap: '32px', marginBottom: '64px' }}>
-                  <div className="technical-card card-obsidian" style={{ padding: '48px', minHeight: '380px' }}>
+                <div className="grid" style={{ gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: isMobile ? '20px' : '32px', marginBottom: isMobile ? '40px' : '64px' }}>
+                  <div className="technical-card card-obsidian" style={{ padding: isMobile ? '24px' : '48px', minHeight: isMobile ? 'auto' : '380px' }}>
                     <div className="scan-line"></div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
                       <div className="badge mb-6" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '10px', fontWeight: 800 }}>ACTIVE EXPEDITION</div>
-                      <h2 style={{ fontSize: '40px', fontWeight: 800, marginBottom: '20px', color: '#fff', letterSpacing: '-0.03em' }}>{focus?.problem || 'Architecting Excellence'}</h2>
-                      <div className="prose mb-10" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '17px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      <h2 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, marginBottom: '20px', color: '#fff', letterSpacing: '-0.03em' }}>{focus?.problem || 'Architecting Excellence'}</h2>
+                      <div className="prose mb-10" style={{ color: 'rgba(255,255,255,0.6)', fontSize: isMobile ? '15px' : '17px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: isMobile ? 4 : 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         <RenderContent content={focus?.blurb || focus?.milestone || 'Executing high-priority system architectural upgrades and performance optimization.'} />
                       </div>
-                      <button onClick={() => setActiveTab('focus')} className="btn" style={{ height: '48px', padding: '0 28px', background: '#fff', color: '#000', borderRadius: '10px', fontSize: '13px', fontWeight: 800 }}>
+                      <button onClick={() => setActiveTab('focus')} className="btn" style={{ height: '48px', padding: '0 28px', background: '#fff', color: '#000', borderRadius: '10px', fontSize: '13px', fontWeight: 800, width: isMobile ? '100%' : 'auto' }}>
                         READ FULL MISSION
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-8">
-                    <div className="technical-card" style={{ background: 'var(--ghost)' }}>
+                  <div className="flex flex-col gap-8" style={{ gap: isMobile ? '20px' : '32px' }}>
+                    <div className="technical-card" style={{ background: 'var(--ghost)', padding: isMobile ? '24px' : '32px' }}>
                       <div className="technical-label mb-2">ACTIVE DEPLOYMENTS</div>
-                      <div style={{ fontSize: '64px', fontWeight: 800, lineHeight: 1, color: 'var(--obsidian)' }}>{projects.length}</div>
+                      <div style={{ fontSize: isMobile ? '48px' : '64px', fontWeight: 800, lineHeight: 1, color: 'var(--obsidian)' }}>{projects.length}</div>
                       <div className="text-muted" style={{ fontSize: '12px', fontWeight: 600 }}>LIVE IN PRODUCTION</div>
                     </div>
-                    <div className="technical-card card-obsidian">
+                    <div className="technical-card card-obsidian" style={{ padding: isMobile ? '24px' : '32px' }}>
                       <div className="scan-line" style={{ animationDelay: '1.5s' }}></div>
                       <div className="technical-label mb-2" style={{ opacity: 0.5 }}>ARCHITECTURAL HEALTH</div>
-                      <div style={{ fontSize: '64px', fontWeight: 800, lineHeight: 1 }}>{settings.homeHealthValue || '99.8%'}</div>
+                      <div style={{ fontSize: isMobile ? '48px' : '64px', fontWeight: 800, lineHeight: 1 }}>{settings.homeHealthValue || '99.8%'}</div>
                       <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7 }}>UPTIME & OPTIMIZATION RATE</div>
                     </div>
                   </div>
@@ -1650,15 +1658,15 @@ export default function Home() {
       <nav className="bottom-nav" role="navigation" aria-label="Whizzyx Mobile Navigation">
         {[
           { id: 'home' as Tab, label: 'Home', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-          { id: 'focus' as Tab, label: 'Working', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> },
           { id: 'projects' as Tab, label: 'Projects', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
-          { id: 'community' as Tab, label: 'Community', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-          { id: 'inquiry' as Tab, label: 'Contact', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
+          { id: 'suggest' as Tab, label: 'Suggest', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> },
+          { id: 'community' as Tab, label: 'Feed', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+          { id: 'more' as any, label: 'Menu', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg> },
         ].map(({ id, label, icon }) => (
           <button
             key={id}
-            className={`bottom-nav-item ${activeTab === id ? 'active' : ''}`}
-            onClick={() => handleTabChange(id)}
+            className={`bottom-nav-item ${activeTab === id || (id === 'more' && isMobileMenuOpen) ? 'active' : ''}`}
+            onClick={() => id === 'more' ? setIsMobileMenuOpen(!isMobileMenuOpen) : handleTabChange(id)}
             aria-label={`Whizzyx ${label}`}
           >
             {icon}
