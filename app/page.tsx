@@ -973,13 +973,14 @@ export default function Home() {
               </section>
 
               {focus && (
-                <div className="grid" style={{ gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: isMobile ? '20px' : '32px', marginBottom: isMobile ? '40px' : '64px' }}>
+                <div style={{ marginBottom: isMobile ? '40px' : '64px' }}>
                   <div className="technical-card card-obsidian" style={{ 
                     padding: isMobile ? '24px 20px' : '48px', 
                     minHeight: isMobile ? 'auto' : '380px',
                     background: isMobile ? 'transparent' : 'var(--obsidian)',
                     border: isMobile ? '1px solid var(--border-color)' : 'none',
-                    color: isMobile ? 'var(--text-primary)' : '#fff'
+                    color: isMobile ? 'var(--text-primary)' : '#fff',
+                    width: '100%'
                   }}>
                     <div className="scan-line" style={{ display: isMobile ? 'none' : 'block' }}></div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
@@ -1009,20 +1010,6 @@ export default function Home() {
                       }}>
                         READ FULL MISSION
                       </button>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-8" style={{ gap: isMobile ? '20px' : '32px' }}>
-                    <div className="technical-card" style={{ background: 'var(--ghost)', padding: isMobile ? '20px' : '32px' }}>
-                      <div className="technical-label mb-2">ACTIVE DEPLOYMENTS</div>
-                      <div style={{ fontSize: isMobile ? '36px' : '64px', fontWeight: 800, lineHeight: 1, color: 'var(--obsidian)' }}>{projects.length}</div>
-                      <div className="text-muted" style={{ fontSize: '11px', fontWeight: 600 }}>LIVE IN PRODUCTION</div>
-                    </div>
-                    <div className="technical-card card-obsidian" style={{ padding: isMobile ? '20px' : '32px' }}>
-                      <div className="scan-line" style={{ animationDelay: '1.5s' }}></div>
-                      <div className="technical-label mb-2" style={{ opacity: 0.5 }}>ARCHITECTURAL HEALTH</div>
-                      <div style={{ fontSize: isMobile ? '36px' : '64px', fontWeight: 800, lineHeight: 1 }}>{settings.homeHealthValue || '99.8%'}</div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, opacity: 0.7 }}>UPTIME & OPTIMIZATION RATE</div>
                     </div>
                   </div>
                 </div>
