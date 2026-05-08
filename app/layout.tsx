@@ -45,7 +45,10 @@ export const metadata: Metadata = {
   },
 };
 
-// Standard Viewport
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 const jsonLd = {
   "@context": "https://schema.org",

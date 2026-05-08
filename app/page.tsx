@@ -1,4 +1,5 @@
 'use client';
+// Version: 1.0.4 - Final Mobile UX Stabilization
 
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
