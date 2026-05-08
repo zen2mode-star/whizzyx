@@ -621,26 +621,40 @@ export default function Home() {
             gap: 24px !important;
             padding: 0 !important;
           }
-          .project-card-image {
-            height: 180px !important;
+          .project-card {
+            border-radius: 24px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
           }
           .project-info {
             flex-direction: column !important;
-            padding: 20px !important;
-            gap: 12px !important;
+            padding: 24px !important;
+            gap: 16px !important;
           }
           .project-avatar {
-            width: 32px !important;
-            height: 32px !important;
-            font-size: 12px !important;
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 14px !important;
           }
           .project-detail-header {
             flex-direction: column !important;
             gap: 24px !important;
           }
-          .project-stats {
-            grid-template-columns: 1fr 1fr !important;
-          }
+        }
+        .sidebar-item {
+          position: relative;
+          border-radius: 0 12px 12px 0 !important;
+          margin-left: 0 !important;
+          padding-left: 24px !important;
+        }
+        .sidebar-item.active::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 4px;
+          bottom: 4px;
+          width: 4px;
+          background: var(--text-primary);
+          border-radius: 0 4px 4px 0;
         }
         @media (max-width: 768px) {
           .bottom-nav {
@@ -786,7 +800,9 @@ export default function Home() {
             <div className="mono" style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.2em' }}>ENGINEERING_CORE</div>
           </div>
 
-          <div className="sidebar-label">[ CORE_MISSION ]</div>
+          <div className="sidebar-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px' }}>🚀</span> [ CORE_MISSION ]
+          </div>
           {NAV_TABS.slice(0, 4).map((t) => (
             <button
               key={t.id}
@@ -799,7 +815,9 @@ export default function Home() {
           ))}
 
           <div className="sidebar-divider" />
-          <div className="sidebar-label">[ COMMUNITY_HUB ]</div>
+          <div className="sidebar-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px' }}>🤝</span> [ COMMUNITY_HUB ]
+          </div>
           {NAV_TABS.slice(4, 7).map((t) => (
             <button
               key={t.id}
@@ -812,26 +830,32 @@ export default function Home() {
           ))}
 
           <div className="sidebar-divider" />
-          <div className="sidebar-label">[ MOBILE_OPTIMIZATION ]</div>
+          <div className="sidebar-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px' }}>📱</span> [ MOBILE_OPTIMIZATION ]
+          </div>
           <button
             onClick={handleInstallApp}
             className="sidebar-item"
             style={{ 
-              background: 'var(--text-primary)', 
-              color: '#fff', 
-              opacity: deferredPrompt ? 1 : 0.5,
+              background: 'rgba(0,0,0,0.03)', 
+              border: '1px dashed var(--border-color)',
+              margin: '8px 16px',
+              width: 'calc(100% - 32px)',
+              borderRadius: '12px',
+              opacity: deferredPrompt ? 1 : 0.6,
               cursor: deferredPrompt ? 'pointer' : 'default',
-              marginTop: '8px'
             }}
           >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span style={{ display: 'flex', alignItems: 'center', color: 'var(--text-primary)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             </span>
-            {deferredPrompt ? 'Download Whizzyx App' : 'App Already Installed'}
+            <span style={{ fontWeight: 700, fontSize: '13px' }}>{deferredPrompt ? 'Install Whizzyx App' : 'App Active'}</span>
           </button>
 
           <div className="sidebar-divider" />
-          <div className="sidebar-label">[ EXTERNAL_CONNECT ]</div>
+          <div className="sidebar-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px' }}>🌐</span> [ EXTERNAL_CONNECT ]
+          </div>
           {NAV_TABS.slice(7).map((t) => (
             <button
               key={t.id}
