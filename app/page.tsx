@@ -619,19 +619,26 @@ export default function Home() {
             box-shadow: 20px 0 50px rgba(0,0,0,0.1);
           }
           .content-area {
-            padding: 24px 20px !important;
+            padding: 24px 16px !important;
             width: 100% !important;
+            max-width: 100vw !important;
           }
           .header-inner {
-            padding: 0 20px !important;
+            padding: 0 16px !important;
           }
           .main-layout {
             width: 100% !important;
           }
           .quote-module {
-            padding: 40px 20px !important;
-            margin: 0 -20px 24px !important;
+            padding: 40px 16px !important;
+            margin: 0 -16px 24px !important;
             border-radius: 0 !important;
+          }
+          .technical-card {
+            padding: 24px 20px !important;
+          }
+          .card {
+            padding: 20px !important;
           }
         }
           .sidebar-overlay {
@@ -938,10 +945,10 @@ export default function Home() {
             <div className="fade-in" style={{ maxWidth: '1200px', paddingTop: '0px' }}>
               <section className="mb-16">
                 <h1
-                  style={{ fontSize: isMobile ? '36px' : '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.15 }}
+                  style={{ fontSize: isMobile ? '32px' : '56px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.05em', lineHeight: 1.1 }}
                   dangerouslySetInnerHTML={{ __html: renderText(settings.homeHeroTitle || 'Whizzyx — Engineering the <span style="color:var(--text-muted)">Future of Systems.</span>') }}
                 />
-                <p style={{ fontSize: '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
+                <p style={{ fontSize: isMobile ? '18px' : '22px', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '850px', lineHeight: '1.6' }}>
                   {heroSubtitle}
                 </p>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1433,21 +1440,21 @@ export default function Home() {
                           {p.title.charAt(0)}
                         </div>
                         <div className="project-details">
-                          <h3 className="project-title" style={{ fontSize: '18px' }}>{displayTitle || p.title}</h3>
-                          <p className="project-desc" style={{ fontSize: '14px', marginBottom: '16px' }}>{cleanDesc}...</p>
+                          <h3 className="project-title" style={{ fontSize: isMobile ? '16px' : '18px' }}>{displayTitle || p.title}</h3>
+                          <p className="project-desc" style={{ fontSize: isMobile ? '13px' : '14px', marginBottom: '16px' }}>{cleanDesc}...</p>
                           
-                          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '12px' : '8px', marginTop: '20px' }}>
+                          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '8px' : '8px', marginTop: isMobile ? '12px' : '20px' }}>
                             {demoLink && (
                               <button 
                                 onClick={(e) => { e.stopPropagation(); window.open(demoLink, '_blank'); }} 
                                 className="btn" 
                                 style={{ 
-                                  background: '#10B981', color: 'white', fontSize: '12px', height: '44px', 
+                                  background: '#10B981', color: 'white', fontSize: isMobile ? '11px' : '12px', height: isMobile ? '40px' : '44px', 
                                   borderRadius: '12px', width: isMobile ? '100%' : 'auto', justifyContent: 'center',
                                   boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', border: 'none', fontWeight: 700
                                 }}
                               >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 LIVE DEPLOYMENT
                               </button>
                             )}
@@ -1456,23 +1463,12 @@ export default function Home() {
                               className="btn" 
                               style={{ 
                                 border: '1px solid var(--border-color)', background: '#fff', color: 'var(--text-primary)', 
-                                fontSize: '12px', height: '44px', borderRadius: '12px', width: isMobile ? '100%' : 'auto', 
+                                fontSize: isMobile ? '11px' : '12px', height: isMobile ? '40px' : '44px', borderRadius: '12px', width: isMobile ? '100%' : 'auto', 
                                 justifyContent: 'center', fontWeight: 700, boxShadow: 'var(--shadow-sm)'
                               }}
                             >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-                              DEVELOPMENT ROADMAP
-                            </button>
-                            <button 
-                              className="btn" 
-                              style={{ 
-                                border: '1px solid #3B82F6', background: 'rgba(59, 130, 246, 0.05)', color: '#3B82F6', 
-                                fontSize: '12px', height: '44px', borderRadius: '12px', width: isMobile ? '100%' : 'auto', 
-                                justifyContent: 'center', fontWeight: 700
-                              }}
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                              TECHNICAL SPECS
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                              ROADMAP
                             </button>
                           </div>
                         </div>
