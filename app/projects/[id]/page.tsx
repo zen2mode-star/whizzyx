@@ -162,6 +162,5 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       </div>
 
     </div>
-iv>
   );
 }
