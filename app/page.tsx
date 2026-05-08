@@ -620,21 +620,25 @@ export default function Home() {
             box-shadow: 20px 0 50px rgba(0,0,0,0.1);
           }
           .content-area {
-            padding: 24px 20px !important;
+            padding: 16px !important;
             width: 100% !important;
           }
           .header-inner {
-            padding: 0 20px !important;
+            padding: 0 16px !important;
           }
           .main-layout {
             width: 100% !important;
           }
           .quote-module {
-            padding: 40px 20px !important;
-            margin: 0 !important;
-            border-radius: 24px !important;
+            padding: 24px 20px !important;
+            margin: 0 0 16px 0 !important;
+            border-radius: 20px !important;
             width: 100% !important;
+            min-height: auto !important;
           }
+          .quote-glow { display: none !important; }
+          .quote-module h2 { font-size: 18px !important; margin-bottom: 12px !important; }
+          .quote-module .mono { margin-bottom: 16px !important; }
         }
           .sidebar-overlay {
             position: fixed;
@@ -970,15 +974,39 @@ export default function Home() {
 
               {focus && (
                 <div className="grid" style={{ gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr', gap: isMobile ? '20px' : '32px', marginBottom: isMobile ? '40px' : '64px' }}>
-                  <div className="technical-card card-obsidian" style={{ padding: isMobile ? '24px' : '48px', minHeight: isMobile ? 'auto' : '380px' }}>
-                    <div className="scan-line"></div>
+                  <div className="technical-card card-obsidian" style={{ 
+                    padding: isMobile ? '24px 20px' : '48px', 
+                    minHeight: isMobile ? 'auto' : '380px',
+                    background: isMobile ? 'transparent' : 'var(--obsidian)',
+                    border: isMobile ? '1px solid var(--border-color)' : 'none',
+                    color: isMobile ? 'var(--text-primary)' : '#fff'
+                  }}>
+                    <div className="scan-line" style={{ display: isMobile ? 'none' : 'block' }}></div>
                     <div style={{ position: 'relative', zIndex: 2 }}>
-                      <div className="badge mb-6" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '10px', fontWeight: 800 }}>ACTIVE EXPEDITION</div>
-                      <h2 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: 800, marginBottom: '20px', color: '#fff', letterSpacing: '-0.03em' }}>{focus?.problem || 'Architecting Excellence'}</h2>
-                      <div className="prose mb-10" style={{ color: 'rgba(255,255,255,0.6)', fontSize: isMobile ? '15px' : '17px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: isMobile ? 4 : 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      <div className="badge mb-4" style={{ 
+                        background: isMobile ? 'var(--bg-tertiary)' : 'rgba(255,255,255,0.1)', 
+                        color: isMobile ? 'var(--text-primary)' : '#fff', 
+                        fontSize: '9px', fontWeight: 800 
+                      }}>ACTIVE EXPEDITION</div>
+                      <h2 style={{ 
+                        fontSize: isMobile ? '22px' : '40px', 
+                        fontWeight: 800, marginBottom: '16px', 
+                        color: isMobile ? 'var(--text-primary)' : '#fff', 
+                        letterSpacing: '-0.03em' 
+                      }}>{focus?.problem || 'Architecting Excellence'}</h2>
+                      <div className="prose mb-6" style={{ 
+                        color: isMobile ? 'var(--text-secondary)' : 'rgba(255,255,255,0.6)', 
+                        fontSize: isMobile ? '14px' : '17px', lineHeight: 1.5, 
+                        display: '-webkit-box', WebkitLineClamp: isMobile ? 3 : 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' 
+                      }}>
                         <RenderContent content={focus?.blurb || focus?.milestone || 'Executing high-priority system architectural upgrades and performance optimization.'} />
                       </div>
-                      <button onClick={() => setActiveTab('focus')} className="btn" style={{ height: '48px', padding: '0 28px', background: '#fff', color: '#000', borderRadius: '10px', fontSize: '13px', fontWeight: 800, width: isMobile ? '100%' : 'auto' }}>
+                      <button onClick={() => setActiveTab('focus')} className="btn" style={{ 
+                        height: '44px', padding: '0 24px', 
+                        background: isMobile ? 'var(--text-primary)' : '#fff', 
+                        color: isMobile ? '#fff' : '#000', 
+                        borderRadius: '10px', fontSize: '12px', fontWeight: 800, width: isMobile ? '100%' : 'auto' 
+                      }}>
                         READ FULL MISSION
                       </button>
                     </div>
