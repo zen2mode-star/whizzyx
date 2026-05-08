@@ -618,10 +618,21 @@ export default function Home() {
           }
           .projects-grid {
             grid-template-columns: 1fr !important;
-            gap: 20px !important;
+            gap: 24px !important;
+            padding: 0 !important;
           }
           .project-card-image {
-            height: 200px !important;
+            height: 180px !important;
+          }
+          .project-info {
+            flex-direction: column !important;
+            padding: 20px !important;
+            gap: 12px !important;
+          }
+          .project-avatar {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 12px !important;
           }
           .project-detail-header {
             flex-direction: column !important;
@@ -636,7 +647,29 @@ export default function Home() {
             display: flex !important;
           }
           .sidebar {
-            display: none !important;
+            display: flex !important;
+            flex-direction: column;
+            position: fixed !important;
+            top: 0 !important;
+            left: -100% !important;
+            width: 85% !important;
+            max-width: 320px !important;
+            height: 100vh !important;
+            background: #fff !important;
+            z-index: 2100 !important;
+            visibility: hidden;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: 20px 0 50px rgba(0,0,0,0.2) !important;
+            padding-top: 20px !important;
+            overflow-y: auto;
+          }
+          .sidebar.mobile-open {
+            visibility: visible;
+            pointer-events: auto;
+            opacity: 1;
+            left: 0 !important;
           }
           .main-content, .content-area {
             padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
@@ -738,6 +771,16 @@ export default function Home() {
         {isMobile && isMobileMenuOpen && <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
         {/* ── Sidebar ── */}
         <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+          {isMobile && (
+            <div style={{ padding: '0 24px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="logo">
+                <span style={{ fontSize: '18px', fontWeight: 800 }}>WhizzyX Menu</span>
+              </div>
+              <button onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'var(--bg-tertiary)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          )}
           <div style={{ padding: '0 24px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '6px', height: '6px', background: '#10B981', borderRadius: '50%', boxShadow: '0 0 8px #10B981', animation: 'pulse 2s infinite' }}></div>
             <div className="mono" style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.2em' }}>ENGINEERING_CORE</div>
@@ -767,6 +810,25 @@ export default function Home() {
               {t.label}
             </button>
           ))}
+
+          <div className="sidebar-divider" />
+          <div className="sidebar-label">[ MOBILE_OPTIMIZATION ]</div>
+          <button
+            onClick={handleInstallApp}
+            className="sidebar-item"
+            style={{ 
+              background: 'var(--text-primary)', 
+              color: '#fff', 
+              opacity: deferredPrompt ? 1 : 0.5,
+              cursor: deferredPrompt ? 'pointer' : 'default',
+              marginTop: '8px'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </span>
+            {deferredPrompt ? 'Download Whizzyx App' : 'App Already Installed'}
+          </button>
 
           <div className="sidebar-divider" />
           <div className="sidebar-label">[ EXTERNAL_CONNECT ]</div>
@@ -1325,25 +1387,47 @@ export default function Home() {
                           {p.title.charAt(0)}
                         </div>
                         <div className="project-details">
-                          <h3 className="project-title" style={{ fontSize: '16px' }}>{displayTitle || p.title}</h3>
-                          <p className="project-desc" style={{ fontSize: '13px' }}>{cleanDesc}...</p>
-
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px' }}>
+                          <h3 className="project-title" style={{ fontSize: '18px' }}>{displayTitle || p.title}</h3>
+                          <p className="project-desc" style={{ fontSize: '14px', marginBottom: '16px' }}>{cleanDesc}...</p>
+                          
+                          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '12px' : '8px', marginTop: '20px' }}>
                             {demoLink && (
-                              <div onClick={(e) => { e.stopPropagation(); window.open(demoLink, '_blank'); }} className="btn" style={{ background: '#10B981', color: 'white', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
-                                LIVE PROJECT
-                              </div>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); window.open(demoLink, '_blank'); }} 
+                                className="btn" 
+                                style={{ 
+                                  background: '#10B981', color: 'white', fontSize: '12px', height: '44px', 
+                                  borderRadius: '12px', width: isMobile ? '100%' : 'auto', justifyContent: 'center',
+                                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)', border: 'none', fontWeight: 700
+                                }}
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                LIVE DEPLOYMENT
+                              </button>
                             )}
-                            <button
+                            <button 
                               onClick={(e) => { e.stopPropagation(); setActiveProjectRoadmap(p); }}
-                              className="btn"
-                              style={{ border: '1px solid #000', fontSize: '10px', height: '28px', borderRadius: '6px' }}
+                              className="btn" 
+                              style={{ 
+                                border: '1px solid var(--border-color)', background: '#fff', color: 'var(--text-primary)', 
+                                fontSize: '12px', height: '44px', borderRadius: '12px', width: isMobile ? '100%' : 'auto', 
+                                justifyContent: 'center', fontWeight: 700, boxShadow: 'var(--shadow-sm)'
+                              }}
                             >
-                              ROADMAP
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                              DEVELOPMENT ROADMAP
                             </button>
-                            <div className="btn" style={{ border: '1px solid #3B82F6', color: '#3B82F6', fontSize: '10px', height: '28px', borderRadius: '6px' }}>
-                              VIEW SPECS
-                            </div>
+                            <button 
+                              className="btn" 
+                              style={{ 
+                                border: '1px solid #3B82F6', background: 'rgba(59, 130, 246, 0.05)', color: '#3B82F6', 
+                                fontSize: '12px', height: '44px', borderRadius: '12px', width: isMobile ? '100%' : 'auto', 
+                                justifyContent: 'center', fontWeight: 700
+                              }}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                              TECHNICAL SPECS
+                            </button>
                           </div>
                         </div>
                       </div>
