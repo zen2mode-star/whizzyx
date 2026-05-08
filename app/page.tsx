@@ -618,13 +618,24 @@ export default function Home() {
             left: 0;
             box-shadow: 20px 0 50px rgba(0,0,0,0.1);
           }
-          .main-content {
-            margin-left: 0 !important;
-            padding: 32px 24px !important;
+          .content-area {
+            padding: 24px 20px !important;
+            width: 100% !important;
+            overflow-x: hidden !important;
           }
           .header-inner {
-            padding: 0 24px !important;
+            padding: 0 20px !important;
           }
+          .main-layout {
+            overflow-x: hidden !important;
+            width: 100vw !important;
+          }
+          .quote-module {
+            padding: 40px 20px !important;
+            margin: 0 -20px 24px !important;
+            border-radius: 0 !important;
+          }
+        }
           .sidebar-overlay {
             position: fixed;
             top: 72px;
@@ -787,13 +798,7 @@ export default function Home() {
               <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-0.02em' }}>WhizzyX</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            {isMobile && showMobileWarning && (
-              <div className="fade-in" style={{ background: 'var(--obsidian)', color: '#fff', padding: '6px 14px', borderRadius: '8px', fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-                <span>[RESOLUTION_ALERT]: USE_DESKTOP_FOR_OPTIMAL_VIEW</span>
-                <button onClick={dismissMobileWarning} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer' }}>×</button>
-              </div>
-            )}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {!isMobile && <a href="/admin" className="btn" style={{ border: 'none', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ADMIN CONSOLE</a>}
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 600 }}>WX</div>
           </div>
