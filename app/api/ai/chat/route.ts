@@ -109,8 +109,9 @@ ${knowledgeBase}
     }
 
     // If all models failed
+    console.error(`AI Final Failure. Last Error:`, lastError);
     return NextResponse.json({ 
-      error: `AI processing failed across all engines. Last error: ${lastError?.message || 'Unknown error'}` 
+      error: `I'm a bit overwhelmed right now. Please try again in a moment.` 
     }, { status: 500 });
 
   } catch (error) {
