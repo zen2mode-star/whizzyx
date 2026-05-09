@@ -145,6 +145,8 @@ export default function AIAssistant() {
     // Basic markdown for links and bold
     let processed = content
       .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #10B981; text-decoration: underline; font-weight: 800;">$1</a>')
+      // Detect raw URLs not already in a markdown link
+      .replace(/(?<!href=")(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #10B981; text-decoration: underline; font-weight: 800;">$1</a>')
       .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 800; color: #fff;">$1</strong>')
       .replace(/\n/g, '<br/>');
     return processed;
@@ -294,17 +296,36 @@ export default function AIAssistant() {
             {isLoading && (
               <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '16px' }}>
                 <div style={{ display: 'flex', gap: '4px' }}>
-                  <div style={{ width: '6px', height: '6px', background: '#444', borderRadius: '30%' }} />
-                  <div style={{ width: '6px', height: '6px', background: '#444', borderRadius: '30%' }} />
-                  <div style={{ width: '6px', height: '6px', background: '#444', borderRadius: '30%' }} />
-                </div>
+                <div style={{ width: '6px', height: '6px', background: '#444', borderRadius: '30%' }} />
+                <div style={{ width: '6px', height: '6px', background: '#444', borderRadius: '30%' }} />
+                <div style={{ width: '6px', height: '6px', background: '#444', borderRadius: '30%' }} />
               </div>
-            )}
-            <div ref={chatEndRef} />
-          </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
 
-          {/* Input */}
-          <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        {/* Quick Actions */}
+        {!isLoading && (
+          <div style={{ padding: '0 24px 12px', display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap' }} className="chat-scroll">
+            {['Show Projects', 'Kumbkaran Alarm', 'Latest Updates', 'Show Resume'].map(action => (
+              <button 
+                key={action}
+                onClick={() => handleSend(action)}
+                style={{ 
+                  padding: '6px 12px', borderRadius: '20px', background: 'rgba(16, 185, 129, 0.1)', 
+                  border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10B981', fontSize: '11px', 
+                  cursor: 'pointer', fontWeight: 600
+                }}
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Input */}
+        <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 onClick={startListening}
