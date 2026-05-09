@@ -78,6 +78,7 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
   const [contentHighlightChar, setContentHighlightChar] = useState(-1);
   const [titleHighlightChar, setTitleHighlightChar] = useState(-1);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const isManuallyClosed = useRef(false);
 
@@ -86,8 +87,20 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
     return () => { if (synthRef.current) synthRef.current.cancel(); };
   }, []);
 
+  // Auto-scroll to center active milestone
+  useEffect(() => {
+    if (scrollRef.current && currentIdx !== -1) {
+      const positions = [ { x: 100, y: 550 }, { x: 250, y: 450 }, { x: 400, y: 350 }, { x: 600, y: 250 }, { x: 800, y: 350 }, { x: 1000, y: 450 }, { x: 1200, y: 550 }, { x: 1400, y: 450 }, { x: 1600, y: 350 }, { x: 1800, y: 250 } ];
+      const pos = positions[currentIdx % positions.length];
+      const containerWidth = scrollRef.current.offsetWidth;
+      // Convert pos.x (from scaled 0.75 SVG) to scroll position
+      const targetScroll = (pos.x * 0.75) - (containerWidth / 2);
+      scrollRef.current.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    }
+  }, [currentIdx]);
+
   const speak = (text: string) => {
-    if (!synthRef.current) return;
+    if (!synthRef.current || !isTtsEnabled) return;
     synthRef.current.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
@@ -98,6 +111,7 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
   const speakUpdate = (upd: any, index: number) => {
     if (!synthRef.current) return;
     synthRef.current.cancel();
+    if (!isTtsEnabled) return;
     const dateStr = new Date(upd.date).toLocaleDateString();
     const timeStr = new Date(upd.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const headerText = `Milestone reached on ${dateStr} at ${timeStr}. `;
@@ -164,9 +178,31 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
       }
       setIsWalking(false);
       setSelectedUpdate(updates[nextIdx]);
-      speakUpdate(updates[nextIdx], nextIdx);
+      if (isTtsEnabled) {
+        speakUpdate(updates[nextIdx], nextIdx);
+      }
     }, 1500);
   };
+
+  const handlePrevious = () => {
+    if (isWalking || updates.length === 0) return;
+    const prevIdx = (currentIdx - 1 + updates.length) % updates.length;
+    handlePush(prevIdx);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isModal && !selectedUpdate) {
+        if (e.key === 'ArrowRight') handlePush();
+        if (e.key === 'ArrowLeft') handlePrevious();
+      } else if (!isModal) {
+        if (e.key === 'ArrowRight') handlePush();
+        if (e.key === 'ArrowLeft') handlePrevious();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIdx, isWalking, updates, selectedUpdate, isModal, isTtsEnabled]);
 
   return (
     <div style={{ 
@@ -204,12 +240,12 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
       `}</style>
       
-      <div className="flex justify-between items-center mb-8">
-        <div>
+      <div className="flex flex-wrap justify-between items-center mb-8 gap-4" style={{ borderBottom: '1px solid #222', paddingBottom: '24px' }}>
+        <div style={{ flex: '1 1 300px' }}>
           <div className="mono" style={{ color: '#555', fontWeight: 800, letterSpacing: '0.2em', fontSize: '10px', marginBottom: '4px' }}>EXPEDITION_MAP://{title.toUpperCase().replace(/\s+/g, '_')}</div>
           <h2 style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-0.04em', color: '#fff' }}>{title}</h2>
         </div>
-        <div className="flex gap-3 items-center">
+        <div className="flex flex-wrap gap-3 items-center justify-end" style={{ flex: '1 1 auto' }}>
           {finalDestination && (
             <button 
                 className="push-button mono"
@@ -234,10 +270,14 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
         </div>
       </div>
 
-      <div className="relative" style={{ flex: 1, minHeight: 0, background: 'rgba(20,20,25,0.5)', backdropFilter: 'blur(10px)', borderRadius: '24px', border: '1px solid #222', overflowX: 'hidden' }}>
+      <div className="relative" style={{ flex: 1, height: '600px', background: '#0a0a0c', borderRadius: '24px', border: '1px solid #222', overflowX: 'hidden', boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)' }}>
+        {/* Optimization: Background Grid */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.05, pointerEvents: 'none', backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        
         <div 
           ref={scrollRef}
-          style={{ height: '100%', overflowX: 'auto', overflowY: 'hidden', padding: '40px 0' }}
+          style={{ height: '100%', overflowX: 'auto', overflowY: 'hidden', padding: '0', position: 'relative', display: 'flex', alignItems: 'center' }}
+          className="no-scrollbar"
         >
         {updates.length === 0 && !finalDestination ? (
           <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: '#555' }}>
@@ -245,14 +285,17 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
             <div style={{ fontSize: '20px', fontWeight: 800 }}>No milestones logged for this module yet.</div>
           </div>
         ) : (
-          <div style={{ minWidth: '2000px', height: '100%', position: 'relative', transform: 'scale(0.6)', transformOrigin: 'top left' }}>
-            <svg width="2000" height="900" viewBox="0 0 2000 900" fill="none">
-              <path d="M 100 800 C 300 800 300 100 600 100 C 900 100 900 800 1200 800 C 1500 800 1500 100 1800 100 L 1900 100" stroke="#000" strokeWidth="64" strokeLinecap="round" />
-              <path d="M 100 800 C 300 800 300 100 600 100 C 900 100 900 800 1200 800 C 1500 800 1500 100 1800 100 L 1900 100" stroke="#222" strokeWidth="60" strokeLinecap="round" />
-              <path d="M 100 800 C 300 800 300 100 600 100 C 900 100 900 800 1200 800 C 1500 800 1500 100 1800 100 L 1900 100" stroke="white" strokeWidth="1" strokeDasharray="10 30" strokeLinecap="round" opacity="0.1" />
+          <div style={{ minWidth: '1600px', height: '100%', position: 'relative', transform: 'scale(0.75)', transformOrigin: 'top left' }}>
+            <svg width="2000" height="700" viewBox="0 0 2000 700" fill="none">
+              <path d="M 100 550 C 300 550 300 250 600 250 C 900 250 900 550 1200 550 C 1500 550 1500 250 1800 250 L 1900 250" stroke="#000" strokeWidth="64" strokeLinecap="round" />
+              <path d="M 100 550 C 300 550 300 250 600 250 C 900 250 900 550 1200 550 C 1500 550 1500 250 1800 250 L 1900 250" stroke="#222" strokeWidth="60" strokeLinecap="round" />
+              <path d="M 100 550 C 300 550 300 250 600 250 C 900 250 900 550 1200 550 C 1500 550 1500 250 1800 250 L 1900 250" stroke="white" strokeWidth="1" strokeDasharray="10 30" strokeLinecap="round" opacity="0.1" />
             </svg>
 
-            <div className="walking-cat-road" style={{ offsetDistance: `${offsetDist}%` }}>
+            <div className="walking-cat-road" style={{ 
+              offsetPath: 'path("M 100 550 C 300 550 300 250 600 250 C 900 250 900 550 1200 550 C 1500 550 1500 250 1800 250 L 1900 250")',
+              filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.5))'
+            }}>
                <svg viewBox="0 0 60 50" width="100%" height="100%">
                     <path className="cat-tail" d="M 10 30 Q 0 20 10 10" stroke="#FFD700" strokeWidth="4" fill="none" strokeLinecap="round" />
                     <ellipse cx="30" cy="35" rx="15" ry="10" fill="#FFD700" />
@@ -268,18 +311,36 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
             </div>
 
             {updates.map((upd, index) => {
-              const positions = [ { x: 100, y: 800 }, { x: 250, y: 550 }, { x: 400, y: 300 }, { x: 600, y: 100 }, { x: 800, y: 300 }, { x: 1000, y: 550 }, { x: 1200, y: 800 }, { x: 1400, y: 550 }, { x: 1600, y: 300 }, { x: 1800, y: 100 } ];
+              const positions = [ { x: 100, y: 550 }, { x: 250, y: 450 }, { x: 400, y: 350 }, { x: 600, y: 250 }, { x: 800, y: 350 }, { x: 1000, y: 450 }, { x: 1200, y: 550 }, { x: 1400, y: 450 }, { x: 1600, y: 350 }, { x: 1800, y: 250 } ];
               const pos = positions[index % positions.length];
               const isActive = index === currentIdx;
               return (
-                <div key={upd.id} className="signpost" onClick={() => { isManuallyClosed.current = false; setSelectedUpdate(upd); speakUpdate(upd, index); }} style={{ position: 'absolute', left: pos.x, top: pos.y, transform: 'translate(-50%, -100%)', filter: isActive ? 'drop-shadow(0 0 10px #FFD700)' : 'none' }}>
+                <div key={upd.id} className="signpost" onClick={() => { isManuallyClosed.current = false; setSelectedUpdate(upd); speakUpdate(upd, index); }} style={{ position: 'absolute', left: pos.x, top: pos.y, transform: 'translate(-50%, calc(-100% + 8px))', filter: isActive ? 'drop-shadow(0 0 20px #FFD700)' : 'none', zIndex: isActive ? 100 : 10 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ background: isActive ? '#FFD700' : '#fff', color: '#000', padding: '12px 20px', borderRadius: '4px', border: '2px solid #000', boxShadow: isActive ? '8px 8px 0 #B8860B' : '6px 6px 0 #333', minWidth: '140px', textAlign: 'center' }}>
-                      <div className="mono" style={{ fontSize: '9px', fontWeight: 900, marginBottom: '4px', color: '#666' }}>{new Date(upd.date).toLocaleDateString()}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 800 }}>{upd.title.length > 25 ? upd.title.substring(0, 22) + '...' : upd.title}</div>
+                    <div style={{ 
+                      background: isActive ? '#FFD700' : 'rgba(26, 26, 30, 0.95)', 
+                      backdropFilter: 'blur(10px)',
+                      color: isActive ? '#000' : '#fff', 
+                      padding: '16px 24px', 
+                      borderRadius: '12px', 
+                      border: isActive ? '3px solid #000' : '1px solid #333', 
+                      boxShadow: isActive ? '12px 12px 0 #B8860B' : '4px 4px 0 #000', 
+                      minWidth: '200px', 
+                      maxWidth: '280px',
+                      textAlign: 'center',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      wordWrap: 'break-word',
+                      whiteSpace: 'normal'
+                    }}>
+                      <div className="mono" style={{ fontSize: '10px', fontWeight: 900, marginBottom: '8px', color: isActive ? '#555' : '#777', letterSpacing: '0.1em' }}>
+                        {new Date(upd.date).toLocaleDateString()}
+                      </div>
+                      <div style={{ fontSize: '15px', fontWeight: 900, lineHeight: 1.3, letterSpacing: '-0.02em' }}>
+                        {upd.title.toUpperCase()}
+                      </div>
                     </div>
-                    <div style={{ width: '4px', height: '30px', background: isActive ? '#FFD700' : '#fff' }}></div>
-                    <div style={{ width: '12px', height: '12px', background: isActive ? '#FFD700' : '#fff', borderRadius: '50%', border: '2px solid #000' }}></div>
+                    <div style={{ width: '4px', height: '40px', background: isActive ? '#FFD700' : '#333' }}></div>
+                    <div style={{ width: '16px', height: '16px', background: isActive ? '#FFD700' : '#1a1a1e', borderRadius: '50%', border: '2px solid #000' }}></div>
                   </div>
                 </div>
               );
@@ -288,7 +349,7 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
             {finalDestination && (
               <div 
                 className="signpost" 
-                style={{ position: 'absolute', left: 1900, top: 100, transform: 'translate(-50%, -100%)', cursor: 'pointer' }}
+                style={{ position: 'absolute', left: 1900, top: 250, transform: 'translate(-50%, calc(-100% + 8px))', cursor: 'pointer' }}
                 onClick={() => speak(`Mission goal: to reach ${finalDestination}`)}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -307,33 +368,142 @@ export default function RoadmapView({ updates, title = "The Project Journey", fi
           </div>
         )}
         </div>
+
+        {/* Floating TTS Control */}
+        <div style={{ position: 'absolute', bottom: '24px', right: '24px', zIndex: 100 }}>
+          <button 
+            onClick={() => {
+              const nextState = !isTtsEnabled;
+              setIsTtsEnabled(nextState);
+              if (!nextState && synthRef.current) {
+                synthRef.current.cancel();
+                setIsSpeaking(false);
+              }
+            }}
+            style={{ 
+              background: isTtsEnabled ? 'linear-gradient(135deg, #059669 0%, #10B981 100%)' : '#222', 
+              color: '#fff', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              padding: '12px 24px', 
+              fontSize: '11px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              borderRadius: '50px',
+              boxShadow: isTtsEnabled ? '0 10px 25px rgba(16, 185, 129, 0.4)' : '0 4px 12px rgba(0,0,0,0.5)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: 'pointer',
+              fontWeight: 800
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>{isTtsEnabled ? '🔊' : '🔇'}</span>
+            <span className="mono">{isTtsEnabled ? 'TTS_READY' : 'TTS_OFF'}</span>
+          </button>
+        </div>
       </div>
 
       {selectedUpdate && (
         <div className="update-modal-overlay" onClick={closeUpdate}>
-          <div style={{ background: '#fff', color: '#000', maxWidth: '800px', width: '100%', padding: '64px', borderRadius: '4px', position: 'relative', border: '3px solid #000', boxShadow: '16px 16px 0 #222', zIndex: 10000 }} onClick={e => e.stopPropagation()}>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                closeUpdate();
-              }}
-              style={{ position: 'absolute', top: '20px', right: '20px', background: '#000', color: '#fff', border: 'none', padding: '8px 16px', cursor: 'pointer', fontWeight: 900, fontSize: '12px', zIndex: 11000 }}
-            >
-              CLOSE_X
-            </button>
-            <div className="mono mb-6" style={{ fontSize: '11px', fontWeight: 900, color: '#888' }}>[LOG_ID: {selectedUpdate.id}] // [TIMESTAMP: {new Date(selectedUpdate.date).toLocaleString()}]</div>
-            <h2 style={{ fontSize: '36px', fontWeight: 900, marginBottom: '32px', lineHeight: 1.1 }}>
-              <HighlightedText text={selectedUpdate.title} highlightCharIndex={titleHighlightChar} />
-            </h2>
-            <div className="prose" style={{ fontSize: '17px', lineHeight: '1.8', color: '#333' }}>
-              <RenderContent content={selectedUpdate.content} highlightCharIndex={contentHighlightChar} />
+          <div style={{ 
+            background: '#fff', 
+            color: '#000', 
+            maxWidth: '900px', 
+            width: '100%', 
+            maxHeight: '90vh',
+            borderRadius: '12px', 
+            position: 'relative', 
+            border: '3px solid #000', 
+            boxShadow: '16px 16px 0 #222', 
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }} onClick={e => e.stopPropagation()}>
+            
+            {/* Fixed Modal Header */}
+            <div style={{ padding: '24px 32px', borderBottom: '2px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', zIndex: 10001 }}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const nextState = !isTtsEnabled;
+                  setIsTtsEnabled(nextState);
+                  if (!nextState && synthRef.current) {
+                    synthRef.current.cancel();
+                    setIsSpeaking(false);
+                  }
+                }}
+                style={{ background: isTtsEnabled ? '#000' : '#EF4444', color: '#fff', border: 'none', padding: '10px 20px', cursor: 'pointer', fontWeight: 900, fontSize: '12px', borderRadius: '4px' }}
+              >
+                {isTtsEnabled ? '🔊 MUTE AUDIO' : '🔇 UNMUTE AUDIO'}
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeUpdate();
+                }}
+                style={{ background: '#000', color: '#fff', border: 'none', padding: '10px 20px', cursor: 'pointer', fontWeight: 900, fontSize: '12px', borderRadius: '4px' }}
+              >
+                CLOSE_X
+              </button>
             </div>
-            {isSpeaking && (
-              <div className="mt-12 mono" style={{ fontSize: '12px', color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '8px', height: '8px', background: '#10B981', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
-                SYSTEM_AUDIO_PLAYBACK_ACTIVE...
+
+            {/* Scrollable Content Area */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '40px 64px' }}>
+              <div className="mono mb-6" style={{ fontSize: '11px', fontWeight: 900, color: '#888' }}>[LOG_ID: {selectedUpdate.id}] // [TIMESTAMP: {new Date(selectedUpdate.date).toLocaleString()}]</div>
+              <h2 style={{ fontSize: '36px', fontWeight: 900, marginBottom: '32px', lineHeight: 1.1 }}>
+                <HighlightedText text={selectedUpdate.title} highlightCharIndex={titleHighlightChar} />
+              </h2>
+              <div className="prose" style={{ fontSize: '18px', lineHeight: '1.8', color: '#333' }}>
+                <RenderContent content={selectedUpdate.content} highlightCharIndex={contentHighlightChar} />
               </div>
-            )}
+            </div>
+
+            {/* Fixed Modal Footer */}
+            <div style={{ padding: '24px 32px', borderTop: '2px solid #eee', display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', justifyContent: 'space-between', background: '#fcfcfc', zIndex: 10001 }}>
+              <div className="flex gap-4">
+                <button 
+                  className="push-button mono" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const idx = updates.findIndex(u => u.id === selectedUpdate.id);
+                    if (idx > 0) {
+                      const prevIdx = idx - 1;
+                      setSelectedUpdate(updates[prevIdx]);
+                      setCurrentIdx(prevIdx);
+                      speakUpdate(updates[prevIdx], prevIdx);
+                    }
+                  }}
+                  disabled={updates.findIndex(u => u.id === selectedUpdate.id) === 0}
+                  style={{ background: '#fff', color: '#000', border: '2px solid #000', padding: '12px 24px', fontSize: '12px', opacity: updates.findIndex(u => u.id === selectedUpdate.id) === 0 ? 0.3 : 1 }}
+                >
+                  {'[ PREVIOUS ]'}
+                </button>
+                <button 
+                  className="push-button mono" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const idx = updates.findIndex(u => u.id === selectedUpdate.id);
+                    if (idx < updates.length - 1) {
+                      const nextIdx = idx + 1;
+                      setSelectedUpdate(updates[nextIdx]);
+                      setCurrentIdx(nextIdx);
+                      speakUpdate(updates[nextIdx], nextIdx);
+                    } else {
+                      speak("Last page reached");
+                    }
+                  }}
+                  style={{ background: '#fff', color: '#000', border: '2px solid #000', padding: '12px 24px', fontSize: '12px' }}
+                >
+                  {updates.findIndex(u => u.id === selectedUpdate.id) === updates.length - 1 ? '[ END ]' : '[ NEXT ]'}
+                </button>
+              </div>
+              {isSpeaking && (
+                <div className="mono" style={{ fontSize: '12px', color: '#10B981', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '8px', height: '8px', background: '#10B981', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
+                  AUDIO_ACTIVE
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

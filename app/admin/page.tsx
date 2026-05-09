@@ -1545,6 +1545,32 @@ export default function AdminDashboard() {
                     <label className="label">Donation QR Code URL</label>
                     <input type="text" className="form-control" value={settings.donateQrUrl || ''} onChange={e => setSettings({ ...settings, donateQrUrl: e.target.value })} placeholder="https://.../qr.png" />
                   </div>
+                  <div style={{ margin: '40px 0 24px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Groq AI Assistant</h3>
+                    <p className="text-muted" style={{ fontSize: '13px' }}>Configure the interactive platform intelligence.</p>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Enable AI Assistant</label>
+                    <select 
+                      className="form-control" 
+                      value={settings.aiEnabled || 'false'} 
+                      onChange={e => setSettings({ ...settings, aiEnabled: e.target.value })}
+                    >
+                      <option value="false">OFF (Hidden)</option>
+                      <option value="true">ON (Active Floating Button)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Groq API Key</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      value={settings.groqApiKey || ''} 
+                      onChange={e => setSettings({ ...settings, groqApiKey: e.target.value })} 
+                      placeholder="gsk_..."
+                    />
+                    <p className="text-muted" style={{ marginTop: '8px', fontSize: '12px' }}>Enter your Groq Cloud API key to power the interactive assistant.</p>
+                  </div>
                   <div className="form-group">
                     <label className="label">Public Contact Email (For Companies)</label>
                     <input type="email" className="form-control" value={settings.contactEmail || ''} onChange={e => setSettings({ ...settings, contactEmail: e.target.value })} placeholder="contact@whizzyx.corp" />

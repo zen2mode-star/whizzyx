@@ -22,6 +22,8 @@ const DEFAULTS: Record<string, string> = {
   sectionProjectsTitle: 'Featured Projects',
   sectionCommunityTitle: 'Community Wall',
   sectionSuggestTitle: 'Got a Problem to Solve?',
+  aiEnabled: 'false',
+  groqApiKey: '',
 };
 
 export async function GET() {

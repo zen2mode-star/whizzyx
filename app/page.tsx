@@ -651,7 +651,7 @@ export default function Home() {
             z-index: 999;
           }
           .projects-grid {
-            grid-template-columns: 1fr !important;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)) !important;
             gap: 24px !important;
             padding: 0 !important;
           }

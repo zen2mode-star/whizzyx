@@ -234,7 +234,7 @@ a:hover {
 
 .project-thumbnail {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 21 / 9;
   background: var(--bg-tertiary);
   position: relative;
   overflow: hidden;
