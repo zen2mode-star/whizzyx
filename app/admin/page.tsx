@@ -29,6 +29,16 @@ export default function AdminDashboard() {
     sectionSuggestTitle: 'Got a Problem to Solve?',
     donateQrUrl: '',
     contactEmail: 'contact@whizzyx.corp',
+    geminiApiKey: '',
+    mistralApiKey: '',
+    openRouterApiKey: '',
+    cohereApiKey: '',
+    anthropicApiKey: '',
+    huggingFaceApiKey: '',
+    groqEnabled: 'true',
+    geminiEnabled: 'true',
+    openRouterEnabled: 'true',
+    mistralEnabled: 'true',
   });
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -297,12 +307,17 @@ export default function AdminDashboard() {
     setLoginError('');
     const res = await fetch('/api/admin/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
+      },
       body: JSON.stringify({ username: loginUsername, password: loginPassword }),
     });
+    const data = await res.json();
     if (res.ok) {
       sessionStorage.setItem('whizzyx_admin_logged_in', 'true');
       sessionStorage.setItem('whizzyx_admin_username', loginUsername);
+      sessionStorage.setItem('whizzyx_admin_token', data.token);
       setCurrentUsername(loginUsername);
       setIsLoggedIn(true);
       fetchAll();
@@ -317,7 +332,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     const res = await fetch('/api/admin/reset', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
+      },
       body: JSON.stringify({ username: currentUsername, newPassword }),
     });
     if (res.ok) {
@@ -375,7 +393,10 @@ export default function AdminDashboard() {
       // NEW: Link all "Current Focus" updates (projectId is null) to this new project
       await fetch('/api/updates/link-focus', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
+      },
         body: JSON.stringify({ projectId: targetProjectId })
       });
     }
@@ -510,7 +531,10 @@ export default function AdminDashboard() {
 
     const res = await fetch('/api/quotes', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
+      },
       body: JSON.stringify({
         quotes: [
           { id: currentQuote.id, order: tarOrder },
@@ -553,7 +577,10 @@ export default function AdminDashboard() {
     const body = { title: blogTitle, content: blogContent, excerpt: blogExcerpt, isHidden: blogIsHidden };
     const res = await fetch(editingBlog ? `/api/blog/${editingBlog.id}` : '/api/blog', {
       method: editingBlog ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
+      },
       body: JSON.stringify(body),
     });
     setMsg(prev => ({ ...prev, blog: res.ok ? (editingBlog ? '✓ Blog post updated' : '✓ Blog post published') : '✗ Operation failed' }));
@@ -1546,8 +1573,8 @@ export default function AdminDashboard() {
                     <input type="text" className="form-control" value={settings.donateQrUrl || ''} onChange={e => setSettings({ ...settings, donateQrUrl: e.target.value })} placeholder="https://.../qr.png" />
                   </div>
                   <div style={{ margin: '40px 0 24px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Groq AI Assistant</h3>
-                    <p className="text-muted" style={{ fontSize: '13px' }}>Configure the interactive platform intelligence.</p>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800 }}>WhizzyAssistant AI (Free Redundancy)</h3>
+                    <p className="text-muted" style={{ fontSize: '13px' }}>Configure the fallback chain to ensure the AI always responds.</p>
                   </div>
                   <div className="form-group">
                     <label className="label">Enable AI Assistant</label>
@@ -1560,16 +1587,90 @@ export default function AdminDashboard() {
                       <option value="true">ON (Active Floating Button)</option>
                     </select>
                   </div>
-                  <div className="form-group">
-                    <label className="label">Groq API Key</label>
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
                     <input 
-                      type="password" 
+                      type="checkbox" 
+                      id="groqEnabled"
+                      checked={settings.groqEnabled === 'true'} 
+                      onChange={e => setSettings({ ...settings, groqEnabled: e.target.checked ? 'true' : 'false' })} 
+                    />
+                    <label htmlFor="groqEnabled" style={{ fontSize: '14px', fontWeight: 700 }}>Enable Groq</label>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Groq API Keys (One per line)</label>
+                    <textarea 
                       className="form-control" 
+                      rows={3}
                       value={settings.groqApiKey || ''} 
                       onChange={e => setSettings({ ...settings, groqApiKey: e.target.value })} 
-                      placeholder="gsk_..."
+                      placeholder="gsk_...&#10;gsk_..."
                     />
-                    <p className="text-muted" style={{ marginTop: '8px', fontSize: '12px' }}>Enter your Groq Cloud API key to power the interactive assistant.</p>
+                    <p className="text-muted" style={{ marginTop: '8px', fontSize: '12px' }}>Whizzy will automatically rotate between these keys if one fails.</p>
+                  </div>
+
+                  <hr style={{ border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)', margin: '20px 0' }} />
+
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="geminiEnabled"
+                      checked={settings.geminiEnabled === 'true'} 
+                      onChange={e => setSettings({ ...settings, geminiEnabled: e.target.checked ? 'true' : 'false' })} 
+                    />
+                    <label htmlFor="geminiEnabled" style={{ fontSize: '14px', fontWeight: 700 }}>Enable Google Gemini</label>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Gemini API Keys (One per line)</label>
+                    <textarea 
+                      className="form-control" 
+                      rows={3}
+                      value={settings.geminiApiKey || ''} 
+                      onChange={e => setSettings({ ...settings, geminiApiKey: e.target.value })} 
+                      placeholder="AIza...&#10;AIza..."
+                    />
+                  </div>
+
+                  <hr style={{ border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)', margin: '20px 0' }} />
+
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="openRouterEnabled"
+                      checked={settings.openRouterEnabled === 'true'} 
+                      onChange={e => setSettings({ ...settings, openRouterEnabled: e.target.checked ? 'true' : 'false' })} 
+                    />
+                    <label htmlFor="openRouterEnabled" style={{ fontSize: '14px', fontWeight: 700 }}>Enable OpenRouter</label>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">OpenRouter API Keys (One per line)</label>
+                    <textarea 
+                      className="form-control" 
+                      rows={3}
+                      value={settings.openRouterApiKey || ''} 
+                      onChange={e => setSettings({ ...settings, openRouterApiKey: e.target.value })} 
+                      placeholder="sk-or-v1-..."
+                    />
+                  </div>
+
+                  <hr style={{ border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)', margin: '20px 0' }} />
+
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="mistralEnabled"
+                      checked={settings.mistralEnabled === 'true'} 
+                      onChange={e => setSettings({ ...settings, mistralEnabled: e.target.checked ? 'true' : 'false' })} 
+                    />
+                    <label htmlFor="mistralEnabled" style={{ fontSize: '14px', fontWeight: 700 }}>Enable Mistral AI</label>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Mistral API Keys (One per line)</label>
+                    <textarea 
+                      className="form-control" 
+                      rows={3}
+                      value={settings.mistralApiKey || ''} 
+                      onChange={e => setSettings({ ...settings, mistralApiKey: e.target.value })} 
+                    />
                   </div>
                   <div className="form-group">
                     <label className="label">Public Contact Email (For Companies)</label>

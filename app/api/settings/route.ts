@@ -41,6 +41,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // SECURITY: Verify Admin Token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    const admin = await prisma.adminUser.findFirst();
+    if (!token || token !== admin?.password) {
+      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+    }
+
     const updates: Record<string, string> = await request.json();
     for (const [key, value] of Object.entries(updates)) {
       await prisma.siteSettings.upsert({

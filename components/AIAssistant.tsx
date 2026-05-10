@@ -1,17 +1,45 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function AIAssistant() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string, debugInfo?: string }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
+  const [lastPromptedPath, setLastPromptedPath] = useState('');
+  const [showProactiveBubble, setShowProactiveBubble] = useState(false);
+  const [proactiveMessage, setProactiveMessage] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+
+  // Proactive Documentation Detection
+  useEffect(() => {
+    if (!isEnabled || pathname === lastPromptedPath) return;
+
+    const isProjectPage = pathname.startsWith('/projects/');
+
+    if (isProjectPage) {
+      setLastPromptedPath(pathname);
+      
+      const timer = setTimeout(() => {
+        const welcomeMsg = "I see you're exploring this project's details. Would you like a quick summary?";
+        
+        setProactiveMessage(welcomeMsg);
+        setShowProactiveBubble(true);
+        
+        if (isTtsEnabled) speak(welcomeMsg);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, isEnabled, isTtsEnabled, lastPromptedPath]);
 
   useEffect(() => {
     // Check if AI is enabled
@@ -68,7 +96,7 @@ export default function AIAssistant() {
         if (isTtsEnabled) speak(data.message);
       } else {
         const errorMsg = data.error || 'System error: Unable to process request.';
-        setMessages([...newMessages, { role: 'assistant', content: errorMsg }]);
+        setMessages([...newMessages, { role: 'assistant', content: errorMsg, debugInfo: data.debugInfo }]);
         if (isTtsEnabled) speak(errorMsg);
       }
     } catch (err) {
@@ -189,6 +217,59 @@ export default function AIAssistant() {
         </svg>
       </button>
 
+      {/* Proactive Notification Bubble */}
+      {showProactiveBubble && !isOpen && (
+        <div style={{
+          position: 'fixed',
+          bottom: '110px',
+          right: '32px',
+          background: '#10B981',
+          color: '#fff',
+          padding: '20px 24px',
+          borderRadius: '24px',
+          boxShadow: '0 12px 48px rgba(16, 185, 129, 0.4)',
+          zIndex: 10000,
+          width: '320px',
+          animation: 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          border: '1px solid rgba(255,255,255,0.2)'
+        }}>
+           <style dangerouslySetInnerHTML={{ __html: `
+             @keyframes popIn {
+               from { transform: scale(0.8) translateY(20px); opacity: 0; }
+               to { transform: scale(1) translateY(0); opacity: 1; }
+             }
+           `}} />
+           <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/></svg>
+              </div>
+              <div style={{ fontWeight: 800, fontSize: '13px', lineHeight: 1.4 }}>{proactiveMessage}</div>
+           </div>
+           <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                onClick={() => {
+                  setIsOpen(true);
+                  setShowProactiveBubble(false);
+                  const fullMsg = pathname === '/pdf-viewer' 
+                    ? "I've detected a documentation module. Would you like me to summarize this PDF? I can explain the **Core Specification**, **Architecture**, or **Engineering History**."
+                    : "I see you're exploring this project's details. Would you like a quick summary of its **Technical Overview**, **Current Status**, or **Future Objectives**?";
+                  setMessages([{ role: 'assistant', content: fullMsg }]);
+                  if (isTtsEnabled) speak(fullMsg);
+                }}
+                style={{ flex: 1, background: '#fff', color: '#10B981', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 900, cursor: 'pointer', fontSize: '11px', letterSpacing: '0.02em' }}
+              >
+                YES, SUMMARIZE
+              </button>
+              <button 
+                onClick={() => setShowProactiveBubble(false)}
+                style={{ background: 'rgba(0,0,0,0.15)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', fontWeight: 800, cursor: 'pointer', fontSize: '11px' }}
+              >
+                DISMISS
+              </button>
+           </div>
+        </div>
+      )}
+
       {/* Chat Window */}
       {isOpen && (
         <div className="assistant-window" style={{
@@ -288,9 +369,36 @@ export default function AIAssistant() {
                 lineHeight: 1.5,
                 border: m.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.05)',
                 whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word'
+                wordBreak: 'break-word',
+                position: 'relative'
               }}>
                 <div dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} />
+                {m.debugInfo && (
+                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    <button 
+                      onClick={async () => {
+                        const user = window.prompt("Enter Admin Username:");
+                        const pass = window.prompt("Enter Admin Password:");
+                        if (!user || !pass) return;
+                        
+                        const res = await fetch('/api/admin/login', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ username: user, password: pass }),
+                        });
+                        
+                        if (res.ok) {
+                          alert(`[ADMIN_DIAGNOSTIC_CORE]\n\n${m.debugInfo}`);
+                        } else {
+                          alert("Access Denied: Invalid Credentials.");
+                        }
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#10B981', fontSize: '10px', fontWeight: 800, cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                    >
+                      ARE_YOU_ADMIN? // VIEW_DIAGNOSTICS
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (
@@ -308,7 +416,12 @@ export default function AIAssistant() {
         {/* Quick Actions */}
         {!isLoading && (
           <div style={{ padding: '0 24px 12px', display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap' }} className="chat-scroll">
-            {['Show Projects', 'Kumbkaran Alarm', 'Latest Updates', 'Show Resume'].map(action => (
+            {(pathname === '/pdf-viewer' 
+              ? ['Technical Architecture', 'Milestone Breakdown']
+              : pathname.startsWith('/projects/')
+                ? ['Project Overview', 'Current Status', 'Future Goals']
+                : ['Show Projects', 'Latest Updates', 'About WhizzyX', 'Show Resume']
+            ).map(action => (
               <button 
                 key={action}
                 onClick={() => handleSend(action)}

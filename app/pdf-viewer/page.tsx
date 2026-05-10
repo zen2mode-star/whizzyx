@@ -34,15 +34,7 @@ function PDFViewerContent() {
       </header>
       
       <main style={{ flex: 1, position: 'relative', background: '#1a1a1e' }}>
-        {/* Hacker Aesthetic Scan-lines Overlay */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          pointerEvents: 'none',
-          background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(0, 255, 0, 0.01), rgba(0, 0, 0, 0.05), rgba(0, 255, 0, 0.01))',
-          backgroundSize: '100% 4px, 3px 100%',
-          zIndex: 5
-        }}></div>
+
 
         <iframe 
           src={googleDocsUrl} 
