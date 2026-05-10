@@ -19,9 +19,9 @@ export async function POST(request: Request) {
     });
     
     const settings: Record<string, string> = {};
-    settingsRows.forEach(row => { settings[row.key] = row.value; });
+    settingsRows.forEach((row: any) => { settings[row.key] = row.value; });
 
-    const hasAnyKey = allAiKeys.some(key => key.includes('ApiKey') && settings[key]);
+    const hasAnyKey = allAiKeys.some((key: string) => key.includes('ApiKey') && settings[key]);
 
     if (settings.aiEnabled !== 'true' || !hasAnyKey) {
       return NextResponse.json({ error: 'AI Assistant is currently offline or unconfigured.' }, { status: 403 });
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     const knowledgeBase = `
 PROJECTS:
-${projects.map(p => {
+${projects.map((p: any) => {
   let linksInfo = '';
   if (p.links) {
     if (p.links.includes('|||')) {
@@ -53,10 +53,10 @@ ${projects.map(p => {
 }).join('\n')}
 
 LATEST BLOGS:
-${blogs.map(b => `- ${b.title || 'Untitled'}`).join('\n')}
+${blogs.map((b: any) => `- ${b.title || 'Untitled'}`).join('\n')}
 
 RECENT UPDATES:
-${updates.map(u => `- ${u.title || 'Update'} (${u.project?.title || 'System'})`).join('\n')}
+${updates.map((u: any) => `- ${u.title || 'Update'} (${u.project?.title || 'System'})`).join('\n')}
     `;
 
     const systemPrompt = `You are WhizzyAI. explain MJ's projects briefly.
@@ -82,21 +82,21 @@ ${knowledgeBase}
       { 
         name: 'Groq', 
         enabled: settings.groqEnabled !== 'false',
-        keys: (settings.groqApiKey || '').split('\n').map(k => k.trim()).filter(Boolean),
+        keys: (settings.groqApiKey || '').split('\n').map((k: string) => k.trim()).filter(Boolean),
         url: 'https://api.groq.com/openai/v1/chat/completions', 
         models: ['mixtral-8x7b-32768', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'] 
       },
       { 
         name: 'Gemini', 
         enabled: settings.geminiEnabled !== 'false',
-        keys: (settings.geminiApiKey || '').split('\n').map(k => k.trim()).filter(Boolean),
+        keys: (settings.geminiApiKey || '').split('\n').map((k: string) => k.trim()).filter(Boolean),
         type: 'gemini', 
         models: ['gemini-1.5-flash', 'gemini-1.5-pro'] 
       },
       { 
         name: 'OpenRouter', 
         enabled: settings.openRouterEnabled !== 'false',
-        keys: (settings.openRouterApiKey || '').split('\n').map(k => k.trim()).filter(Boolean),
+        keys: (settings.openRouterApiKey || '').split('\n').map((k: string) => k.trim()).filter(Boolean),
         url: 'https://openrouter.ai/api/v1/chat/completions', 
         models: [
           'google/gemini-2.0-flash-exp:free', 
@@ -107,7 +107,7 @@ ${knowledgeBase}
       { 
         name: 'Mistral', 
         enabled: settings.mistralEnabled !== 'false',
-        keys: (settings.mistralApiKey || '').split('\n').map(k => k.trim()).filter(Boolean),
+        keys: (settings.mistralApiKey || '').split('\n').map((k: string) => k.trim()).filter(Boolean),
         url: 'https://api.mistral.ai/v1/chat/completions', 
         models: ['mistral-tiny', 'mistral-small', 'open-mixtral-8x7b'] 
       }
