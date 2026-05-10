@@ -30,11 +30,11 @@ export async function GET() {
   try {
     const rows = await prisma.siteSettings.findMany();
     const settings: Record<string, string> = { ...DEFAULTS };
-    for (const row of rows) {
+    for (const row of rows as any[]) {
       settings[row.key] = row.value;
     }
     return NextResponse.json(settings);
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json(DEFAULTS);
   }
 }
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       });
     }
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
   }
 }
