@@ -132,7 +132,7 @@ ${knowledgeBase}
             if (provider.type === 'gemini') {
               const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
               
-              const contextStr = history.map(m => `${m.role}: ${m.content}`).join('\n');
+              const contextStr = history.map((m: any) => `${m.role}: ${m.content}`).join('\n');
               const fullPrompt = `${systemPrompt}\n\n${contextStr}`;
 
               response = await fetch(geminiUrl, {
