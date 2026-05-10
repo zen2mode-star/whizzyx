@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import Script from "next/script";
 import AIAssistant from "@/components/AIAssistant";
@@ -107,7 +108,9 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <AIAssistant />
+        <Suspense fallback={null}>
+          <AIAssistant />
+        </Suspense>
       </body>
     </html>
   );

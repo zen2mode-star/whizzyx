@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function AIAssistant() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [isEnabled, setIsEnabled] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string, debugInfo?: string }[]>([]);
