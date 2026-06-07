@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import ContactForm from "./ContactForm";
 
 export const metadata: Metadata = {
   title: "WhizzyX Team — App Developer Profile",
@@ -100,23 +101,7 @@ export default function DeveloperPage() {
                 Encountered a bug or have a feature request? Raise a query directly from the website and our team will get back to you.
               </p>
               
-              <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="form-group" style={{ marginBottom: '0' }}>
-                  <label className="label">Your Name</label>
-                  <input type="text" className="form-control" placeholder="Enter your name" required />
-                </div>
-                <div className="form-group" style={{ marginBottom: '0' }}>
-                  <label className="label">Email Address</label>
-                  <input type="email" className="form-control" placeholder="Enter your email" required />
-                </div>
-                <div className="form-group" style={{ marginBottom: '0' }}>
-                  <label className="label">Query Details</label>
-                  <textarea className="form-control" rows={4} placeholder="Describe your issue or request" required></textarea>
-                </div>
-                <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', cursor: 'pointer' }}>
-                  Submit Query
-                </button>
-              </form>
+              <ContactForm />
             </div>
           </div>
         </div>
