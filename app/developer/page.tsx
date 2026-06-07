@@ -16,6 +16,7 @@ export default function DeveloperPage() {
           </Link>
           <nav className="nav hidden-mobile">
             <Link href="/" className="nav-link">Main Site</Link>
+            <Link href="/privacy" className="nav-link" style={{ fontWeight: 600 }}>Privacy Policy</Link>
             <a href="#contact" className="btn btn-primary">Contact Us</a>
           </nav>
         </div>
@@ -76,6 +77,23 @@ export default function DeveloperPage() {
               </div>
             </div>
             
+            <div className="card" style={{ marginBottom: '80px', background: 'var(--bg-tertiary)', border: 'none', padding: '48px' }}>
+              <h2 style={{ fontSize: '32px', marginBottom: '24px' }}>About WhizzyX Technologies</h2>
+              <p style={{ fontSize: '18px', color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: '32px' }}>
+                WhizzyX is a cutting-edge engineering and innovation lab dedicated to solving real-world inefficiencies through uncompromising software architecture. 
+                We specialize in building local, offline-first ecosystems ranging from high-performance Android utilities to advanced local AI processing pipelines and smart IoT firmware.
+                Our core philosophy is simple: technology should respect user privacy, run exceptionally fast, and never rely on unnecessary internet connections.
+              </p>
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <Link href="/privacy" className="btn btn-primary" style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}>
+                  View Official Privacy Policy
+                </Link>
+                <Link href="/" className="btn" style={{ background: 'var(--bg-secondary)' }}>
+                  Explore All Engineering Projects
+                </Link>
+              </div>
+            </div>
+
             <div id="contact" className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
               <h3 style={{ marginBottom: '16px' }}>Contact & Support</h3>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
