@@ -16,8 +16,7 @@ export default function DeveloperPage() {
           </Link>
           <nav className="nav hidden-mobile">
             <Link href="/" className="nav-link">Main Site</Link>
-            <Link href="/privacy" className="nav-link">Privacy Policy</Link>
-            <a href="mailto:support@whizzyx.com" className="btn btn-primary">Contact Us</a>
+            <a href="#contact" className="btn btn-primary">Contact Us</a>
           </nav>
         </div>
       </header>
@@ -77,21 +76,29 @@ export default function DeveloperPage() {
               </div>
             </div>
             
-            <div className="grid">
-              <div className="card">
-                <h3 style={{ marginBottom: '16px' }}>Contact & Support</h3>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-                  Encountered a bug or have a feature request? Our team is dedicated to providing high-end support for all our applications.
-                </p>
-                <a href="mailto:support@whizzyx.com" className="btn btn-primary">Email support@whizzyx.com</a>
-              </div>
-              <div className="card">
-                <h3 style={{ marginBottom: '16px' }}>Legal & Compliance</h3>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-                  We build systems with privacy as the core foundation. Review our strictly offline compliance protocols and application policies.
-                </p>
-                <Link href="/privacy" className="btn" style={{ background: 'var(--bg-tertiary)' }}>View Privacy Policy</Link>
-              </div>
+            <div id="contact" className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+              <h3 style={{ marginBottom: '16px' }}>Contact & Support</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
+                Encountered a bug or have a feature request? Raise a query directly from the website and our team will get back to you.
+              </p>
+              
+              <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} onSubmit={(e) => e.preventDefault()}>
+                <div className="form-group" style={{ marginBottom: '0' }}>
+                  <label className="label">Your Name</label>
+                  <input type="text" className="form-control" placeholder="Enter your name" required />
+                </div>
+                <div className="form-group" style={{ marginBottom: '0' }}>
+                  <label className="label">Email Address</label>
+                  <input type="email" className="form-control" placeholder="Enter your email" required />
+                </div>
+                <div className="form-group" style={{ marginBottom: '0' }}>
+                  <label className="label">Query Details</label>
+                  <textarea className="form-control" rows={4} placeholder="Describe your issue or request" required></textarea>
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', cursor: 'pointer' }}>
+                  Submit Query
+                </button>
+              </form>
             </div>
           </div>
         </div>
