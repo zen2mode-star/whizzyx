@@ -82,7 +82,7 @@ export default function DeveloperPage() {
                 Encountered a bug or have a feature request? Raise a query directly from the website and our team will get back to you.
               </p>
               
-              <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} onSubmit={(e) => e.preventDefault()}>
+              <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="form-group" style={{ marginBottom: '0' }}>
                   <label className="label">Your Name</label>
                   <input type="text" className="form-control" placeholder="Enter your name" required />
@@ -95,7 +95,7 @@ export default function DeveloperPage() {
                   <label className="label">Query Details</label>
                   <textarea className="form-control" rows={4} placeholder="Describe your issue or request" required></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', cursor: 'pointer' }}>
+                <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '8px', cursor: 'pointer' }}>
                   Submit Query
                 </button>
               </form>
