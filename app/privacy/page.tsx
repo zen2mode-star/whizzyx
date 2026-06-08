@@ -82,7 +82,7 @@ export default function PrivacyPage() {
                 4. Contact & Legal Inquiries
               </h2>
               <p>
-                If you have any questions, concerns, or legal inquiries regarding our Privacy Policy, compliance, or the VoltX application, please reach out to our team by <strong><Link href="/developer#contact">raising a query directly on our developer website</Link></strong>.
+                If you have any questions, concerns, or legal inquiries regarding our Privacy Policy, compliance, or the VoltX application, please reach out to our team by <strong><Link href="/developer#contact">raising a query directly on our developer website</Link></strong> or via email at <strong>thewhizzy.ltd@gmail.com</strong>.
               </p>
             </div>
 
