@@ -98,7 +98,7 @@ export default function DeveloperPage() {
             <div id="contact" className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
               <h3 style={{ marginBottom: '16px' }}>Contact & Support</h3>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-                Encountered a bug or have a feature request? Raise a query directly from the website and our team will get back to you. Alternatively, you can email us at <strong>thewhizzy.ltd@gmail.com</strong>.
+                Encountered a bug or have a feature request? Raise a query directly from the website and our team will get back to you. Alternatively, you can email us at <a href="mailto:thewhizzy.ltd@gmail.com" style={{ color: 'var(--text-primary)', fontWeight: 600, textDecoration: 'underline' }}>thewhizzy.ltd@gmail.com</a>.
               </p>
               
               <ContactForm />
