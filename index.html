@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhizzyX — Maintenance Status</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter & JetBrains Mono Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['Inter', 'sans-serif'],
+                mono: ['JetBrains Mono', 'monospace'],
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fafafa;
+        }
+        /* Dotted pattern grid matching the WhizzyX style */
+        .dotted-card {
+            background-color: #ffffff;
+            background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
+            background-size: 16px 16px;
+        }
+
+        /* Rapid typing hands animation */
+        @keyframes typeLeft {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-3px, -5px) rotate(-6deg); }
+            50% { transform: translate(2px, 3px) rotate(4deg); }
+            75% { transform: translate(-2px, -3px) rotate(-3deg); }
+        }
+        @keyframes typeRight {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(3px, -4px) rotate(5deg); }
+            50% { transform: translate(-2px, 4px) rotate(-4deg); }
+            75% { transform: translate(3px, -2px) rotate(3deg); }
+        }
+
+        .monkey-type-left {
+            animation: typeLeft 0.12s linear infinite;
+            transform-origin: 75px 130px;
+        }
+
+        .monkey-type-right {
+            animation: typeRight 0.1s linear infinite;
+            transform-origin: 125px 130px;
+        }
+
+        /* Floating matrix/binary stream upwards */
+        @keyframes binaryRise {
+            0% { transform: translateY(15px); opacity: 0; }
+            50% { opacity: 0.9; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        .code-particle-1 {
+            animation: binaryRise 1.6s infinite ease-in-out;
+        }
+        .code-particle-2 {
+            animation: binaryRise 1.3s infinite ease-in-out 0.3s;
+        }
+        .code-particle-3 {
+            animation: binaryRise 2s infinite ease-in-out 0.6s;
+        }
+
+        /* Eye blink animation */
+        @keyframes eyeBlink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+        .monkey-eye {
+            animation: eyeBlink 4s infinite;
+            transform-origin: 100px 85px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-slate-900 min-h-screen flex flex-col justify-between p-4 sm:p-8 lg:p-12">
+
+    <!-- TOP LOGO HEADER -->
+    <header class="w-full max-w-5xl mx-auto flex items-center justify-between pb-8 border-b border-slate-200/60">
+        <div class="flex items-center gap-3.5">
+            <!-- METALLIC WX LOGO -->
+            <svg class="w-12 h-12 drop-shadow-md" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="silver-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f3f4f6" />
+                        <stop offset="20%" stop-color="#9ca3af" />
+                        <stop offset="40%" stop-color="#ffffff" />
+                        <stop offset="60%" stop-color="#d1d5db" />
+                        <stop offset="80%" stop-color="#4b5563" />
+                        <stop offset="100%" stop-color="#e5e7eb" />
+                    </linearGradient>
+                    <radialGradient id="dark-base" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#111827" />
+                        <stop offset="100%" stop-color="#030712" />
+                    </radialGradient>
+                    <path id="text-arc" d="M 36,138 A 66,66 0 0,0 164,138" />
+                </defs>
+                
+                <circle cx="100" cy="100" r="94" fill="url(#dark-base)" stroke="#374151" stroke-width="2" />
+                <circle cx="100" cy="100" r="80" stroke="url(#silver-metal)" stroke-width="2.5" fill="none" />
+                
+                <path d="M 40,70 L 53,70 L 67,112 L 69,112 L 81,74 L 93,74 L 105,112 L 107,112 L 121,70 L 134,70 L 114,124 L 99,124 L 87,86 L 75,124 L 60,124 Z" fill="url(#silver-metal)" />
+                <path d="M 102,70 L 116,70 L 135,100 L 154,70 L 168,70 L 142,108 L 168,145 L 154,145 L 135,115 L 116,145 L 102,145 L 128,108 Z" fill="url(#silver-metal)" />
+                
+                <text font-family="'JetBrains Mono', 'Inter', monospace" font-size="11.5" font-weight="bold" letter-spacing="4.5">
+                    <textPath href="#text-arc" startOffset="50%" text-anchor="middle" fill="url(#silver-metal)">WHIZZYX</textPath>
+                </text>
+            </svg>
+            <span class="font-bold text-xl tracking-tight text-slate-950">WhizzyX</span>
+        </div>
+        <div class="font-mono text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+            [ PIPELINE_OPTIMIZATION_PHASE ]
+        </div>
+    </header>
+
+    <!-- MAIN GRID CONTAINER -->
+    <main class="w-full max-w-5xl mx-auto my-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            <!-- LEFT COLUMN: STATUS & DETAILED NOTIFICATIONS (7 COLS) -->
+            <div class="lg:col-span-7 space-y-8">
+                
+                <div class="space-y-4">
+                    <!-- Inline High-Tech Status Indicator -->
+                    <div class="flex items-center gap-2 font-mono text-[11px] font-bold tracking-wider text-emerald-500 uppercase">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        [ ACTIVE_COMPILER_RUNNING ]
+                    </div>
+                    
+                    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-950 leading-tight">
+                        System Is Undergoing Maintenance
+                    </h1>
+                    <p class="text-base sm:text-lg text-slate-500 leading-relaxed">
+                        I recently figured a problem in the website which was preventing it to update the new updates to the website because of some backend error that were caused unintentionally while deploying new features. I will try to fix it till the 15 July 2026.
+                    </p>
+                </div>
+
+                <!-- NEW HIGH-IMPACT MASSIVE TIMER -->
+                <div class="grid grid-cols-4 gap-3 text-center max-w-2xl">
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+                        <span id="days" class="text-3xl sm:text-5xl font-extrabold text-slate-950 block font-mono">00</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 block">[ Days ]</span>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+                        <span id="hours" class="text-3xl sm:text-5xl font-extrabold text-slate-950 block font-mono">00</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 block">[ Hours ]</span>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+                        <span id="minutes" class="text-3xl sm:text-5xl font-extrabold text-slate-950 block font-mono">00</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 block">[ Mins ]</span>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+                        <span id="seconds" class="text-3xl sm:text-5xl font-extrabold text-slate-950 block font-mono">00</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 block">[ Secs ]</span>
+                    </div>
+                </div>
+
+                <!-- THE WHIZZYX CONTROL PILL -->
+                <div class="flex">
+                    <div class="bg-black text-white rounded-xl px-5 py-3 text-xs font-bold tracking-tight shadow-sm flex items-center gap-2">
+                        System status: COMPILING_UPDATES 🛠
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: MONKEY CODING SUITE (5 COLS) -->
+            <div class="lg:col-span-5 space-y-4">
+                <div class="font-mono text-[10px] font-bold text-slate-400 tracking-wider">
+                    [SYSTEM://DIAGNOSTICS_PORTAL]
+                </div>
+
+                <!-- DOTTED PRIMATE CARD -->
+                <div class="dotted-card border border-slate-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col justify-between min-h-[420px]">
+                    <div class="space-y-2 text-center">
+                        <span class="font-mono text-[10px] font-bold text-slate-400 block">01. COMPILER_EXECUTION_UNIT</span>
+                        <h3 class="font-bold text-slate-950 text-lg">Diagnostics Engine</h3>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">
+                            Executing diagnostic suites and compiling localized repositories to clear pipeline blocks.
+                        </p>
+                    </div>
+
+                    <!-- HEAD-ON CODING MONKEY WITH INTERACTIVE TERMINAL SCREEN OVERLAY -->
+                    <div class="flex justify-center my-6 relative">
+                        <svg class="w-56 h-56" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Workspace / Desk Base -->
+                            <line x1="10" y1="185" x2="190" y2="185" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 4" />
+
+                            <!-- Tail -->
+                            <path d="M 65 170 Q 30 190 20 160 T 40 130" stroke="#5c4033" stroke-width="4.5" stroke-linecap="round" fill="none" />
+                            
+                            <!-- Feet -->
+                            <ellipse cx="75" cy="182" rx="10" ry="6" fill="#4a2e1b" />
+                            <ellipse cx="125" cy="182" rx="10" ry="6" fill="#4a2e1b" />
+                            
+                            <!-- Legs -->
+                            <path d="M 75 160 Q 65 180 75 180" stroke="#5c4033" stroke-width="8" stroke-linecap="round" />
+                            <path d="M 125 160 Q 135 180 125 180" stroke="#5c4033" stroke-width="8" stroke-linecap="round" />
+
+                            <!-- Torso/Body -->
+                            <ellipse cx="100" cy="145" rx="30" ry="36" fill="#5c4033" />
+                            <!-- Chest Light Patch -->
+                            <ellipse cx="100" cy="148" rx="20" ry="24" fill="#fbcfe8" fill-opacity="0.7" />
+
+                            <!-- Ears -->
+                            <circle cx="66" cy="86" r="10" fill="#5c4033" />
+                            <circle cx="66" cy="86" r="5" fill="#fbcfe8" />
+                            <circle cx="134" cy="86" r="10" fill="#5c4033" />
+                            <circle cx="134" cy="86" r="5" fill="#fbcfe8" />
+
+                            <!-- Head -->
+                            <circle cx="100" cy="86" r="24" fill="#5c4033" />
+                            
+                            <!-- Face Mask -->
+                            <path d="M 84 88 C 84 74, 100 74, 100 85 C 100 74, 116 74, 116 88 C 116 100, 84 100, 84 88 Z" fill="#fbcfe8" />
+                            <ellipse cx="100" cy="94" rx="12" ry="7" fill="#fbcfe8" />
+
+                            <!-- Developer Glasses (Cyberpunk Amber) -->
+                            <g stroke="#eab308" stroke-width="2.5" fill="none">
+                                <circle cx="91" cy="84" r="9" />
+                                <circle cx="109" cy="84" r="9" />
+                                <line x1="100" y1="84" x2="100" y2="84" />
+                                <line x1="82" y1="84" x2="77" y2="82" />
+                                <line x1="118" y1="84" x2="123" y2="82" />
+                            </g>
+
+                            <!-- Eyes -->
+                            <g class="monkey-eye">
+                                <circle cx="91" cy="84" r="3.5" fill="#000000" />
+                                <circle cx="90" cy="83" r="1" fill="#ffffff" />
+                            </g>
+                            <g class="monkey-eye">
+                                <circle cx="109" cy="84" r="3.5" fill="#000000" />
+                                <circle cx="110" cy="83" r="1" fill="#ffffff" />
+                            </g>
+
+                            <!-- Concentrated Mouth -->
+                            <path d="M 96 100 Q 100 97 104 100" stroke="#000000" stroke-width="1.8" fill="none" stroke-linecap="round" />
+
+                            <!-- Keyboard on Table -->
+                            <rect x="70" y="166" width="60" height="15" rx="3" fill="#1e293b" stroke="#334155" stroke-width="1" />
+                            <line x1="74" y1="171" x2="126" y2="171" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2" />
+                            <line x1="74" y1="176" x2="126" y2="176" stroke="#475569" stroke-width="1.5" stroke-dasharray="3 2" />
+
+                            <!-- Left Arm (Typing behind screen) -->
+                            <g class="monkey-type-left">
+                                <path d="M 74 134 C 80 152, 75 160, 86 169" stroke="#5c4033" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                <circle cx="86" cy="169" r="3" fill="#fbcfe8" />
+                            </g>
+
+                            <!-- Right Arm (Typing behind screen) -->
+                            <g class="monkey-type-right">
+                                <path d="M 126 134 C 120 152, 125 160, 114 169" stroke="#5c4033" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                                <circle cx="114" cy="169" r="3" fill="#fbcfe8" />
+                            </g>
+
+                            <!-- SEMI-TRANSPARENT GLOWING TERMINAL SCREEN OVERLAY (IN FRONT OF MONKEY) -->
+                            <g opacity="0.88">
+                                <!-- Glass Monitor Overlay Panel -->
+                                <rect x="52" y="112" width="96" height="52" rx="6" fill="#022c22" fill-opacity="0.25" stroke="#10b981" stroke-width="2" />
+                                <!-- Neon Monitor Base Stand -->
+                                <path d="M92 164 L86 178 L114 178 L108 164 Z" fill="#1e293b" stroke="#0f172a" stroke-width="1.5" />
+                                
+                                <!-- Glowing Matrix/Terminal Diagnostics Code Inside Monitor -->
+                                <text x="58" y="125" fill="#34d399" font-size="6" font-family="monospace" font-weight="bold">> SYS_COMPILE</text>
+                                <text x="58" y="133" fill="#10b981" font-size="5" font-family="monospace">> MODULES_OK: 98.2%</text>
+                                <text x="58" y="141" fill="#10b981" font-size="5" font-family="monospace">> DEPLOYING_REGISTRY</text>
+                                <text x="58" y="149" fill="#059669" font-size="5" font-family="monospace">> TARGET_T: JULY_15</text>
+                                <text x="58" y="157" fill="#34d399" font-size="5" font-family="monospace" class="animate-pulse">> ACTIVE_CALIBRATION...</text>
+                                
+                                <!-- Glowing screen corner indicators -->
+                                <circle cx="142" cy="118" r="1.5" fill="#ef4444" class="animate-ping" />
+                            </g>
+
+                            <!-- Binary and Telemetry Code Particles floating upwards -->
+                            <text class="code-particle-1" x="42" y="120" fill="#10b981" font-size="7" font-family="monospace">1</text>
+                            <text class="code-particle-2" x="154" y="110" fill="#10b981" font-size="6" font-family="monospace">0</text>
+                            <text class="code-particle-3" x="98" y="118" fill="#34d399" font-size="7" font-family="monospace">1</text>
+                        </svg>
+                    </div>
+
+                    <div class="text-[9px] text-center font-mono text-slate-400">
+                        * PIPELINE: LIVE_COMPILATION_SUITE
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- FOOTER INFO -->
+    <footer class="w-full max-w-5xl mx-auto pt-8 border-t border-slate-200/80 flex flex-col sm:flex-row justify-between text-xs text-slate-400 font-mono gap-4 text-center sm:text-left">
+        <span>© 2026 WhizzyX Laboratory. All updates logged.</span>
+        <div class="flex justify-center sm:justify-start gap-4">
+            <a href="mailto:support@example.com" class="hover:text-slate-900 transition-colors">[ PING_ENGINEERING ]</a>
+            <a href="#" class="hover:text-slate-900 transition-colors">[ SYSTEM_STATUS ]</a>
+        </div>
+    </footer>
+
+    <!-- Live Countdown Update Script -->
+    <script>
+        // Set maintenance end target: July 15, 2026 (00:00:00 UTC)
+        const targetDate = new Date('2026-07-15T00:00:00').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference <= 0) {
+                document.getElementById('days').innerText = '00';
+                document.getElementById('hours').innerText = '00';
+                document.getElementById('minutes').innerText = '00';
+                document.getElementById('seconds').innerText = '00';
+            } else {
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                document.getElementById('days').innerText = String(days).padStart(2, '0');
+                document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+                document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+            }
+        }
+
+        // Run immediately and update on loop
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
