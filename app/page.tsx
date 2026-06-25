@@ -904,41 +904,6 @@ export default function Home() {
 
         {/* ── Main Content Area ── */}
         <main className="content-area">
-          {/* Quote Slider (Slide Show) */}
-          {quotes.length > 0 && (
-            <div className="quote-module text-center" style={{ marginBottom: '24px' }}>
-              <div className="quote-glow"></div>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', marginBottom: '32px' }} className="mono">
-                  [SYSTEM://VISIONARY_LOG]
-                </div>
-                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: '24px', fontStyle: 'italic', lineHeight: 1.4 }}>
-                  “{quotes[currentQuoteIndex]?.text || 'Loading vision...'}”
-                </h2>
-                <div className="mono" style={{ fontSize: '12px', fontWeight: 800, color: '#fff', letterSpacing: '0.1em', opacity: 0.8 }}>
-                  — {quotes[currentQuoteIndex]?.designation || 'SYSTEM_CORE'}
-                </div>
-              </div>
-
-              <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px' }}>
-                {quotes.map((_: any, idx: number) => (
-                  <div
-                    key={idx}
-                    onClick={() => setCurrentQuoteIndex(idx)}
-                    style={{
-                      width: idx === currentQuoteIndex ? '24px' : '6px',
-                      height: '6px',
-                      background: idx === currentQuoteIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
-                      borderRadius: '3px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* ══ HOME TAB (Creative Freedom Redesign) ══ */}
           {activeTab === 'home' && (
             <div className="fade-in" style={{ maxWidth: '1200px', paddingTop: '0px' }}>
@@ -1048,6 +1013,41 @@ export default function Home() {
                   </div>
                 </div>
               </section>
+
+              {/* Quote Slider (Slide Show) */}
+              {quotes.length > 0 && (
+                <div className="quote-module text-center" style={{ marginBottom: '64px', marginTop: '64px' }}>
+                  <div className="quote-glow"></div>
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3em', marginBottom: '32px' }} className="mono">
+                      [SYSTEM://VISIONARY_LOG]
+                    </div>
+                    <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: '24px', fontStyle: 'italic', lineHeight: 1.4 }}>
+                      “{quotes[currentQuoteIndex]?.text || 'Loading vision...'}”
+                    </h2>
+                    <div className="mono" style={{ fontSize: '12px', fontWeight: 800, color: '#fff', letterSpacing: '0.1em', opacity: 0.8 }}>
+                      — {quotes[currentQuoteIndex]?.designation || 'SYSTEM_CORE'}
+                    </div>
+                  </div>
+
+                  <div style={{ position: 'absolute', bottom: '32px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px' }}>
+                    {quotes.map((_: any, idx: number) => (
+                      <div
+                        key={idx}
+                        onClick={() => setCurrentQuoteIndex(idx)}
+                        style={{
+                          width: idx === currentQuoteIndex ? '24px' : '6px',
+                          height: '6px',
+                          background: idx === currentQuoteIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
+                          borderRadius: '3px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s'
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* ABOUT THE FOUNDER / ARCHITECT */}
               <section className="mb-24" style={{ padding: isMobile ? '32px 24px' : '60px', background: 'var(--bg-secondary)', borderRadius: '32px', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
