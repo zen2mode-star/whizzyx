@@ -565,7 +565,11 @@ export default function AdminDashboard() {
   const handleSettingsSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch('/api/settings', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', 
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
+      },
       body: JSON.stringify(settings),
     });
     flash('settings', res.ok ? '✓ Website content updated!' : '✗ Failed.');
