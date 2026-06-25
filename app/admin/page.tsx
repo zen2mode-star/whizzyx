@@ -774,6 +774,20 @@ export default function AdminDashboard() {
             Website Info
           </button>
 
+          <div style={{ padding: '16px 24px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.1em', marginTop: '16px', borderTop: '1px solid var(--border-color)' }}>STATIC PAGES</div>
+          <a href="/developer" target="_blank" className="sidebar-item" style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'flex', alignItems: 'center', opacity: 0.6 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </span>
+            Developer Profile ↗
+          </a>
+          <a href="/privacy" target="_blank" className="sidebar-item" style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'flex', alignItems: 'center', opacity: 0.6 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </span>
+            Privacy Policy ↗
+          </a>
+
         </aside>
 
         {/* ── Main Content Area ── */}
