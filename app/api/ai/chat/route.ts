@@ -5,6 +5,14 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    // SECURITY: Verify Admin Token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    const admin = await prisma.adminUser.findFirst();
+    if (!token || token !== admin?.password) {
+      return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 401 });
+    }
+
     const { messages } = await request.json();
 
     // 1. Fetch AI Settings

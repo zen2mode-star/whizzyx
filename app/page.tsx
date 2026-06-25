@@ -382,15 +382,6 @@ export default function Home() {
           98% { offset-distance: 0%; transform: scaleX(-1); }
           100% { offset-distance: 0%; transform: scaleX(1); }
         }
-        .walking-cat-road {
-          offset-path: path("M 100 500 C 300 500 300 200 600 200 C 900 200 900 500 1200 500 C 1500 500 1500 200 1800 200 L 1900 200");
-          position: absolute;
-          width: 70px;
-          height: 70px;
-          animation: walkAlongRoad 40s linear infinite;
-          z-index: 50;
-          pointer-events: none;
-        }
         .technical-label {
           font-family: var(--font-mono);
           font-size: 10px;
@@ -408,20 +399,6 @@ export default function Home() {
           animation: pulse 2s infinite;
         }
         .status-pulse-hibernated {
-          background: var(--status-hibernated);
-          box-shadow: 0 0 8px var(--status-hibernated-glow);
-        }
-        .cat-inner {
-          animation: leapCat 0.8s ease-in-out infinite;
-          display: block;
-          width: 100%;
-          height: 100%;
-          transform-origin: bottom center;
-        }
-        .cat-tail {
-          animation: wagTail 0.3s ease-in-out infinite;
-          transform-origin: 20px 75px;
-        }
         .signpost {
           cursor: pointer;
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);

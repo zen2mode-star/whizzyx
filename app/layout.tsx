@@ -108,9 +108,6 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <Suspense fallback={null}>
-          <AIAssistant />
-        </Suspense>
       </body>
     </html>
   );

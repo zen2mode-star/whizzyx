@@ -308,6 +308,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -333,6 +334,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/reset', {
       method: 'PUT',
       headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -356,7 +358,8 @@ export default function AdminDashboard() {
   const handleFocusUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const res = await fetch('/api/focus', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(focus),
     });
     
@@ -379,7 +382,8 @@ export default function AdminDashboard() {
       if (!title) return;
       
       const res = await fetch('/api/projects', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           title, 
           description: focus.description || focus.problem,
@@ -392,8 +396,9 @@ export default function AdminDashboard() {
 
       // NEW: Link all "Current Focus" updates (projectId is null) to this new project
       await fetch('/api/updates/link-focus', {
-        method: 'POST',
+      method: 'POST',
         headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -403,7 +408,8 @@ export default function AdminDashboard() {
     
     // Clear focus
     await fetch('/api/focus', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ problem: 'Looking for the next challenge...', status: 'Idle', projectId: null }),
     });
     
@@ -476,7 +482,8 @@ export default function AdminDashboard() {
 
   const handleDeleteProject = async (id: number) => {
     if (!confirm('Delete this project?')) return;
-    const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/projects/${id}`, {
+      method: 'DELETE' });
     if (res.ok) fetchAll();
   };
 
@@ -486,7 +493,8 @@ export default function AdminDashboard() {
     const url = editingQuote ? `/api/quotes/${editingQuote.id}` : '/api/quotes';
     const method = editingQuote ? 'PATCH' : 'POST';
     const res = await fetch(url, {
-      method, headers: { 'Content-Type': 'application/json' },
+      method, headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: quoteText, designation: quoteDesignation }),
     });
     if (res.ok) { 
@@ -504,7 +512,8 @@ export default function AdminDashboard() {
 
   const handleDeleteQuote = async (id: number) => {
     if (!confirm('Delete this quote?')) return;
-    await fetch(`/api/quotes/${id}`, { method: 'DELETE' });
+    await fetch(`/api/quotes/${id}`, {
+      method: 'DELETE' });
     fetchAll();
   };
 
@@ -532,6 +541,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/quotes', {
       method: 'PUT',
       headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -549,7 +559,8 @@ export default function AdminDashboard() {
   // --- Suggestions ---
   const handleFeature = async (id: number, current: boolean) => {
     await fetch(`/api/suggestions/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ isFeatured: !current }),
     });
     fetchAll();
@@ -557,7 +568,8 @@ export default function AdminDashboard() {
 
   const handleDeleteSuggestion = async (id: number) => {
     if (!confirm('Are you sure you want to delete this suggestion?')) return;
-    await fetch(`/api/suggestions/${id}`, { method: 'DELETE' });
+    await fetch(`/api/suggestions/${id}`, {
+      method: 'DELETE' });
     fetchAll();
   };
 
@@ -567,6 +579,7 @@ export default function AdminDashboard() {
     const res = await fetch('/api/settings', {
       method: 'POST', 
       headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -605,7 +618,8 @@ export default function AdminDashboard() {
 
   const handleDeleteBlog = async (id: number) => {
     if (!confirm('Delete this blog post?')) return;
-    const res = await fetch(`/api/blog/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/blog/${id}`, {
+      method: 'DELETE' });
     if (res.ok) fetchAll();
   };
 
@@ -628,7 +642,8 @@ export default function AdminDashboard() {
     }
 
     const res = await fetch('/api/updates', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: updateTitle, content: updateContent, excerpt: updateExcerpt, category: updateCategory, projectId: finalProjectId }),
     });
 
@@ -636,7 +651,8 @@ export default function AdminDashboard() {
       // 1. Automatic Project Module Milestone Update
       if (finalProjectId) {
         await fetch(`/api/projects/${finalProjectId}`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ currentMilestone: updateTitle, finalDestination }),
         });
       }
@@ -650,7 +666,8 @@ export default function AdminDashboard() {
         
         // Use raw SQL or dedicated focus update API
         await fetch('/api/focus', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...updatedFocus, id: targetFocus.id }), // Include ID for targeted update
         });
       }
@@ -662,7 +679,8 @@ export default function AdminDashboard() {
 
   const handleDeleteUpdate = async (id: number) => {
     if (!confirm('Delete this update?')) return;
-    const res = await fetch(`/api/updates/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/updates/${id}`, {
+      method: 'DELETE' });
     if (res.ok) fetchAll();
   };
 
@@ -897,7 +915,8 @@ export default function AdminDashboard() {
                             onClick={async () => {
                               if (!confirm('Re-activate this mission?')) return;
                               const res = await fetch('/api/focus', {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ ...m, status: 'Active' }),
                               });
                               if (res.ok) fetchAll();
@@ -910,7 +929,8 @@ export default function AdminDashboard() {
                             style={{ borderColor: '#ef4444', color: '#ef4444', fontWeight: 800, fontSize: '11px' }}
                             onClick={async () => {
                               if (!confirm('PERMANENT DELETION: Are you sure you want to delete this archived mission?')) return;
-                              const res = await fetch(`/api/focus/${m.id}`, { method: 'DELETE' });
+                              const res = await fetch(`/api/focus/${m.id}`, {
+      method: 'DELETE' });
                               if (res.ok) fetchAll();
                             }}
                           >
@@ -1027,7 +1047,8 @@ export default function AdminDashboard() {
                             let success = false;
                             if (finalProjectId) {
                               const res = await fetch(`/api/projects/${finalProjectId}`, {
-                                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                                method: 'PATCH', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ finalDestination }),
                               });
                               if (res.ok) success = true;
@@ -1037,7 +1058,8 @@ export default function AdminDashboard() {
                               const newFocus = { ...focus, finalDestination };
                               setFocus(newFocus);
                               const res = await fetch('/api/focus', {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 
+        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 'Content-Type': 'application/json' },
                                 body: JSON.stringify(newFocus),
                               });
                               if (res.ok) success = true;
