@@ -308,7 +308,6 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 
-        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -334,7 +333,6 @@ export default function AdminDashboard() {
     const res = await fetch('/api/admin/reset', {
       method: 'PUT',
       headers: { 
-        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -398,7 +396,6 @@ export default function AdminDashboard() {
       await fetch('/api/updates/link-focus', {
       method: 'POST',
         headers: { 
-        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -541,7 +538,6 @@ export default function AdminDashboard() {
     const res = await fetch('/api/quotes', {
       method: 'PUT',
       headers: { 
-        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },
@@ -579,7 +575,6 @@ export default function AdminDashboard() {
     const res = await fetch('/api/settings', {
       method: 'POST', 
       headers: { 
-        'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`, 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('whizzyx_admin_token')}`
       },

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import net from 'net';
+import { prisma } from '@/lib/prisma';
 
 // Cache TCP socket clients per IP address
 let clients: { [ip: string]: net.Socket } = {};
