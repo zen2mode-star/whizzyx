@@ -884,7 +884,7 @@ export default function Home() {
           <div className="sidebar-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '12px' }}>🌐</span> [ EXTERNAL_CONNECT ]
           </div>
-          {NAV_TABS.slice(7).map((t) => (
+          {NAV_TABS.slice(7).filter(t => !(settings.hideSupportPage === 'true' && t.id === 'support')).map((t) => (
             <button
               key={t.id}
               onClick={() => handleTabChange(t.id)}

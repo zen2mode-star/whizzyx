@@ -1571,6 +1571,16 @@ export default function AdminDashboard() {
                     <label className="label">Hero Tagline / Status</label>
                     <input type="text" className="form-control" value={settings.heroTagline || ''} onChange={e => setSettings({ ...settings, heroTagline: e.target.value })} placeholder="STABLE_BUILD_VERSION_1.0" />
                   </div>
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="hideSupportPage" 
+                      style={{ width: '18px', height: '18px' }}
+                      checked={settings.hideSupportPage === 'true'} 
+                      onChange={e => setSettings({ ...settings, hideSupportPage: e.target.checked ? 'true' : 'false' })} 
+                    />
+                    <label htmlFor="hideSupportPage" className="label" style={{ margin: 0, cursor: 'pointer' }}>Hide Support Page from Main Navigation</label>
+                  </div>
                   <div style={{ margin: '40px 0 24px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
                     <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Founder Profile</h3>
                     <p className="text-muted" style={{ fontSize: '13px' }}>The human intelligence behind the architecture.</p>
