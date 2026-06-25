@@ -202,13 +202,13 @@ export default function Home() {
   const fetchAll = async () => {
     try {
       const [projRes, blogRes, focusRes, updateRes, suggestRes, quoteRes, settingsRes] = await Promise.all([
-        fetch('/api/projects'),
-        fetch('/api/blog'),
-        fetch('/api/focus?status=all'),
-        fetch('/api/updates'),
-        fetch('/api/suggestions'),
-        fetch('/api/quotes'),
-        fetch('/api/settings')
+        fetch(`/api/projects?t=${Date.now()}`),
+        fetch(`/api/blog?t=${Date.now()}`),
+        fetch(`/api/focus?status=all&t=${Date.now()}`),
+        fetch(`/api/updates?t=${Date.now()}`),
+        fetch(`/api/suggestions?t=${Date.now()}`),
+        fetch(`/api/quotes?t=${Date.now()}`),
+        fetch(`/api/settings?t=${Date.now()}`)
       ]);
 
       const allProjects = await projRes.json();

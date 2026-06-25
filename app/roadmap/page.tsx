@@ -8,8 +8,8 @@ export default function RoadmapExpedition() {
   const [settings, setSettings] = useState<any>({});
 
   useEffect(() => {
-    fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
-    fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
+    fetch(`/api/updates?t=${Date.now()}`).then(r => r.json()).then(setUpdates).catch(console.error);
+    fetch(`/api/settings?t=${Date.now()}`).then(r => r.json()).then(setSettings).catch(console.error);
   }, []);
 
   return (

@@ -257,16 +257,16 @@ export default function AdminDashboard() {
 
   // --- Data fetchers ---
   const fetchAll = () => {
-    fetch('/api/projects').then(r => r.json()).then(setProjects).catch(console.error);
-    fetch('/api/suggestions').then(r => r.json()).then(setSuggestions).catch(console.error);
-    fetch('/api/quotes').then(r => r.json()).then(setQuotes).catch(console.error);
-    fetch('/api/collaborators').then(r => r.json()).then(setCollaborators).catch(console.error);
-    fetch('/api/settings').then(r => r.json()).then(setSettings).catch(console.error);
-    fetch('/api/blog').then(r => r.json()).then(setBlogPosts).catch(console.error);
-    fetch('/api/updates').then(r => r.json()).then(setUpdates).catch(console.error);
-    fetch('/api/leads').then(r => r.json()).then(setLeads).catch(console.error);
-    fetch('/api/visits').then(r => r.json()).then(setVisitLogs).catch(console.error);
-    fetch('/api/quotes').then(r => r.json()).then(setQuotes).catch(console.error);
+    fetch(`/api/projects?t=${Date.now()}`).then(r => r.json()).then(setProjects).catch(console.error);
+    fetch(`/api/suggestions?t=${Date.now()}`).then(r => r.json()).then(setSuggestions).catch(console.error);
+    fetch(`/api/quotes?t=${Date.now()}`).then(r => r.json()).then(setQuotes).catch(console.error);
+    fetch(`/api/collaborators?t=${Date.now()}`).then(r => r.json()).then(setCollaborators).catch(console.error);
+    fetch(`/api/settings?t=${Date.now()}`).then(r => r.json()).then(setSettings).catch(console.error);
+    fetch(`/api/blog?t=${Date.now()}`).then(r => r.json()).then(setBlogPosts).catch(console.error);
+    fetch(`/api/updates?t=${Date.now()}`).then(r => r.json()).then(setUpdates).catch(console.error);
+    fetch(`/api/leads?t=${Date.now()}`).then(r => r.json()).then(setLeads).catch(console.error);
+    fetch(`/api/visits?t=${Date.now()}`).then(r => r.json()).then(setVisitLogs).catch(console.error);
+    fetch(`/api/quotes?t=${Date.now()}`).then(r => r.json()).then(setQuotes).catch(console.error);
     fetch('/api/focus?status=all&t=' + Date.now()).then(r => r.json()).then(data => {
       if (Array.isArray(data)) {
         const active = data.find((f: any) => f.status !== 'Hibernated');
@@ -1196,8 +1196,8 @@ export default function AdminDashboard() {
                             console.log('INITIALIZING_CLOUDINARY_WIDGET...');
                             // @ts-ignore
                             const widget = window.cloudinary.createUploadWidget({
-                              cloudName: 'dztz30gio',
-                              uploadPreset: 'whizzyx_preset',
+                              cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dztz30gio',
+                              uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'whizzyx_preset',
                               resourceType: 'auto', // Allow Cloudinary to decide, but we'll inspect result
                               clientAllowedFormats: ['pdf'],
                               maxFiles: 1,
@@ -1235,8 +1235,8 @@ export default function AdminDashboard() {
                           onClick={() => {
                             // @ts-ignore
                             const widget = window.cloudinary.createUploadWidget({
-                              cloudName: 'dztz30gio',
-                              uploadPreset: 'whizzyx_preset'
+                              cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dztz30gio',
+                              uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'whizzyx_preset'
                             }, (error: any, result: any) => { 
                               if (!error && result && result.event === "success") { 
                                 setThumbnailUrl(result.info.secure_url);

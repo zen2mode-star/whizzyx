@@ -2,9 +2,13 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function check() {
-  const focus = await prisma.currentFocus.findFirst();
-  console.log('Current Focus:', JSON.stringify(focus, null, 2));
-  process.exit(0);
+  const settings = await prisma.siteSettings.findMany();
+  console.log('--- SETTINGS ---');
+  settings.forEach(s => {
+    const displayValue = s.key.toLowerCase().includes('key') ? '********' : s.value;
+    console.log(`${s.key}: ${displayValue}`);
+  });
+  console.log('----------------');
 }
 
-check();
+check().finally(() => prisma.$disconnect());
